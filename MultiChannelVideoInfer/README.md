@@ -82,7 +82,7 @@ export ASCEND_GLOBAL_LOG_LEVEL=3
 
 ## 5 准备
 
-按照第3小结**软件依赖**安装live555和ffmpeg，按照 [Live555离线视频转RTSP说明文档](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/Live555%E7%A6%BB%E7%BA%BF%E8%A7%86%E9%A2%91%E8%BD%ACRTSP%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)将mp4视频转换为h264格式。并将生成的264格式的视频上传到`live/mediaServer`目录下，然后修改`MultiChannelVideoInfer/pipeline`目录下的multi_infer2_4.pipeline和multi_infer1_8.pipeline文件中mxpi_rtspsrc0的内容。
+按照第3小结**软件依赖**安装live555和ffmpeg，按照 [Live555离线视频转RTSP说明文档](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/Live555%E7%A6%BB%E7%BA%BF%E8%A7%86%E9%A2%91%E8%BD%ACRTSP%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)将mp4视频转换为h264格式。并将生成的264格式的视频上传到`live/mediaServer`目录下，然后修改`MultiChannelVideoInfer/pipeline`目录下的multi_infer2_4.pipeline和multi_infer1_8.pipeline文件中mxpi_rtspsrc插件的内容。如下：
 
 ```
         "mxpi_rtspsrc0": {
