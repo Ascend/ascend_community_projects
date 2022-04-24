@@ -48,7 +48,7 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 
 ### 1.5 技术实现流程图
 
-![](../../figures/multi_channel_infer_pipeline.jpg)
+![](../figures/multi_channel_infer_pipeline.jpg)
 
 
 
