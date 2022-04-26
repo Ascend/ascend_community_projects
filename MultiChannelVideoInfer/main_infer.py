@@ -12,7 +12,7 @@ import signal
 import datetime
 import threading
 
-def sigint_handler(signum, frame):
+def sigint_handler():
     global is_sigint_up
     is_sigint_up = True
     print("catched interrupt signal")
