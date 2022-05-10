@@ -21,11 +21,11 @@ import sys
 import re
 import json
 import os
+import random
+import cv2
 import signal
 import datetime
 import threading
-import random
-import cv2
 import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
