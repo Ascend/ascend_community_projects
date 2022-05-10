@@ -57,29 +57,29 @@ if __name__ == '__main__':
         streamManagerApi.DestroyAllStreams()
         exit()
 
-    streamName = b'inferofflinevideo'
-    count = 0
+    STREAM_NAME = b'inferofflinevideo'
+    COUNT = 0
 
-    def timeFunc():
-        timeStep = 0
-        timeCount = 0
+    def time_func():
+        time_step = 0
+        time_count = 0
         begin_time = datetime.datetime.now()
         one_step = 2
         while True:
-            curTime = (datetime.datetime.now() - begin_time).total_seconds()
-            if curTime >= (timeStep + one_step):
-                timeStep = timeStep + one_step
-                print("rate:", (count - timeCount) * 1.0 / one_step)
-                timeCount = count
+            cur_time = (datetime.datetime.now() - begin_time).total_seconds()
+            if cur_time >= (time_step + one_step):
+                time_step = time_step + one_step
+                print("rate:", (COUNT - time_count) * 1.0 / one_step)
+                time_count = COUNT
             if ISSIGINTUP:
                 print("Exit")
                 break 
 
-    t = threading.Thread(target=timeFunc, args=())
+    t = threading.Thread(target=time_func, args=())
     t.start()
     while True:
-        inferResult = streamManagerApi.GetResult(streamName, 0, 10000)
-        count = count + 1
+        inferResult = streamManagerApi.GetResult(STREAM_NAME, 0, 10000)
+        COUNT = COUNT + 1
 
         if inferResult is None:
             continue
