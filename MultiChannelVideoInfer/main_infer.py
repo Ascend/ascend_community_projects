@@ -13,14 +13,14 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
 
 def SigintHandler():
-    global isSigintUp
-    isSigintUp = True
+    global g_isSigintUp
+    g_isSigintUp = True
     print("catched interrupt signal")
 
 signal.signal(signal.SIGINT, SigintHandler)
 signal.signal(signal.SIGHUP, SigintHandler)
 signal.signal(signal.SIGTERM, SigintHandler)
-isSigintUp = False
+g_isSigintUp = False
 
 if __name__ == '__main__':
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                 timeStep = timeStep + oneStep
                 print("rate:", (count - timeCount) * 1.0 / oneStep)
                 timeCount = count
-            if isSigintUp:
+            if g_isSigintUp:
                 print("Exit")
                 break 
 
@@ -67,7 +67,7 @@ if __name__ == '__main__':
             print("GetResultWithUniqueId error. errorCode=%d, errorMsg=%s" % (
                 inferResult.errorCode, inferResult.data.decode()))
             continue
-        if isSigintUp:
+        if g_isSigintUp:
             print("Exit")
             break    
         retStr = inferResult.data.decode()
