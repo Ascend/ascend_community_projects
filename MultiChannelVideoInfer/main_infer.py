@@ -50,8 +50,8 @@ if __name__ == '__main__':
         streamManagerApi.DestroyAllStreams()
         exit()
 
-    pipelinePath = b"./pipeline/multi_infer1_8.pipeline"
-    ret = streamManagerApi.CreateMultipleStreamsFromFile(pipelinePath)
+    PIPELINE_PATH = b"./pipeline/multi_infer1_8.pipeline"
+    ret = streamManagerApi.CreateMultipleStreamsFromFile(PIPELINE_PATH)
     if ret != 0:
         print("Failed to create Stream, ret=%s" % str(ret))
         streamManagerApi.DestroyAllStreams()
@@ -59,16 +59,17 @@ if __name__ == '__main__':
 
     streamName = b'inferofflinevideo'
     count = 0
+
     def timeFunc():
         timeStep = 0
         timeCount = 0
-        beginTime = datetime.datetime.now()
-        oneStep = 2
+        begin_time = datetime.datetime.now()
+        one_step = 2
         while True:
-            curTime = (datetime.datetime.now() - beginTime).total_seconds()
-            if curTime >= (timeStep + oneStep):
-                timeStep = timeStep + oneStep
-                print("rate:", (count - timeCount) * 1.0 / oneStep)
+            curTime = (datetime.datetime.now() - begin_time).total_seconds()
+            if curTime >= (timeStep + one_step):
+                timeStep = timeStep + one_step
+                print("rate:", (count - timeCount) * 1.0 / one_step)
                 timeCount = count
             if ISSIGINTUP:
                 print("Exit")
