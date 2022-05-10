@@ -43,18 +43,18 @@ ISSIGINTUP = False
 
 if __name__ == '__main__':
 
-    streamManagerApi = StreamManagerApi()
-    ret = streamManagerApi.InitManager()
+    multiStreamManagerApi = StreamManagerApi()
+    ret = multiStreamManagerApi.InitManager()
     if ret != 0:
-        print("Failed to init Stream manager, ret=%s" % str(ret))
-        streamManagerApi.DestroyAllStreams()
+        print("Failed to init Stream manager, retStr=%s" % str(ret))
+        multiStreamManagerApi.DestroyAllStreams()
         exit()
 
     PIPELINE_PATH = b"./pipeline/multi_infer1_8.pipeline"
-    ret = streamManagerApi.CreateMultipleStreamsFromFile(PIPELINE_PATH)
+    ret = multiStreamManagerApi.CreateMultipleStreamsFromFile(PIPELINE_PATH)
     if ret != 0:
-        print("Failed to create Stream, ret=%s" % str(ret))
-        streamManagerApi.DestroyAllStreams()
+        print("Failed to create Stream, retStr=%s" % str(ret))
+        multiStreamManagerApi.DestroyAllStreams()
         exit()
 
     STREAM_NAME = b'inferofflinevideo'
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     t = threading.Thread(target=time_func, args=())
     t.start()
     while True:
-        inferResult = streamManagerApi.GetResult(STREAM_NAME, 0, 10000)
+        inferResult = multiStreamManagerApi.GetResult(STREAM_NAME, 0, 10000)
         COUNT = COUNT + 1
 
         if inferResult is None:
@@ -92,4 +92,4 @@ if __name__ == '__main__':
             break    
         retStr = inferResult.data.decode()
         
-    streamManagerApi.DestroyAllStreams()
+    multiStreamManagerApi.DestroyAllStreams()
