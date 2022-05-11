@@ -65,6 +65,7 @@ if __name__ == '__main__':
         time_count = 0
         begin_time = datetime.datetime.now()
         one_step = 2
+        
         while True:
             cur_time = (datetime.datetime.now() - begin_time).total_seconds()
             if cur_time >= (time_step + one_step):
