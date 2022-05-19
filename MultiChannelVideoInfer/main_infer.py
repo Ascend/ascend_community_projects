@@ -31,7 +31,9 @@ import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
 
-def sigint_handler():
+def sigint_handler(signum, frame):
+    signum = signum
+    frame = frame
     global ISSIGINTUP
     ISSIGINTUP = True
     print("catched interrupt signal")
