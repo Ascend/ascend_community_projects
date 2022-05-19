@@ -81,6 +81,10 @@ if __name__ == '__main__':
     t = threading.Thread(target=time_func, args=())
     t.start()
     while True:
+        if ISSIGINTUP:
+            print("Exit")
+            break
+        
         inferResult = multiStreamManagerApi.GetResult(STREAM_NAME, 0, 10000)
         COUNT = COUNT + 1
 
@@ -90,9 +94,7 @@ if __name__ == '__main__':
             print("GetResultWithUniqueId error. errorCode=%d, errorMsg=%s" % (
                 inferResult.errorCode, inferResult.data.decode()))
             continue
-        if ISSIGINTUP:
-            print("Exit")
-            break    
+ 
         retStr = inferResult.data.decode()
         
     multiStreamManagerApi.DestroyAllStreams()
