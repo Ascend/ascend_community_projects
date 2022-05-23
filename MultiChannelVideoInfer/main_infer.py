@@ -96,5 +96,6 @@ if __name__ == '__main__':
             continue
  
         retStr = inferResult.data.decode()
+        print(retStr)
         
     multiStreamManagerApi.DestroyAllStreams()
