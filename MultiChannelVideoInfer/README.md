@@ -109,7 +109,7 @@ export ASCEND_GLOBAL_LOG_LEVEL=3
 python3 main_infer.py
 ```
 
-命令执行成功后会在终端输出检测框的信息已经分类信息。
+命令执行成功后会在终端输出检测框的信息以及分类信息。
 
 
 
