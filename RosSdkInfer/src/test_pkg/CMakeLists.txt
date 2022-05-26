@@ -166,14 +166,14 @@ include_directories(
 
 # message(STATUS "env catkin_LIBRARIES: ${catkin_LIBRARIES}")
 
-link_directories(${catkin_LIB_DIRS}
-    ${MX_SDK_HOME}/lib/
-    ${MX_SDK_HOME}/opensource/lib/
-    ${MX_SDK_HOME}/opensource/lib64/)
+# link_directories(${catkin_LIB_DIRS}
+#     ${MX_SDK_HOME}/lib/
+#     ${MX_SDK_HOME}/opensource/lib/
+#     ${MX_SDK_HOME}/opensource/lib64/)
 
-add_executable(sdk_server src/sdk_server.cpp) 	
-target_link_libraries(sdk_server ${catkin_LIBRARIES} glog mxbase plugintoolkit mxpidatatype streammanager cpprest mindxsdk_protobuf)
-add_dependencies(sdk_server ${PROJECT_NAME}_gencpp)
+# add_executable(sdk_server src/sdk_server.cpp) 	
+# target_link_libraries(sdk_server ${catkin_LIBRARIES} glog mxbase plugintoolkit mxpidatatype streammanager cpprest mindxsdk_protobuf)
+# add_dependencies(sdk_server ${PROJECT_NAME}_gencpp)
 
 # add_executable(sdk_client src/sdk_client.cpp)
 # target_link_libraries(sdk_client ${catkin_LIBRARIES})
