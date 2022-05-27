@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import rospy
-from test_pkg.srv import MyResult, MyResultRequest
+
 import sys
 import re
 import json
@@ -10,9 +9,12 @@ import signal
 import datetime
 import threading
 import random
+import base64
 import cv2
 import numpy as np
-import base64
+import rospy
+from test_pkg.srv import MyResult, MyResultRequest
+
 
 def saveInferResultToImage(inferResultString, imagePath):
 
