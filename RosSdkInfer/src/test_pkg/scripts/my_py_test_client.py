@@ -16,12 +16,12 @@ import rospy
 from test_pkg.srv import MyResult, MyResultRequest
 
 
-def saveInferResultToImage(inferResultString, imagePath):
+def save_infer_result_to_image(infer_result_string, image_path):
 
-    img = cv2.imread(imagePath)
+    img = cv2.imread(image_path)
     rows = img.shape[0]
     cols = img.shape[1]
-    retDict = json.loads(inferResultString)
+    retDict = json.loads(infer_result_string)
     idsLen = len(retDict["MxpiObject"])
     for i in range(idsLen):
 
@@ -52,8 +52,8 @@ def sdk_client_func():
         sdk_client = rospy.ServiceProxy('/sdk_infer', MyResult)
         imagestr = ""
         realimagestr = ""
-        imagePath = "/home/HwHiAiUser/hhy/pic/test1.jpg"
-        with open(imagePath, 'rb') as f:
+        image_path = "/home/HwHiAiUser/hhy/pic/test1.jpg"
+        with open(image_path, 'rb') as f:
             imagebytes = base64.b64encode(f.read())
             f.close()    
             imagestr = str(imagebytes)
@@ -62,9 +62,9 @@ def sdk_client_func():
 		# 请求服务调用，输入请求数据
         response = sdk_client(realimagestr)
 
-        inferResultString = response.inferResultStr
-        saveInferResultToImage(inferResultString, imagePath)
-        return inferResultString
+        infer_result_string = response.inferResultStr
+        save_infer_result_to_image(infer_result_string, image_path)
+        return infer_result_string
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import rospy
-from test_pkg.srv import MyResult, MyResultResponse
+
 import sys
 import re
 import json
@@ -15,14 +14,17 @@ import cv2
 import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
+import rospy
+from test_pkg.srv import MyResult, MyResultResponse
 
 streamManagerApi = {}
 
-def picInfer(picData):
+
+def pic_infer(pic_data):
     global streamManagerApi
     # Construct the input of the stream
     dataInput = MxDataInput()
-    dataInput.data = picData
+    dataInput.data = pic_data
 
     # Inputs data to a specified stream based on streamName.
     streamName = b'classification+detection'
@@ -49,8 +51,8 @@ def picInfer(picData):
 def sdkCallback(req):
 	# 显示请求数据
     # rospy.loginfo("resutl:%s", req.inferResult)
-    picData = base64.b64decode(req.imageStr)
-    retStr = picInfer(picData)
+    pic_data = base64.b64decode(req.imageStr)
+    retStr = pic_infer(pic_data)
 
 	# 反馈数据
     return MyResultResponse(retStr)
