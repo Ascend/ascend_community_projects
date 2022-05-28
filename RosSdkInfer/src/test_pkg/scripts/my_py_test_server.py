@@ -17,11 +17,11 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 import rospy
 from test_pkg.srv import MyResult, MyResultResponse
 
-streamManagerApi = {}
+STREAM_MANAGER_API = {}
 
 
 def pic_infer(pic_data):
-    global streamManagerApi
+    global STREAM_MANAGER_API
     # Construct the input of the stream
     dataInput = MxDataInput()
     dataInput.data = pic_data
@@ -29,13 +29,13 @@ def pic_infer(pic_data):
     # Inputs data to a specified stream based on streamName.
     streamName = b'classification+detection'
     inPluginId = 0
-    uniqueId = streamManagerApi.SendDataWithUniqueId(streamName, inPluginId, dataInput)
+    uniqueId = STREAM_MANAGER_API.SendDataWithUniqueId(streamName, inPluginId, dataInput)
     if uniqueId < 0:
         print("Failed to send data to stream.")
         exit()
 
     # Obtain the inference result by specifying streamName and uniqueId.
-    inferResult = streamManagerApi.GetResultWithUniqueId(streamName, uniqueId, 3000)
+    inferResult = STREAM_MANAGER_API.GetResultWithUniqueId(streamName, uniqueId, 3000)
     if inferResult.errorCode != 0:
         print("GetResultWithUniqueId error. errorCode=%d, errorMsg=%s" % (
             inferResult.errorCode, inferResult.data.decode()))
@@ -70,12 +70,12 @@ def sdk_server():
 
 def sdk_init():
     # init stream manager
-    global streamManagerApi
-    streamManagerApi = StreamManagerApi()
-    ret = streamManagerApi.InitManager()
+    global STREAM_MANAGER_API
+    STREAM_MANAGER_API = StreamManagerApi()
+    ret = STREAM_MANAGER_API.InitManager()
     if ret != 0:
         print("Failed to init Stream manager, ret=%s" % str(ret))
-        streamManagerApi.DestroyAllStreams()
+        STREAM_MANAGER_API.DestroyAllStreams()
         exit()
 
     # create streams by pipeline config file
@@ -83,10 +83,10 @@ def sdk_init():
     with open(pipelinePath, 'rb') as f:
         pipelineStr = f.read()
 
-    ret = streamManagerApi.CreateMultipleStreams(pipelineStr)
+    ret = STREAM_MANAGER_API.CreateMultipleStreams(pipelineStr)
     if ret != 0:
         print("Failed to create Stream, ret=%s" % str(ret))
-        streamManagerApi.DestroyAllStreams()
+        STREAM_MANAGER_API.DestroyAllStreams()
         exit()
 
 if __name__ == "__main__":

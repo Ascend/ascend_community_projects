@@ -77,4 +77,3 @@ if __name__ == "__main__":
 	#服务调用并显示调用结果
     print("Show response result : \n %s" % (sdk_client_func()))
 
-
