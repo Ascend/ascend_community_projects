@@ -21,26 +21,30 @@ def save_infer_result_to_image(infer_result_string, image_path):
     img = cv2.imread(image_path)
     rows = img.shape[0]
     cols = img.shape[1]
-    retDict = json.loads(infer_result_string)
-    idsLen = len(retDict["MxpiObject"])
-    for i in range(idsLen):
+    ret_dict = json.loads(infer_result_string)
+    ids_len = len(ret_dict["MxpiObject"])
+    for i in range(ids_len):
 
-        x0 = int(retDict["MxpiObject"][i]["x0"])
-        y0 = int(retDict["MxpiObject"][i]["y0"])
-        x1 = int(retDict["MxpiObject"][i]["x1"])
-        y1 = int(retDict["MxpiObject"][i]["y1"])
+        x0 = int(ret_dict["MxpiObject"][i]["x0"])
+        y0 = int(ret_dict["MxpiObject"][i]["y0"])
+        x1 = int(ret_dict["MxpiObject"][i]["x1"])
+        y1 = int(ret_dict["MxpiObject"][i]["y1"])
         
-        className = retDict["MxpiObject"][i]["classVec"][0]["className"]
-        confidence = retDict["MxpiObject"][i]["classVec"][0]["confidence"]
+        class_name = ret_dict["MxpiObject"][i]["classVec"][0]["className"]
+        confidence = ret_dict["MxpiObject"][i]["classVec"][0]["confidence"]
 
         thickness = int((rows + cols) / 2 * 0.005 + 1)
-        wordSize = thickness * 0.3 if thickness * 0.3 > 1.0 else 1.0
-        bgr = np.random.randint(0, 255, 3, dtype = np.int32)#随机颜色
+        word_size = thickness * 0.3 if thickness * 0.3 > 1.0 else 1.0
+        bgr = np.random.randint(0, 255, 3, dtype = np.int32)
+        color_random = (int(bgr[0]), int(bgr[1]), int(bgr[2]))
+        text_pos = (x0, y0 - thickness)
+        text_form = cv2.FONT_HERSHEY_SIMPLEX
         cv2.rectangle(img, (x0, y0), (x1, y1), (int(bgr[0]), int(bgr[1]), int(bgr[2])), thickness)
-        cv2.putText(img, className, (x0, y0 - thickness), cv2.FONT_HERSHEY_SIMPLEX, wordSize, (int(bgr[0]), int(bgr[1]), int(bgr[2])), thickness)
+        cv2.putText(img, class_name, text_pos, text_form, word_size, color_random, thickness)
 
-    savePath = "/home/HwHiAiUser/hhy/pic/test1__save.jpg"
-    cv2.imwrite(savePath, img)
+    save_path = "/home/HwHiAiUser/pic/test1__save.jpg"
+    cv2.imwrite(save_path, img)
+
 
 def sdk_client_func():
 	# ROS节点初始化
@@ -52,7 +56,7 @@ def sdk_client_func():
         sdk_client = rospy.ServiceProxy('/sdk_infer', MyResult)
         imagestr = ""
         realimagestr = ""
-        image_path = "/home/HwHiAiUser/hhy/pic/test1.jpg"
+        image_path = "/home/HwHiAiUser/pic/test1.jpg"
         with open(image_path, 'rb') as f:
             imagebytes = base64.b64encode(f.read())
             f.close()    
@@ -66,10 +70,11 @@ def sdk_client_func():
         save_infer_result_to_image(infer_result_string, image_path)
         return infer_result_string
     except rospy.ServiceException as e:
-        print("Service call failed: %s"%e)
+        print("Service call failed: %s" % e)
+        return ""
 
 if __name__ == "__main__":
 	#服务调用并显示调用结果
-    print("Show response result : \n %s" %(sdk_client_func()))
+    print("Show response result : \n %s" % (sdk_client_func()))
 
 
