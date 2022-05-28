@@ -23,50 +23,51 @@ STREAM_MANAGER_API = {}
 def pic_infer(pic_data):
     global STREAM_MANAGER_API
     # Construct the input of the stream
-    dataInput = MxDataInput()
-    dataInput.data = pic_data
+    data_input = MxDataInput()
+    data_input.data = pic_data
 
-    # Inputs data to a specified stream based on streamName.
-    streamName = b'classification+detection'
-    inPluginId = 0
-    uniqueId = STREAM_MANAGER_API.SendDataWithUniqueId(streamName, inPluginId, dataInput)
-    if uniqueId < 0:
+    # Inputs data to a specified stream based on stream_name.
+    stream_name = b'classification+detection'
+    in_plugin_id = 0
+    unique_id = STREAM_MANAGER_API.SendDataWithUniqueId(stream_name, in_plugin_id, data_input)
+    if unique_id < 0:
         print("Failed to send data to stream.")
         exit()
 
-    # Obtain the inference result by specifying streamName and uniqueId.
-    inferResult = STREAM_MANAGER_API.GetResultWithUniqueId(streamName, uniqueId, 3000)
-    if inferResult.errorCode != 0:
+    # Obtain the inference result by specifying stream_name and unique_id.
+    infer_result = STREAM_MANAGER_API.GetResultWithUniqueId(stream_name, unique_id, 3000)
+    if infer_result.errorCode != 0:
         print("GetResultWithUniqueId error. errorCode=%d, errorMsg=%s" % (
-            inferResult.errorCode, inferResult.data.decode()))
+            infer_result.errorCode, infer_result.data.decode()))
         exit()
 
     # print the infer result
-    retStr = inferResult.data.decode()
+    ret_str = infer_result.data.decode()
     print("server infer the result:\n")
-    print(retStr)
-    return retStr
+    print(ret_str)
+    return ret_str
 
 
-def sdkCallback(req):
+def sdk_call_back(req):
 	# 显示请求数据
-    # rospy.loginfo("resutl:%s", req.inferResult)
     pic_data = base64.b64decode(req.imageStr)
-    retStr = pic_infer(pic_data)
+    ret_str = pic_infer(pic_data)
 
 	# 反馈数据
-    return MyResultResponse(retStr)
+    return MyResultResponse(ret_str)
+
 
 def sdk_server():
 	# ROS节点初始化
     rospy.init_node('sdk_server')
 
-	# 创建一个名为/show_person的server，注册回调函数sdkCallback
-    s = rospy.Service('/sdk_infer', MyResult, sdkCallback)
+	# 创建一个名为/show_person的server，注册回调函数sdk_call_back
+    s = rospy.Service('/sdk_infer', MyResult, sdk_call_back)
 
 	# 循环等待回调函数
     print("Ready to get image string.")
     rospy.spin()
+
 
 def sdk_init():
     # init stream manager
@@ -79,11 +80,11 @@ def sdk_init():
         exit()
 
     # create streams by pipeline config file
-    pipelinePath = b"/home/HwHiAiUser/hhy/catkin_ws/src/test_pkg/scripts/pipeline/Sample.pipeline"
-    with open(pipelinePath, 'rb') as f:
-        pipelineStr = f.read()
+    pipeline_path = b"/home/HwHiAiUser/catkin_ws/src/test_pkg/scripts/pipeline/Sample.pipeline"
+    with open(pipeline_path, 'rb') as f:
+        pipeline_str = f.read()
 
-    ret = STREAM_MANAGER_API.CreateMultipleStreams(pipelineStr)
+    ret = STREAM_MANAGER_API.CreateMultipleStreams(pipeline_str)
     if ret != 0:
         print("Failed to create Stream, ret=%s" % str(ret))
         STREAM_MANAGER_API.DestroyAllStreams()
