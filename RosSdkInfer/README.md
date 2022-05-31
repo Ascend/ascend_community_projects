@@ -93,9 +93,19 @@ $catkin_create_pkg test_pkg roscpp rospy std_msgs geometry_msgs turtlesim
 
 ## 6 项目文件部署
 
-1、删除test_pkg下的文件
+1、修改CMakeLists.txt与package.xml
 
-$rm CMakeLists.txt package.xml src include -rf
+CMakeLists.txt,添加如下选项：
+
+find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp rospy std_msgs turtlesim message_generation)
+add_service_files(FILES MyResult.srv)
+generate_messages(DEPENDENCIES std_msgs)
+catkin_package(CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs turtlesim message_runtime)
+
+package.xml,添加如下选项：
+
+<build_depend>message_generation</build_depend>
+<exec_depend>message_runtime</exec_depend>
 
 2、把本项目test_pkg下的文件拷贝过去
 
@@ -103,6 +113,15 @@ $rm CMakeLists.txt package.xml src include -rf
 
 ## 7 运行
 
+
+find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
+  roscpp
+  rospy
+  std_msgs
+  turtlesim
+  message_generation
+)
 1、运行前先输入：
 
 pip install pyyaml
