@@ -7,9 +7,10 @@
 1.环境依赖
 2.200dk-conda-sdk环境搭建;
 3.基于200dk-ROS系统移植;
-4.ROS工程创建;
-5.项目文件部署;
-6.运行;
+4.ROS-SDK推理流程
+5.ROS工程创建;
+6.项目文件部署;
+7.运行;
 
 
 ## 1 环境依赖
@@ -41,9 +42,14 @@
 
 ## 3 基于200dk-ROS系统移植
 
-基于200dk-ROS系统的移植可以参考：https://gitee.com/huang-heyang/docs-openmind/blob/master/guide/mindx/ascend_community_projects/tutorials/200dk-ROS%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D.md
+基于200dk-ROS系统的移植可以参考：https://gitee.com/Ascend/docs-openmind/blob/master/guide/mindx/ascend_community_projects/tutorials/200dk-ROS%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D.md
 
-## 4 ROS工程创建
+## 4 ROS-SDK推理流程
+
+![输入图片说明](../figures/rossdkinfer.jpg "rossdkinfer.jpg")
+
+
+## 5 ROS工程创建
 
 1、创建工作空间
 
@@ -85,7 +91,7 @@ $cd ~/catkin_ws/src
 
 $catkin_create_pkg test_pkg roscpp rospy std_msgs geometry_msgs turtlesim
 
-## 5 项目文件部署
+## 6 项目文件部署
 
 1、删除test_pkg下的文件
 
@@ -95,7 +101,7 @@ $rm CMakeLists.txt package.xml src include -rf
 
 3、执行catkin_make（这一步主要是生成自定义数据代码文件）
 
-## 6 运行
+## 7 运行
 
 1、运行前先输入：
 
