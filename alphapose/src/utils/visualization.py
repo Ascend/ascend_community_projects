@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-'''
-fn
-'''
 
 import math
 import numpy as np
@@ -28,6 +25,7 @@ CYAN = (255, 255, 0)
 YELLOW = (0, 255, 255)
 ORANGE = (0, 165, 255)
 PURPLE = (255, 0, 255)
+
 
 def visualize(frame, result, dataset='coco'):
     '''
@@ -105,6 +103,5 @@ def visualize(frame, result, dataset='coco'):
                 else:
                     transparency = float(max(0, min(1, (kp_scores[start_pair] + kp_scores[end_pair]))))
 
-                #transparency = float(max(0, min(1, 0.5 * (kp_scores[start_pair] + kp_scores[end_pair])-0.1)))
                 img = cv2.addWeighted(bg, transparency, img, 1 - transparency, 0)
     return img

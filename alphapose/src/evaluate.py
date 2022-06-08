@@ -56,25 +56,20 @@ def main():
     data_input = MxDataInput()
     coco_result = []
     
-    for image_idx, image_info in enumerate(image_list):
-        
+    for image_idx, image_info in enumerate(image_list):   
         image_path = os.path.join(image_folder, image_info['file_name'])
-        image_id = image_info['id']
-        
+        image_id = image_info['id']       
         ann_ids = coco.getAnnIds(image_id)
         anns = coco.loadAnns(ann_ids)
         roi_vector = RoiBoxVector()
-        if (image_id == 397133):
-            print(anns[0]['bbox'])
-            print(anns[1]['bbox'])
         for i in range(len(anns)):
-            # print(anns[i]['bbox'])
             roi = RoiBox()
             roi.x0 = anns[i]['bbox'][0]
             roi.y0 = anns[i]['bbox'][1]
             roi.x1 = anns[i]['bbox'][0] + anns[i]['bbox'][2]
             roi.y1 = anns[i]['bbox'][1] + anns[i]['bbox'][3]
             roi_vector.push_back(roi)
+        
         data_input.roiBoxs = roi_vector
         print('Detect image: ', image_idx, ': ', image_info['file_name'], ', image id: ', image_id)        
         if os.path.exists(image_path) != 1:

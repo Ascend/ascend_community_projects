@@ -43,6 +43,7 @@ YUV_BYTES_DE = 2
 parser = argparse.ArgumentParser(description='AlphaPose')
 parser.add_argument('--speedtest', default=False, action='store_true', help='The test frame rate')
 
+
 def main():
     args = parser.parse_args()
     stream_manager_api = StreamManagerApi()
@@ -64,16 +65,16 @@ def main():
     key_vec.push_back(b"mxpi_alphaposepostprocess0")
 
     # Example Initialize the video encoder
-    fourcc = cv2.VideoWriter_fourcc('X','V','I','D')  # H.264 codec
+    fourcc = cv2.VideoWriter_fourcc(' X ', ' V ', ' I ', ' D ')  # H.264 codec
     out = cv2.VideoWriter(filename="../out/alphapose.avi", fourcc=fourcc, fps=24, 
-                        frameSize=(OUT_WIDTH, OUT_HEIGHT),isColor=True)
+                        frameSize=(OUT_WIDTH, OUT_HEIGHT), isColor=True)
     frame_count = 0
     wait_count = 0
     while True:
-        infer_result = stream_manager_api.GetResult(stream_name, b'appsink0', key_vec, 200000)
+        infer_result = stream_manager_api.GetResult(stream_name, b'appsink0', key_vec, 5000)
         if infer_result.errorCode != 0:
             if wait_count != 5:
-                print("Please check the format of the video or if the rtspUrl of the video is correct or if the video exists.")
+                print("Please check the rtspUrl of the video is correct or the video exists.")
                 wait_count += 1
                 continue
             else:
@@ -123,7 +124,7 @@ def main():
             personlist[i]['proposal_score'] = personlist[i]['proposal_score'].tolist()
         with open( "../out/alphapose.json", "a") as f:
             json.dump(personlist, f, indent=2)
-        frame_count +=1
+        frame_count += 1
         # The time and frame rate information is printed every 10 frames
         if frame_count % 10 == 0:            
             end = time.time()

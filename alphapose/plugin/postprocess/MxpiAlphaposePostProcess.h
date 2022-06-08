@@ -91,10 +91,10 @@ namespace MxPlugins {
          * @param personScores - Target data containing the information of person's score
          * @return APP_ERROR
          */
-        APP_ERROR PoseNms(std::vector<cv::Mat> &keypointPreds, 
-                        std::vector<cv::Mat> &keypointScores, 
+        APP_ERROR PoseNms(std::vector<cv::Mat> &keypointPreds,
+                        std::vector<cv::Mat> &keypointScores,
                         std::vector<std::vector<float> > &objectBoxes,
-                        std::vector<cv::Mat> &finalPoses, 
+                        std::vector<cv::Mat> &finalPoses,
                         std::vector<cv::Mat> &finalScores,
                         std::vector<float> &personScores);
         
@@ -106,7 +106,7 @@ namespace MxPlugins {
          * @param keypointScores - Source data containing the information of keypoins score
          * @return APP_ERROR
          */
-        APP_ERROR ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result, 
+        APP_ERROR ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result,
                                     const std::vector<std::vector<float> > &objectBoxes,
                                     std::vector<cv::Mat> &keypointPreds,
                                     std::vector<cv::Mat> &keypointScores);
