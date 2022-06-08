@@ -29,21 +29,20 @@ using namespace cv;
 
 namespace {
     auto g_uint8Deleter = [] (uint8_t *p) { };
-    const float delta1 = 1;
-    const float mu = 1.7;
-    const float delta2 = 2.65;
-    const float gma = 22.48;
-    const float scoreThreds = 0.3;
-    const float matchThreds = 5;
-    const float areaThres = 0;
-    const float alpha = 0.1;
-    const float aspectRatio = 0.75;
     const int keypointsNum = 17;
+    const int poseCoordNum = 2;
+    const int scoreCoordNum = 1;
     const int confidenceIndex = 0;
     const int centerxIndex = 1;
     const int centeryIndex = 2;
     const int scalewIndex = 3;
     const int scalehIndex = 4;
+
+    const float half = 0.5;
+    const float quarter = 0.25;  
+    const float scoreThreds = 0.3;
+    const float matchThreds = 5;
+    const float areaThres = 0;  // 40 * 40.5
     bool accTest = false;
 }
 
@@ -53,7 +52,7 @@ namespace {
  * @param tensors - Target TensorBase data
  */
 static void GetTensors(const MxTools::MxpiTensorPackageList &srcMxpiTensorPackageList,
-                        std::vector<MxBase::TensorBase> &tensors)
+                       std::vector<MxBase::TensorBase> &tensors)
 {
     for (int i = 0; i < srcMxpiTensorPackageList.tensorpackagevec_size(); ++i) {
         MxTools::MxpiTensorPackage srcMxpiTensorPackage = srcMxpiTensorPackageList.tensorpackagevec(i);
@@ -79,10 +78,12 @@ static void GetTensors(const MxTools::MxpiTensorPackageList &srcMxpiTensorPackag
  * @param srcMxpiObjectList - Source MxpiObjectList
  * @param objectBoxes - The boxes of objects
  */
-static void GetBoxes(const MxTools::MxpiObjectList &srcMxpiObjectList,
-                        std::vector<std::vector<float> > &objectBoxes)
+static void GetBoxes(const MxTools::MxpiObjectList &srcMxpiObjectList, 
+                     std::vector<std::vector<float> > &objectBoxes)
 {
     int boxInfoNum = 5;
+    float scaleMult = 1.25;
+    float aspectRatio = 0.75;
     for (int i = 0; i < srcMxpiObjectList.objectvec_size(); i++) {      
         MxTools::MxpiObject srcMxpiObject = srcMxpiObjectList.objectvec(i);
         // Filter out person class
@@ -92,8 +93,8 @@ static void GetBoxes(const MxTools::MxpiObjectList &srcMxpiObjectList,
             float y0 = srcMxpiObject.y0();            
             float x1 = srcMxpiObject.x1();            
             float y1 = srcMxpiObject.y1();           
-            float centerx = (x1 + x0) * 0.5;
-            float centery = (y1 + y0) * 0.5;       
+            float centerx = (x1 + x0) * half;
+            float centery = (y1 + y0) * half;       
             float boxWidth = x1 - x0;
             float boxHeight = y1 - y0;
             float confidence = 0;
@@ -110,8 +111,8 @@ static void GetBoxes(const MxTools::MxpiObjectList &srcMxpiObjectList,
             }else{
                 boxWidth = boxHeight * aspectRatio;
             }
-            float scalew = boxWidth * 1.25;
-            float scaleh = boxHeight * 1.25;
+            float scalew = boxWidth * scaleMult;
+            float scaleh = boxHeight * scaleMult;
 
             objectBox[confidenceIndex] = confidence;
             objectBox[centerxIndex] = centerx;
@@ -165,12 +166,12 @@ static void ReadResultFromTensor(const std::vector <MxBase::TensorBase> &tensors
  * @param maxvals - Maximum values
  */
 static void GetMaxPrediction(const std::vector<std::vector<cv::Mat> > &result,
-                            std::vector<cv::Mat> &coords, std::vector<cv::Mat> &maxvals)
+                             std::vector<cv::Mat> &coords, std::vector<cv::Mat> &maxvals)
 {
     int channel = result[0].size();
     for (int i = 0; i < result.size(); i++){
-        cv::Mat coord(channel, 2, CV_32FC1, cv::Scalar(0));
-        cv::Mat maxval(channel, 1, CV_32FC1, cv::Scalar(0));
+        cv::Mat coord(channel, poseCoordNum, CV_32FC1, cv::Scalar(0));
+        cv::Mat maxval(channel, scoreCoordNum, CV_32FC1, cv::Scalar(0));
         for (int j = 0; j < channel; j++){
             // Get the max point's position and it's value
             double maxValue;
@@ -212,21 +213,21 @@ static void GetThirdPoint(cv::Point2f *mapPoint)
  * @param outputSize - The transformation matrix for affine tranform
  * @param trans - The transformation matrix for affine tranform
  */
-static void GetAffineTransform(const std::vector<float> &center, const std::vector<float> &scale,
-                                const std::vector<int> &outputSize, cv::Mat &trans)
+static void GetAffineTransform(const std::vector<float> &center, const std::vector<float> &scale, 
+                               const std::vector<int> &outputSize, cv::Mat &trans)
 {
     int pointNum = 3;
     cv::Point2f src[pointNum];
     src[0].x = center[0];
     src[0].y = center[1];
     src[1].x = center[0];
-    src[1].y = center[1] - scale[0] * 0.5;
+    src[1].y = center[1] - scale[0] * half;
     GetThirdPoint(src);
     cv::Point2f dst[pointNum];
-    dst[0].x = outputSize[0] * 0.5;
-    dst[0].y = outputSize[1] * 0.5;
-    dst[1].x = outputSize[0] * 0.5;
-    dst[1].y = (outputSize[1] - outputSize[0]) * 0.5;
+    dst[0].x = outputSize[0] * half;
+    dst[0].y = outputSize[1] * half;
+    dst[1].x = outputSize[0] * half;
+    dst[1].y = (outputSize[1] - outputSize[0]) * half;
     GetThirdPoint(dst);
     // Get the transformation matrix for affine tranform
     trans = cv::getAffineTransform(dst, src);
@@ -242,7 +243,7 @@ static void GetAffineTransform(const std::vector<float> &center, const std::vect
  * @param heatmapHeight - The heatmap's height
  */
 static void TransformPreds(const std::vector<cv::Mat> &coords, const std::vector<std::vector<float> > &objectBoxes,
-                            std::vector<cv::Mat> &keypointPreds, int heatmapWidth, int heatmapHeight)
+                           std::vector<cv::Mat> &keypointPreds, int heatmapWidth, int heatmapHeight)
 {
     
     std::vector<int> outputSize = {heatmapWidth, heatmapHeight};
@@ -253,7 +254,9 @@ static void TransformPreds(const std::vector<cv::Mat> &coords, const std::vector
         std::vector<float> scale = {};
         scale.push_back(objectBoxes[i][scalewIndex]);
         scale.push_back(objectBoxes[i][scalehIndex]);
-        cv::Mat trans(2, 3, CV_32FC1, Scalar(0));
+        int transxIndex = 3;
+        int transyIndex = 2;
+        cv::Mat trans(transyIndex, transxIndex, CV_32FC1, Scalar(0));  
         
         // Get transformation matrix for affine transformation
         GetAffineTransform(center, scale, outputSize, trans);   
@@ -280,9 +283,12 @@ static void TransformPreds(const std::vector<cv::Mat> &coords, const std::vector
  * @param keypointScores - Source data containing the information of keypoins score
  * @param finalDists - Final distance
  */
-static void GetParametricDistance(int pickId, const std::vector<cv::Mat> &keypointPreds,
-                                const std::vector<cv::Mat> &keypointScores, std::vector<float> &finalDists)
+static void GetParametricDistance(int pickId, const std::vector<cv::Mat> &keypointPreds, 
+                                  const std::vector<cv::Mat> &keypointScores, std::vector<float> &finalDists)
 {
+    float square = 2.0;
+    float delta2 = 2.65;
+    float mu = 1.7;
     int batchNum = keypointPreds.size();
     cv::Mat pickPred = keypointPreds[pickId].clone();
     cv::Mat predScore = keypointScores[pickId].clone();
@@ -296,8 +302,8 @@ static void GetParametricDistance(int pickId, const std::vector<cv::Mat> &keypoi
         for (int j =0; j < keypointPreds[i].rows; j++){
             const float *ptr1 = keypointPreds[i].ptr<float>(j);
             float *ptr2 = pickPred.ptr<float>(j);
-            float p0 = powf((ptr2[0] - ptr1[0]), 2.0);
-            float p1 = powf((ptr2[1] - ptr1[1]), 2.0);
+            float p0 = powf((ptr2[0] - ptr1[0]), square);
+            float p1 = powf((ptr2[1] - ptr1[1]), square);
             float p =p0 + p1;
             float dist = sqrt(p);
             float pointDist = exp((-1) * dist / delta2);          
@@ -316,9 +322,11 @@ static void GetParametricDistance(int pickId, const std::vector<cv::Mat> &keypoi
  * @param keypointPreds - Source data containing the information of keypoints position
  * @param numMatchKeypoints - The numbers of match keypoints
  */
-static void PCKMatch(int pickId, float refDist, const std::vector<cv::Mat> &keypointPreds,
-                    std::vector<int> &numMatchKeypoints)
+static void PCKMatch(int pickId, float refDist, const std::vector<cv::Mat> &keypointPreds, 
+                     std::vector<int> &numMatchKeypoints)
 {
+    float square = 2.0;
+    float compareNum = 7.0;
     int batchNum = keypointPreds.size();
     cv::Mat pickPred = keypointPreds[pickId].clone();
 
@@ -327,11 +335,11 @@ static void PCKMatch(int pickId, float refDist, const std::vector<cv::Mat> &keyp
         for (int j =0; j < keypointPreds[i].rows; j++){
             const float *ptr1 = keypointPreds[i].ptr<float>(j);
             float *ptr2 = pickPred.ptr<float>(j);
-            float p0 = powf((ptr2[0] - ptr1[0]), 2.0);
-            float p1 = powf((ptr2[1] - ptr1[1]), 2.0);
+            float p0 = powf((ptr2[0] - ptr1[0]), square);
+            float p1 = powf((ptr2[1] - ptr1[1]), square);
             float p =p0 + p1;
             float dist = sqrt(p);
-            refDist = std::min(refDist, (float)7.0);
+            refDist = std::min(refDist, compareNum);
             if ((dist / refDist) <= 1){
                 numMatchKeypoint += 1;
             }else{
@@ -353,11 +361,12 @@ static void PCKMatch(int pickId, float refDist, const std::vector<cv::Mat> &keyp
  * @param mergePose - The merged pose
  * @param mergeScore - The merged score
  */
-static void PoseMergeFast(const cv::Mat &predsPick, const std::vector<cv::Mat> &originKeypointPreds,
-                        const std::vector<cv::Mat> &originKeypointScores, float refDist,
-                        const std::vector<int> &mergeIds, cv::Mat &mergePose, cv::Mat &mergeScore)
+static void PoseMergeFast(const cv::Mat &predsPick, const std::vector<cv::Mat> &originKeypointPreds, 
+                          const std::vector<cv::Mat> &originKeypointScores, float refDist, 
+                          const std::vector<int> &mergeIds, cv::Mat &mergePose, cv::Mat &mergeScore)
 {
-    int kpNum = 17;
+    float square = 2.0;
+    float compareNum = 15.0;
     int mergeSize = mergeIds.size();
     std::vector<cv::Mat> mergePs = {};
     std::vector<cv::Mat> mergeSs = {};
@@ -371,16 +380,16 @@ static void PoseMergeFast(const cv::Mat &predsPick, const std::vector<cv::Mat> &
 
     std::vector<cv::Mat> maskScores = {};
     for (int i = 0; i < mergeSize; i++){ 
-        cv::Mat maskScore(keypointsNum, 1, CV_32FC1, Scalar(0));   
+        cv::Mat maskScore(keypointsNum, scoreCoordNum, CV_32FC1, Scalar(0));   
         for (int j =0; j < keypointsNum; j++){
             float *ptr1 = mergePs[i].ptr<float>(j);
             const float *ptr2 = predsPick.ptr<float>(j);
             float *ptr3 = mergeSs[i].ptr<float>(j);
-            float p0 = powf((ptr2[0] - ptr1[0]), 2.0);
-            float p1 = powf((ptr2[1] - ptr1[1]), 2.0);
+            float p0 = powf((ptr2[0] - ptr1[0]), square);
+            float p1 = powf((ptr2[1] - ptr1[1]), square);
             float p =p0 + p1;
             float dist = std::sqrt(p);
-            refDist = std::min(refDist, (float)15.0);
+            refDist = std::min(refDist, compareNum);
             float mask;
             if ((dist <= refDist)){
                 mask = 1.0;
@@ -405,8 +414,8 @@ static void PoseMergeFast(const cv::Mat &predsPick, const std::vector<cv::Mat> &
     
     // Merge pose
     for (int i = 0; i < mergeSize; i++){
-        cv::Mat tmpScore(keypointsNum, 1, CV_32FC1, Scalar(0));
-        cv::Mat tmpPose(keypointsNum, 2, CV_32FC1, Scalar(0));
+        cv::Mat tmpScore(keypointsNum, scoreCoordNum, CV_32FC1, Scalar(0));
+        cv::Mat tmpPose(keypointsNum, poseCoordNum, CV_32FC1, Scalar(0));
         for (int j = 0; j < keypointsNum; j++){
             float *ptr6 = maskScores[i].ptr<float>(j);
             float *ptr7 = mergePs[i].ptr<float>(j);
@@ -433,16 +442,16 @@ static void PoseMergeFast(const cv::Mat &predsPick, const std::vector<cv::Mat> &
  * @param finalScores - Target data containing the information of fianl keypoints' score
  * @param personScores - Target data containing the information of person's score
  */
-static void GetFinalPose(double maxValue, float confidencePick, cv::Mat &mergePose,
-                        cv::Mat &mergeScore, std::vector<cv::Mat> &finalPoses,
-                        std::vector<cv::Mat> &finalScores, std::vector<float> &personScores)
+static void GetFinalPose(double maxValue, float confidencePick, cv::Mat &mergePose, 
+                         cv::Mat &mergeScore, std::vector<cv::Mat> &finalPoses, 
+                         std::vector<cv::Mat> &finalScores, std::vector<float> &personScores)
 {       
     double maxValue1;
     cv::Point maxIdx1;
     cv::minMaxLoc(mergeScore, NULL, &maxValue1, NULL, &maxIdx1);
     if (maxValue1 > scoreThreds){
         cv::Mat mergePoseX = mergePose.colRange(0, 1).clone();
-        cv::Mat mergePoseY = mergePose.colRange(1, 2).clone();
+        cv::Mat mergePoseY = mergePose.colRange(1, poseCoordNum).clone();
         double minValue2, maxValue2;
         cv::Point minIdx2, maxIdx2;
         cv::minMaxLoc(mergePoseX, &minValue2, &maxValue2, &minIdx2, &maxIdx2);
@@ -452,11 +461,13 @@ static void GetFinalPose(double maxValue, float confidencePick, cv::Mat &mergePo
         cv::Point minIdx3, maxIdx3;
         cv::minMaxLoc(mergePoseX, &minValue3, &maxValue3, &minIdx3, &maxIdx3);
         double yLeft = minValue3;
-        double yRight = maxValue3;              
-        if (2.15 * (xRight - xLeft) * (yRight - yLeft) > areaThres){
+        double yRight = maxValue3;      
+        float areaGain = 2.15;
+        float valueGain = 1.25;        
+        if (areaGain * (xRight - xLeft) * (yRight - yLeft) > areaThres){
             finalPoses.push_back(mergePose.clone());
             finalScores.push_back(mergeScore.clone());
-            float personScore = cv::mean(mergeScore)[0] + confidencePick + 1.25 * (float)maxValue;
+            float personScore = cv::mean(mergeScore)[0] + confidencePick + valueGain * (float)maxValue;
             personScores.push_back(personScore);
         }
     }   
@@ -470,10 +481,10 @@ static void GetFinalPose(double maxValue, float confidencePick, cv::Mat &mergePo
     * @param keypointScores - Source data containing the information of keypoins score
     * @return APP_ERROR
  */
-APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result,
-                                                    const std::vector<std::vector<float> > &objectBoxes,
-                                                    std::vector<cv::Mat> &keypointPreds,
-                                                    std::vector<cv::Mat> &keypointScores)
+APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result, 
+                                                     const std::vector<std::vector<float> > &objectBoxes,
+                                                     std::vector<cv::Mat> &keypointPreds,
+                                                     std::vector<cv::Mat> &keypointScores)
 {
     // Get the max predictive value
     // coords: n*17*2   maxvals: n*17*1
@@ -488,20 +499,20 @@ APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vect
             float *ptr = coords[i].ptr<float>(j);
             cv::Mat heatMap = result[i][j];
             
-            int px = (int)floor(ptr[0] + 0.5);
-            int py = (int)floor(ptr[1] + 0.5);
+            int px = (int)floor(ptr[0] + half);
+            int py = (int)floor(ptr[1] + half);
             if ((px > 1)&&(px < heatMapWidth-1)&&(py > 1)&&(py < heatMapHeight-1)){
                 float diff1 = heatMap.at<float>(py,px+1) - heatMap.at<float>(py,px-1);           
                 if (diff1 > 0){
-                    ptr[0] += 0.25; 
+                    ptr[0] += quarter; 
                 }else if (diff1 < 0){
-                    ptr[0] -= 0.25;
+                    ptr[0] -= quarter;
                 }
                 float diff2 = heatMap.at<float>(py+1,px) - heatMap.at<float>(py-1,px);               
                 if (diff2 > 0){
-                    ptr[1] += 0.25; 
+                    ptr[1] += quarter; 
                 }else if (diff2 < 0){
-                    ptr[1] -= 0.25;
+                    ptr[1] -= quarter;
                 }
             }
         }
@@ -524,13 +535,15 @@ APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vect
  * @param personScores - Target data containing the information of person's score
  * @return APP_ERROR
 */
-APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds,
-                                            std::vector<cv::Mat> &keypointScores,
+APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds, 
+                                            std::vector<cv::Mat> &keypointScores, 
                                             std::vector<std::vector<float> > &objectBoxes,
-                                            std::vector<cv::Mat> &finalPoses,
+                                            std::vector<cv::Mat> &finalPoses, 
                                             std::vector<cv::Mat> &finalScores,
                                             std::vector<float> &personScores)
 {
+    float gma = 22.48;
+    float alpha = 0.1;
     int batchNum = keypointScores.size();
     std::vector<float> confidence(batchNum);
     std::vector<float> boxWidth(batchNum);
@@ -547,9 +560,9 @@ APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds,
                 ptr[0] == 1e-5;
             }
         }
-        confidence[i] = objectBoxes[i][confidenceIndex];
-        boxWidth[i] = objectBoxes[i][scalewIndex] * 0.8;
-        boxHeight[i] = objectBoxes[i][scalehIndex] * 0.8;
+        confidence[i] = objectBoxes[i][0];
+        boxWidth[i] = objectBoxes[i][3];
+        boxHeight[i] = objectBoxes[i][4];
         if (boxHeight[i] >= boxWidth[i]){
             refDists[i] = alpha * boxHeight[i];
         }else  {
@@ -607,8 +620,8 @@ APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds,
         cv::Point maxIdx;
         cv::minMaxLoc(scoresPick, NULL, &maxValue, NULL, &maxIdx);
         if (maxValue >= scoreThreds){           
-            cv::Mat mergePose(keypointsNum, 2, CV_32FC1, Scalar(0));
-            cv::Mat mergeScore(keypointsNum, 1, CV_32FC1, Scalar(0));
+            cv::Mat mergePose(keypointsNum, poseCoordNum, CV_32FC1, Scalar(0));
+            cv::Mat mergeScore(keypointsNum, scoreCoordNum, CV_32FC1, Scalar(0));
             if (mergeIds.size() == 1){
                 mergePose = originKeypointPreds[mergeIds[0]].clone();
                 mergeScore = originKeypointScores[mergeIds[0]].clone();
@@ -665,15 +678,14 @@ APP_ERROR MxpiAlphaposePostProcess::GeneratePersonList(const MxpiObjectList &src
                                                       mxpialphaposeproto::MxpiPersonList &dstMxpiPersonList)
 {
     // Get object boxes from object detector
-    // objectBoxes: n*5, n is the number of person
     std::vector<std::vector<float> > objectBoxes = {};
     GetBoxes(srcMxpiObjectList, objectBoxes);
     std::vector<cv::Mat> finalPoses = {};
     std::vector<cv::Mat> finalScores = {};
     std::vector<float> personScores = {};
     if (objectBoxes.size() == 0){
-        cv::Mat finalPose(keypointsNum, 2, CV_32FC1, Scalar(0));
-        cv::Mat finalScore(keypointsNum, 1, CV_32FC1, Scalar(0));
+        cv::Mat finalPose(keypointsNum, poseCoordNum, CV_32FC1, Scalar(0));
+        cv::Mat finalScore(keypointsNum, scoreCoordNum, CV_32FC1, Scalar(0));
         float personScore = 0.0;
         finalPoses.push_back(finalPose);
         finalScores.push_back(finalScore);
@@ -833,7 +845,7 @@ std::vector<std::shared_ptr<void>> MxpiAlphaposePostProcess::DefineProperties()
 }
 
 APP_ERROR MxpiAlphaposePostProcess::SetMxpiErrorInfo(MxpiBuffer &buffer, const std::string plugin_name,
-                                                    const MxpiErrorInfo mxpiErrorInfo)
+                                                     const MxpiErrorInfo mxpiErrorInfo)
 {
     APP_ERROR ret = APP_ERR_OK;
     // Define an object of MxpiMetadataManager
