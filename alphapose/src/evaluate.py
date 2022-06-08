@@ -45,7 +45,7 @@ def main():
     image_folder = 'dataset/val2017'
     annotation_file = 'dataset/annotations/person_keypoints_val2017.json'
     detect_file = 'val2017_keypoint_detect_result.json'
-    
+
     coco = COCO(annotation_file)
     with open(annotation_file, 'r') as f:
         annotations = json.load(f)
@@ -55,10 +55,10 @@ def main():
     in_plugin_id = 0
     data_input = MxDataInput()
     coco_result = []
-    
-    for image_idx, image_info in enumerate(image_list):   
+
+    for image_idx, image_info in enumerate(image_list):
         image_path = os.path.join(image_folder, image_info['file_name'])
-        image_id = image_info['id']       
+        image_id = image_info['id']
         ann_ids = coco.getAnnIds(image_id)
         anns = coco.loadAnns(ann_ids)
         roi_vector = RoiBoxVector()
@@ -69,15 +69,15 @@ def main():
             roi.x1 = anns[i]['bbox'][0] + anns[i]['bbox'][2]
             roi.y1 = anns[i]['bbox'][1] + anns[i]['bbox'][3]
             roi_vector.push_back(roi)
-        
+
         data_input.roiBoxs = roi_vector
-        print('Detect image: ', image_idx, ': ', image_info['file_name'], ', image id: ', image_id)        
+        print('Detect image: ', image_idx, ': ', image_info['file_name'], ', image id: ', image_id)
         if os.path.exists(image_path) != 1:
             print("The image does not exist.")
             exit()
         with open(image_path, 'rb') as f:
             data_input.data = f.read()
-        
+
         # Inputs data to a specified stream based on stream_name.
         ret = stream_manager_api.SendData(stream_name, in_plugin_id, data_input)
         if ret < 0:
@@ -90,11 +90,10 @@ def main():
         if infer_result.errorCode != 0:
             print("GetResult error. errorCode=%d, errorMsg=%s" % (infer_result.errorCode, infer_result.errorMsg))
             continue
-    
         # Obtain the post-processing results of key point detection
         pose_out_list = mxpialphaposeproto.MxpiPersonList()
         pose_out_list.ParseFromString(infer_result.metadataVec[0].serializedMetadata)
-        person_num = len(pose_out_list.personInfoVec)         
+        person_num = len(pose_out_list.personInfoVec)
         for i in range(person_num):
             person = pose_out_list.personInfoVec[i]
             keypoints_score = np.zeros((17, 1), dtype = np.float32)
@@ -113,7 +112,7 @@ def main():
             data['category_id'] = 1
             data['keypoints'] = keypoints
             coco_result.append(data)
-        
+
     with open(detect_file, 'w') as f:
         json.dump(coco_result, f, indent=4)
     # run coco evaluation process using COCO official evaluation tool

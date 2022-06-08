@@ -17,7 +17,6 @@
  */
 
 namespace MxPlugins {
-
     class MxpiAlphaposePreProcess : public MxTools::MxPluginBase {
     public:
         /**
@@ -56,7 +55,6 @@ namespace MxPlugins {
         APP_ERROR GenerateVisionList(const MxTools::MxpiObjectList &srcMxpiObjectList,
                                      const MxTools::MxpiVisionList &srcMxpiVisionList,
                                      MxTools::MxpiVisionList &dstMxpiVisionList);
-        
         /**
          * @brief Prepare output in the format of MxpiVisionList
          * @param affinedImages - The image after affine transformation

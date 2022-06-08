@@ -86,14 +86,14 @@ def visualize(frame, result, dataset='coco'):
                 end_xy = part_line[end_pair]
                 bg = img.copy()
 
-                X = (start_xy[0], end_xy[0])
-                Y = (start_xy[1], end_xy[1])
-                mX = np.mean(X)
-                mY = np.mean(Y)
-                length = ((Y[0] - Y[1]) ** 2 + (X[0] - X[1]) ** 2) ** 0.5
-                angle = math.degrees(math.atan2(Y[0] - Y[1], X[0] - X[1]))
+                coord_x = (start_xy[0], end_xy[0])
+                coord_y = (start_xy[1], end_xy[1])
+                coord_mx = np.mean(coord_x)
+                coord_my = np.mean(coord_y)
+                length = ((coord_y[0] - coord_y[1]) ** 2 + (coord_x[0] - coord_x[1]) ** 2) ** 0.5
+                angle = math.degrees(math.atan2(coord_y[0] - coord_y[1], coord_x[0] - coord_x[1]))
                 stickwidth = (kp_scores[start_pair] + kp_scores[end_pair]) + 1
-                polygon = cv2.ellipse2Poly((int(mX), int(mY)), (int(length/2), int(stickwidth)), int(angle), 0, 360, 1)
+                polygon = cv2.ellipse2Poly((int(coord_mx), int(coord_my)), (int(length/2), int(stickwidth)), int(angle), 0, 360, 1)
                 if i < len(line_color):
                     cv2.fillConvexPoly(bg, polygon, line_color[i])
                 else:

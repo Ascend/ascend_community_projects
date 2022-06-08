@@ -44,7 +44,6 @@ def main():
     if ret != 0:
         print("Failed to create Stream, ret=%s" % str(ret))
         exit()
-    # 
     data_input = MxDataInput()
     stream_name = b'alphapose'
     in_plugin_id = 0
@@ -72,11 +71,11 @@ def main():
         if infer_result.errorCode != 0:
             print("GetResult error. errorCode=%d, errorMsg=%s" % (infer_result.errorCode, infer_result.errorMsg))
             continue
-    
+
         # Obtain the post-processing results of key point detection
         pose_out_list = mxpialphaposeproto.MxpiPersonList()
         pose_out_list.ParseFromString(infer_result.metadataVec[0].serializedMetadata)
-        person_num = len(pose_out_list.personInfoVec)         
+        person_num = len(pose_out_list.personInfoVec)
         personlist = []
         for i in range(person_num):
             person = pose_out_list.personInfoVec[i]
@@ -112,9 +111,7 @@ def main():
     stream_manager_api.DestroyAllStreams()
 
 
-if __name__ == '__main__':   
+if __name__ == '__main__':
     main()
 
-    
-    
-    
+

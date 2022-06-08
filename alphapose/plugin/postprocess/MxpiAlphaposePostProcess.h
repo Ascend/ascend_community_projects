@@ -97,7 +97,6 @@ namespace MxPlugins {
                           std::vector<cv::Mat> &finalPoses,
                           std::vector<cv::Mat> &finalScores,
                           std::vector<float> &personScores);
-        
         /**
          * @brief Extract keypoints' location information and scores
          * @param result - Source data containing the information of heatmap data
@@ -110,7 +109,6 @@ namespace MxPlugins {
                                   const std::vector<std::vector<float> > &objectBoxes,
                                   std::vector<cv::Mat> &keypointPreds,
                                   std::vector<cv::Mat> &keypointScores);
-
 
     private:
         APP_ERROR SetMxpiErrorInfo(MxTools::MxpiBuffer &buffer, const std::string plugin_name,

@@ -25,7 +25,6 @@ import time
 
 import cv2
 import numpy as np
-from sympy import per
 
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, StringVector
@@ -57,7 +56,7 @@ def main():
     if ret != 0:
         print("Failed to create Stream, ret=%s" % str(ret))
         exit()
-    start = time.time() 
+    start = time.time()
 
     stream_name = b'alphapose'
     key_vec = StringVector()
@@ -66,7 +65,7 @@ def main():
 
     # Example Initialize the video encoder
     fourcc = cv2.VideoWriter_fourcc(' X ', ' V ', ' I ', ' D ')  # H.264 codec
-    out = cv2.VideoWriter(filename="../out/alphapose.avi", fourcc=fourcc, fps=24, 
+    out = cv2.VideoWriter(filename="../out/alphapose.avi", fourcc=fourcc, fps=24,
                         frameSize=(OUT_WIDTH, OUT_HEIGHT), isColor=True)
     frame_count = 0
     wait_count = 0
@@ -90,11 +89,11 @@ def main():
         img_yuv = np.frombuffer(vision_data, dtype = np.uint8)
         img_yuv = img_yuv.reshape(vision_info.heightAligned * YUV_BYTES_NU // YUV_BYTES_DE, vision_info.widthAligned)
         img_bgr = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR_NV12)
-       
+
         # Obtain the post-processing results of key point detection
         pose_out_list = mxpialphaposeproto.MxpiPersonList()
         pose_out_list.ParseFromString(infer_result.metadataVec[POSE_INDEX].serializedMetadata)
-        person_num = len(pose_out_list.personInfoVec)         
+        person_num = len(pose_out_list.personInfoVec)
         personlist = []
         for i in range(person_num):
             person = pose_out_list.personInfoVec[i]
@@ -126,7 +125,7 @@ def main():
             json.dump(personlist, f, indent=2)
         frame_count += 1
         # The time and frame rate information is printed every 10 frames
-        if frame_count % 10 == 0:            
+        if frame_count % 10 == 0:
             end = time.time()
             cost_time = end - start
             print("*******************************************************************")
@@ -140,9 +139,5 @@ def main():
     stream_manager_api.DestroyAllStreams()
 
 
-if __name__ == '__main__':   
+if __name__ == '__main__':
     main()
-
-    
-    
-    
