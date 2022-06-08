@@ -20,7 +20,9 @@
 """
 import argparse
 import json
+import os
 import sys
+import stat
 import time
 
 import cv2
@@ -28,9 +30,10 @@ import numpy as np
 
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, StringVector
+from utils.visualization import visualize
 sys.path.append("../proto/")
 import mxpiAlphaposeProto_pb2 as mxpialphaposeproto
-from utils.visualization import visualize
+
 
 DECODE_INDEX = 0
 POSE_INDEX = 1
@@ -64,7 +67,7 @@ def main():
     key_vec.push_back(b"mxpi_alphaposepostprocess0")
 
     # Example Initialize the video encoder
-    fourcc = cv2.VideoWriter_fourcc(' X ', ' V ', ' I ', ' D ')  # H.264 codec
+    fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')  # H.264 codec
     out = cv2.VideoWriter(filename="../out/alphapose.avi", fourcc=fourcc, fps=24,
                         frameSize=(OUT_WIDTH, OUT_HEIGHT), isColor=True)
     frame_count = 0
@@ -95,7 +98,8 @@ def main():
         pose_out_list.ParseFromString(infer_result.metadataVec[POSE_INDEX].serializedMetadata)
         person_num = len(pose_out_list.personInfoVec)
         personlist = []
-        for i in range(person_num):
+        i = 0
+        while i < person_num:
             person = pose_out_list.personInfoVec[i]
             keypoints_score = np.zeros((17, 1), dtype = np.float32)
             keypoints_pre = np.zeros((17, 2), dtype = np.float32)
@@ -110,6 +114,7 @@ def main():
                 'kp_score': keypoints_score,
                 'proposal_score': score,
             })
+            i += 1
         # Whether to conduct speed tests
         if not args.speedtest:
             # visualize and save
@@ -121,7 +126,12 @@ def main():
             personlist[i]['keypoints'] = personlist[i]['keypoints'].tolist()
             personlist[i]['kp_score'] = personlist[i]['kp_score'].tolist()
             personlist[i]['proposal_score'] = personlist[i]['proposal_score'].tolist()
-        with open( "../out/alphapose.json", "a") as f:
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # Sets how files are read and written
+        modes = stat.S_IWUSR | stat.S_IRUSR  # Set file permissions
+        json_file = "../out/alphapose.json"
+        if os.path.exists(json_file) == 1:
+            os.remove(json_file)
+        with os.fdopen(os.open(json_file, flags, modes), 'a') as f:
             json.dump(personlist, f, indent=2)
         frame_count += 1
         # The time and frame rate information is printed every 10 frames

@@ -17,7 +17,6 @@
         "mxpi_imageresize0": {
             "factory": "mxpi_imageresize",
             "next": "mxpi_tensorinfer0"
-            
         },
         "mxpi_tensorinfer0": {
             "props": {

@@ -20,15 +20,17 @@
 """
 import json
 import sys
+import stat
 import os
 
 import cv2
 import numpy as np
 
 from StreamManagerApi import StreamManagerApi, StringVector, MxDataInput
+from utils.visualization import visualize
 sys.path.append("../proto/")
 import mxpiAlphaposeProto_pb2 as mxpialphaposeproto
-from utils.visualization import visualize
+
 
 
 def main():
@@ -77,7 +79,8 @@ def main():
         pose_out_list.ParseFromString(infer_result.metadataVec[0].serializedMetadata)
         person_num = len(pose_out_list.personInfoVec)
         personlist = []
-        for i in range(person_num):
+        i = 0
+        while i < person_num:
             person = pose_out_list.personInfoVec[i]
             keypoints_score = np.zeros((17, 1), dtype = np.float32)
             keypoints_pre = np.zeros((17, 2), dtype = np.float32)
@@ -93,6 +96,7 @@ def main():
                 'kp_score': keypoints_score,
                 'proposal_score': score
             })
+            i += 1
         # Read the original image
         origin_image = cv2.imread(file_path)
         # Visual keypoints
@@ -104,7 +108,12 @@ def main():
             personlist[i]['keypoints'] = personlist[i]['keypoints'].tolist()
             personlist[i]['kp_score'] = personlist[i]['kp_score'].tolist()
             personlist[i]['proposal_score'] = personlist[i]['proposal_score'].tolist()
-        with open( "../out/{}.json".format(image_name), "w") as f:
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # Sets how files are read and written
+        modes = stat.S_IWUSR | stat.S_IRUSR  # Set file permissions
+        json_file = "../out/{}.json".format(image_name)
+        if os.path.exists(json_file) == 1:
+            os.remove(json_file)
+        with os.fdopen(os.open(json_file, flags, modes), 'w') as f:
             json.dump(personlist, f)
         print('result was written successfully')
 

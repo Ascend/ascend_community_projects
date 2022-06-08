@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+import stat
 import os
 import json
 import numpy as np
@@ -94,7 +95,8 @@ def main():
         pose_out_list = mxpialphaposeproto.MxpiPersonList()
         pose_out_list.ParseFromString(infer_result.metadataVec[0].serializedMetadata)
         person_num = len(pose_out_list.personInfoVec)
-        for i in range(person_num):
+        i = 0
+        while i < person_num:
             person = pose_out_list.personInfoVec[i]
             keypoints_score = np.zeros((17, 1), dtype = np.float32)
             keypoints_pre = np.zeros((17, 2), dtype = np.float32)
@@ -112,8 +114,13 @@ def main():
             data['category_id'] = 1
             data['keypoints'] = keypoints
             coco_result.append(data)
+            i += 1
 
-    with open(detect_file, 'w') as f:
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # Sets how files are read and written
+    modes = stat.S_IWUSR | stat.S_IRUSR  # Set file permissions
+    if os.path.exists(detect_file) == 1:
+        os.remove(detect_file)
+    with os.fdopen(os.open(detect_file, flags, modes), 'w') as f:
         json.dump(coco_result, f, indent=4)
     # run coco evaluation process using COCO official evaluation tool
     annotation_type = 'keypoints'

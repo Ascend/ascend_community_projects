@@ -48,14 +48,14 @@ namespace {
  */
 static void GetDecodedImages(const MxTools::MxpiVisionList srcMxpiVisionList, cv::Mat &decodedImage)
 {
-    if (accTest){
+    if (accTest) {
         MxpiVisionData inputdata = srcMxpiVisionList.visionvec(0).visiondata();
-        cv::Mat rawData( 1, (uint32_t)inputdata.datasize(), CV_8UC1, (void *)inputdata.dataptr());
+        cv::Mat rawData(1, (uint32_t)inputdata.datasize(), CV_8UC1, (void *)inputdata.dataptr());
         decodedImage = cv::imdecode(rawData, cv::IMREAD_COLOR);
-    }else{
-        //Get decoded image from image decoder
+    } else {
+        // Get decoded image from image decoder
         MxTools::MxpiVision srcMxpiVision = srcMxpiVisionList.visionvec(0);
-        //Copy memory from device to host
+        // Copy memory from device to host
         MxBase::MemoryData dstHost((uint32_t)srcMxpiVision.visiondata().datasize(), MxBase::MemoryData::MEMORY_HOST);
         MxBase::MemoryData srcDvpp((void *)srcMxpiVision.visiondata().dataptr(), (uint32_t)srcMxpiVision.visiondata().datasize(),
                                    MxBase::MemoryData::MEMORY_DVPP);
@@ -70,9 +70,9 @@ static void GetDecodedImages(const MxTools::MxpiVisionList srcMxpiVisionList, cv
         memcpy(yuvImage.data, static_cast<unsigned char*>(dstHost.ptrData), width * height * yuvBytesMu / yuvBytesNu * sizeof(unsigned char));
         Mat rgbImg(height, width, CV_8UC3, Scalar(0, 0, 0));
         cv::cvtColor(yuvImage, rgbImg, COLOR_YUV2BGR_NV12);
-        if (rgbImg.isContinuous()){
+        if (rgbImg.isContinuous()) {
             decodedImage = rgbImg;
-        }else{
+        } else {
             decodedImage = rgbImg.clone();
         }
         dstHost.free(dstHost.ptrData);
@@ -93,7 +93,7 @@ static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList,
     for (int i = 0; i < srcMxpiObjectList.objectvec_size(); i++) {
         MxTools::MxpiObject srcMxpiObject = srcMxpiObjectList.objectvec(i);
         // Filter out person class
-        if ((accTest) || (srcMxpiObject.classvec(0).classid() == 0)){
+        if ((accTest) || (srcMxpiObject.classvec(0).classid() == 0)) {
             std::vector<float> objectBox(boxInfoNum);
             float x0 = srcMxpiObject.x0();
             float y0 = srcMxpiObject.y0();
@@ -104,9 +104,9 @@ static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList,
             float boxWidth = x1 - x0;
             float boxHeight = y1 - y0;
             // Adjust the aspect ratio
-            if (boxWidth >= aspectRatio * boxHeight){
+            if (boxWidth >= aspectRatio * boxHeight) {
                 boxHeight = boxWidth / aspectRatio;
-            }else{
+            } else {
                 boxWidth = boxHeight * aspectRatio;
             }
             float scalew = boxWidth * scaleMult;
@@ -215,8 +215,8 @@ APP_ERROR MxpiAlphaposePreProcess::GenerateMxpiOutput(std::vector<cv::Mat> &affi
         mxpiVisionPtr->mutable_visioninfo()->set_heightaligned((uint32_t)modelHeight);
 
         // Copy memmory from host to device
-        MxBase::MemoryData srcImage((void *)affinedImages[i].data, (uint32_t)(modelWidth * modelHeight * rgbSize), 
-                            MxBase::MemoryData::MEMORY_HOST);
+        MxBase::MemoryData srcImage((void *)affinedImages[i].data, (uint32_t)(modelWidth * modelHeight * rgbSize),
+                                    MxBase::MemoryData::MEMORY_HOST);
         MxBase::MemoryData dstImage((uint32_t)(modelWidth * modelHeight * rgbSize), MxBase::MemoryData::MEMORY_DEVICE);
         MemoryHelper::MxbsMallocAndCopy(dstImage, srcImage);
         // Set vision data

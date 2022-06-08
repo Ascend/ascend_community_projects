@@ -170,7 +170,7 @@ static void GetMaxPrediction(const std::vector<std::vector<cv::Mat> > &result,
     for (int i = 0; i < result.size(); i++) {
         cv::Mat coord(channel, poseCoordNum, CV_32FC1, cv::Scalar(0));
         cv::Mat maxval(channel, scoreCoordNum, CV_32FC1, cv::Scalar(0));
-        for (int j = 0; j < channel; j++){
+        for (int j = 0; j < channel; j++) {
             // Get the max point's position and it's value
             double maxValue;
             cv::Point maxIdx;
@@ -297,7 +297,7 @@ static void GetParametricDistance(int pickId, const std::vector<cv::Mat> &keypoi
             float *ptr2 = pickPred.ptr<float>(j);
             float p0 = powf((ptr2[0] - ptr1[0]), square);
             float p1 = powf((ptr2[1] - ptr1[1]), square);
-            float p =p0 + p1;
+            float p = p0 + p1;
             float dist = sqrt(p);
             float pointDist = exp((-1) * dist / delta2);
             float scoreDist = 0.0;
@@ -324,12 +324,12 @@ static void PCKMatch(int pickId, float refDist, const std::vector<cv::Mat> &keyp
 
     for (int i = 0; i < batchNum; i++) {
         int numMatchKeypoint = 0;
-        for (int j =0; j < keypointPreds[i].rows; j++) {
+        for (int j = 0; j < keypointPreds[i].rows; j++) {
             const float *ptr1 = keypointPreds[i].ptr<float>(j);
             float *ptr2 = pickPred.ptr<float>(j);
             float p0 = powf((ptr2[0] - ptr1[0]), square);
             float p1 = powf((ptr2[1] - ptr1[1]), square);
-            float p =p0 + p1;
+            float p = p0 + p1;
             float dist = sqrt(p);
             refDist = std::min(refDist, compareNum);
             if (dist <= refDist) {
@@ -372,13 +372,13 @@ static void PoseMergeFast(const cv::Mat &predsPick, const std::vector<cv::Mat> &
     std::vector<cv::Mat> maskScores = {};
     for (int i = 0; i < mergeSize; i++) {
         cv::Mat maskScore(keypointsNum, scoreCoordNum, CV_32FC1, Scalar(0));
-        for (int j =0; j < keypointsNum; j++) {
+        for (int j = 0; j < keypointsNum; j++) {
             float *ptr1 = mergePs[i].ptr<float>(j);
             const float *ptr2 = predsPick.ptr<float>(j);
             float *ptr3 = mergeSs[i].ptr<float>(j);
             float p0 = powf((ptr2[0] - ptr1[0]), square);
             float p1 = powf((ptr2[1] - ptr1[1]), square);
-            float p =p0 + p1;
+            float p = p0 + p1;
             float dist = std::sqrt(p);
             refDist = std::min(refDist, compareNum);
             float mask;
@@ -472,7 +472,7 @@ static void GetFinalPose(double maxValue, float confidencePick, cv::Mat &mergePo
     * @param keypointScores - Source data containing the information of keypoins score
     * @return APP_ERROR
  */
-APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result, 
+APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result,
                                                      const std::vector<std::vector<float> > &objectBoxes,
                                                      std::vector<cv::Mat> &keypointPreds,
                                                      std::vector<cv::Mat> &keypointScores)
@@ -498,7 +498,7 @@ APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vect
                 } else if (diff1 < 0) {
                     ptr[0] -= quarter;
                 }
-                float diff2 = heatMap.at<float>(py+1,px) - heatMap.at<float>(py-1,px);
+                float diff2 = heatMap.at<float>(py+1, px) - heatMap.at<float>(py-1, px);
                 if (diff2 > 0) {
                     ptr[1] += quarter;
                 } else if (diff2 < 0) {
@@ -694,7 +694,7 @@ APP_ERROR MxpiAlphaposePostProcess::GeneratePersonList(const MxpiObjectList &src
         ExtractKeypoints(result, objectBoxes, keypointPreds, keypointScores);
         // DO pose nms
         if (accTest) {
-            for (int i = 0; i < keypointPreds.size(); i++){
+            for (int i = 0; i < keypointPreds.size(); i++) {
                 double maxValue;
                 cv::Point maxIdx;
                 cv::minMaxLoc(keypointScores[i], NULL, &maxValue, NULL, &maxIdx);
@@ -820,9 +820,9 @@ std::vector<std::shared_ptr<void>> MxpiAlphaposePostProcess::DefineProperties()
 {
     std::vector<std::shared_ptr<void>> properties;
     // Set the type and related information of the properties, and the key is the name
-    auto parentNameProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string>{
+    auto parentNameProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string> {
             STRING, "dataSource", "parentName", "the name of previous plugin", "mxpi_tensorinfer1", "NULL", "NULL"});
-    auto objectDetectorProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string>{
+    auto objectDetectorProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string> {
             STRING, "objectSource", "objectName", "the name of object postprocess plugin", "mxpi_objectpostprocessor0", "NULL", "NULL"});
     properties.push_back(parentNameProSptr);
     properties.push_back(objectDetectorProSptr);
@@ -831,7 +831,7 @@ std::vector<std::shared_ptr<void>> MxpiAlphaposePostProcess::DefineProperties()
 }
 
 APP_ERROR MxpiAlphaposePostProcess::SetMxpiErrorInfo(MxpiBuffer &buffer, const std::string plugin_name,
-                                                    const MxpiErrorInfo mxpiErrorInfo)
+                                                     const MxpiErrorInfo mxpiErrorInfo)
 {
     APP_ERROR ret = APP_ERR_OK;
     // Define an object of MxpiMetadataManager

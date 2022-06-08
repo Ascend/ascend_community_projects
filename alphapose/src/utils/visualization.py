@@ -82,8 +82,8 @@ def visualize(frame, result, dataset='coco'):
             img = cv2.addWeighted(bg, transparency, img, 1-transparency, 0)
         for i, (start_pair, end_pair) in enumerate(l_pair):
             if start_pair in part_line and end_pair in part_line:
-                start_xy = part_line[start_pair]
-                end_xy = part_line[end_pair]
+                start_xy = part_line.get(start_pair)
+                end_xy = part_line.get(end_pair)
                 bg = img.copy()
 
                 coord_x = (start_xy[0], end_xy[0])
@@ -93,11 +93,12 @@ def visualize(frame, result, dataset='coco'):
                 length = ((coord_y[0] - coord_y[1]) ** 2 + (coord_x[0] - coord_x[1]) ** 2) ** 0.5
                 angle = math.degrees(math.atan2(coord_y[0] - coord_y[1], coord_x[0] - coord_x[1]))
                 stickwidth = (kp_scores[start_pair] + kp_scores[end_pair]) + 1
-                polygon = cv2.ellipse2Poly((int(coord_mx), int(coord_my)), (int(length/2), int(stickwidth)), int(angle), 0, 360, 1)
+                polygon = cv2.ellipse2Poly((int(coord_mx), int(coord_my)), (int(length/2),
+                                           int(stickwidth)), int(angle), 0, 360, 1)
                 if i < len(line_color):
                     cv2.fillConvexPoly(bg, polygon, line_color[i])
                 else:
-                    cv2.line(bg, start_xy, end_xy, (255,255,255), 1)
+                    cv2.line(bg, start_xy, end_xy, (255, 255, 255), 1)
                 if n < len(p_color):
                     transparency = float(max(0, min(1, 0.5 * (kp_scores[start_pair] + kp_scores[end_pair])-0.1)))
                 else:
