@@ -1,0 +1,44 @@
+{
+    "alphapose": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "appsrc0": {
+            "props": {
+                "blocksize": "409600"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_alphaposepreprocess0"
+        },
+         "mxpi_alphaposepreprocess0": {
+             "props": {
+                "dataSource": "appInput",
+                "imageSource": "appInput"
+            },
+            "factory": "mxpi_alphaposepreprocess",
+            "next": "mxpi_tensorinfer1"
+        },
+        "mxpi_tensorinfer1": {
+            "props": {
+                "dataSource":"mxpi_alphaposepreprocess0",
+                "modelPath": "../models/fast_res50_256x192_aipp_rgb.om"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "mxpi_alphaposepostprocess0"
+        },
+        "mxpi_alphaposepostprocess0": {
+            "props": {
+                "dataSource":"mxpi_tensorinfer1",
+                "objectSource": "appInput"
+            },
+            "factory": "mxpi_alphaposepostprocess",
+            "next": "appsink0"
+        },
+        "appsink0": {
+            "props": {
+                "blocksize": "4096000"
+            },
+            "factory": "appsink"
+        }
+    }
+}

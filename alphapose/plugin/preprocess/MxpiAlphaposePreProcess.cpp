@@ -1,0 +1,404 @@
+/*
+ * Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include "MxpiAlphaposePreProcess.h"
+#include <numeric>
+#include <algorithm>
+#include <math.h>
+#include "opencv2/opencv.hpp"
+#include "MxBase/Log/Log.h"
+#include "MxBase/Tensor/TensorBase/TensorBase.h"
+#include <string>
+
+using namespace MxBase;
+using namespace MxPlugins;
+using namespace MxTools;
+using namespace std;
+using namespace cv;
+
+namespace {
+    const int modelWidth = 192;
+    const int modelHeight = 256;   
+    const float aspectRatio = 0.75;
+    bool accTest = false;
+}
+
+/**
+ * @brief Get decoded image and change it from yuvNV12 to RGB
+ * @param srcMxpiVisionList - Source srcMxpiVisionList
+ * @param decodedImage - Decoded RGB image
+ */
+static void GetDecodedImages(const MxTools::MxpiVisionList srcMxpiVisionList, cv::Mat &decodedImage)
+{
+    if (accTest){
+        MxpiVisionData inputdata = srcMxpiVisionList.visionvec(0).visiondata();
+        cv::Mat rawData( 1, (uint32_t)inputdata.datasize(), CV_8UC1, (void *)inputdata.dataptr());
+        cv::Mat decodedImage1 = cv::imdecode(rawData, cv::IMREAD_COLOR);
+        cv::cvtColor(decodedImage1, decodedImage, COLOR_BGR2RGB);
+    }else{
+        //Get decoded image from image decoder   
+        MxTools::MxpiVision srcMxpiVision = srcMxpiVisionList.visionvec(0);
+        //Copy memory from device to host      
+        MxBase::MemoryData dstHost((uint32_t)srcMxpiVision.visiondata().datasize(), MxBase::MemoryData::MEMORY_HOST);
+        MxBase::MemoryData srcDvpp((void *)srcMxpiVision.visiondata().dataptr(), (uint32_t)srcMxpiVision.visiondata().datasize(), 
+                                    MxBase::MemoryData::MEMORY_DVPP);
+        MemoryHelper::MxbsMallocAndCopy(dstHost, srcDvpp);
+
+        // yuv --> bgr
+        int height = srcMxpiVision.visioninfo().heightaligned();
+        int width = srcMxpiVision.visioninfo().widthaligned();
+        cv::Mat yuvImage(height * 3 / 2, width, CV_8UC1, Scalar(0));
+        memcpy(yuvImage.data, static_cast<unsigned char*>(dstHost.ptrData), width * height * 3 / 2 * sizeof(unsigned char));
+        Mat rgbImg(height, width, CV_8UC3, Scalar(0, 0, 0));
+        cv::cvtColor(yuvImage, rgbImg, COLOR_YUV2RGB_NV12);
+        if (rgbImg.isContinuous()){
+            decodedImage = rgbImg;
+        }else{
+            decodedImage = rgbImg.clone();
+        }
+        dstHost.free(dstHost.ptrData);
+    }
+}
+
+/**
+ * @brief decode MxpiObjectList
+ * @param srcMxpiObjectList - Source MxpiObjectList
+ * @param objectBoxes - The boxes of object
+ */
+static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList, 
+                        std::vector<std::vector<float> > &objectBoxes)
+{
+    for (int i = 0; i < srcMxpiObjectList.objectvec_size(); i++) {      
+        MxTools::MxpiObject srcMxpiObject = srcMxpiObjectList.objectvec(i);
+        // Filter out person class
+        if ((accTest) || (srcMxpiObject.classvec(0).classid() == 0)){
+            std::vector<float> objectBox(4);
+            float x0 = srcMxpiObject.x0();            
+            float y0 = srcMxpiObject.y0();            
+            float x1 = srcMxpiObject.x1();            
+            float y1 = srcMxpiObject.y1();           
+            float centerx = (x1 + x0) * 0.5;
+            float centery = (y1 + y0) * 0.5;       
+            float boxWidth = x1 - x0;
+            float boxHeight = y1 - y0;
+            // Adjust the aspect ratio
+            if (boxWidth >= aspectRatio * boxHeight){
+                boxHeight = boxWidth / aspectRatio;
+            }else{
+                boxWidth = boxHeight * aspectRatio;
+            }
+            float scalew = boxWidth *1.25;
+            float scaleh = boxHeight *1.25;
+
+            objectBox[0] = centerx;
+            objectBox[1] = centery;
+            objectBox[2] = scalew;
+            objectBox[3] = scaleh;
+            objectBoxes.push_back(objectBox);
+        }
+    }
+}
+
+/**
+ * @brief Get the third mapPoint for affine transform
+ * @param mapPoint - cv::Point2f *
+ */
+static void GetThirdPoint(cv::Point2f *mapPoint)
+{
+    float directx = mapPoint[0].x - mapPoint[1].x;
+    float directy = mapPoint[0].y - mapPoint[1].y;
+    mapPoint[2].x = mapPoint[1].x - directy;
+    mapPoint[2].y = mapPoint[1].y + directx;
+}
+
+/**
+ * @brief Get the transformation matrix for affine tranform
+ * @param center - The center of object box
+ * @param scale - The scale of objetc box
+ * @param outputSize - The transformation matrix for affine tranform
+ * @param trans - The transformation matrix for affine tranform
+ */
+static void GetAffineTransform(const std::vector<float> &center, const std::vector<float> &scale, 
+                                const std::vector<int> &outputSize, cv::Mat &trans)
+{
+    cv::Point2f src[3];
+    src[0].x = center[0];
+    src[0].y = center[1];
+    src[1].x = center[0];
+    src[1].y = center[1] - scale[0] * 0.5;
+    GetThirdPoint(src);
+    cv::Point2f dst[3];
+    dst[0].x = outputSize[0] * 0.5;
+    dst[0].y = outputSize[1] * 0.5;
+    dst[1].x = outputSize[0] * 0.5;
+    dst[1].y = (outputSize[1] - outputSize[0]) * 0.5;
+    GetThirdPoint(dst);
+    
+    trans = cv::getAffineTransform(src, dst);
+}
+
+/**
+ * @brief Affine transformation
+ * @param decodedImage - Decoded RGB image
+ * @param objectBoxes - The boxes of object
+ * @param affinedImages - The image after affine transformation
+ */
+static void DoWarpAffine(const cv::Mat &decodedImage, 
+                        const std::vector<std::vector<float> > &objectBoxes,
+                        std::vector<cv::Mat> &affinedImages)
+{
+    std::vector<int> outputSize = {modelWidth, modelHeight};
+    int batchSize = objectBoxes.size();
+    for (int i = 0; i < batchSize; i++){
+        std::vector<float> center(2);
+        center[0] = (objectBoxes[i][0]);
+        center[1] = (objectBoxes[i][1]);
+        std::vector<float> scale(batchSize);
+        scale[0] = (objectBoxes[i][2]);
+        scale[1] = (objectBoxes[i][3]);
+        cv::Mat trans(2, 3, CV_32FC1, Scalar(0));   
+        // Get transformation matrix for affine transformation
+        GetAffineTransform(center, scale, outputSize, trans);  
+        cv::Mat dst(modelHeight, modelWidth, CV_8UC3, Scalar(0, 0, 0)); 
+        // Affine transformation
+        cv::warpAffine(decodedImage, dst, trans, dst.size());
+
+        if (dst.isContinuous()){
+            affinedImages.push_back(dst);
+        }else{
+            affinedImages.push_back(dst.clone());
+        }
+             
+    }
+
+}
+
+/**
+ * @brief Prepare output in the format of MxpiVisionList
+ * @param affinedImages - The image after affine transformation
+ * @param dstMxpiVisionList - Target data in the format of MxpiVisionList
+ * @return APP_ERROR
+ */
+APP_ERROR MxpiAlphaposePreProcess::GenerateMxpiOutput(std::vector<cv::Mat> &affinedImages,
+                                                        MxpiVisionList &dstMxpiVisionList)
+{
+    for (int i =0; i < affinedImages.size(); i++){
+    
+        auto mxpiVisionPtr = dstMxpiVisionList.add_visionvec();
+
+        // Set vision infomation
+        mxpiVisionPtr->mutable_visioninfo()->set_format(12);
+        mxpiVisionPtr->mutable_visioninfo()->set_width((uint32_t)modelWidth);
+        mxpiVisionPtr->mutable_visioninfo()->set_height((uint32_t)modelHeight);
+        mxpiVisionPtr->mutable_visioninfo()->set_widthaligned((uint32_t)modelWidth);
+        mxpiVisionPtr->mutable_visioninfo()->set_heightaligned((uint32_t)modelHeight);
+
+        // Copy memmory from host to device
+        MxBase::MemoryData srcImage((void *)affinedImages[i].data, (uint32_t)(modelWidth * modelHeight * 3), 
+                            MxBase::MemoryData::MEMORY_HOST);
+        MxBase::MemoryData dstImage( (uint32_t)(modelWidth * modelHeight * 3), MxBase::MemoryData::MEMORY_DEVICE);
+        MemoryHelper::MxbsMallocAndCopy(dstImage, srcImage);
+        
+        // Set vision data
+        mxpiVisionPtr->mutable_visiondata()->set_dataptr((const uint64_t)dstImage.ptrData);
+        std::string str = (const char *)dstImage.ptrData;
+        mxpiVisionPtr->mutable_visiondata()->set_datastr(str);
+        mxpiVisionPtr->mutable_visiondata()->set_datasize(modelWidth * modelHeight * 3);
+        mxpiVisionPtr->mutable_visiondata()->set_deviceid(0);
+        mxpiVisionPtr->mutable_visiondata()->set_memtype(MxTools::MxpiMemoryType::MXPI_MEMORY_DEVICE);
+        mxpiVisionPtr->mutable_visiondata()->set_freefunc(0);
+        MxTools::MxpiMetaHeader *header = mxpiVisionPtr->add_headervec();
+        header->set_datasource(parentName_);
+        header->set_memberid(i);
+    }
+    return APP_ERR_OK;
+}
+
+/**
+ * @brief Overall process to generate pretreated images
+ * @param srcMxpiObjectList - Source MxpiObjectList containing object data about input image
+ * @param srcMxpiVisionList - Source MxpiTensorPackageList containing input image
+ * @param dstMxpiVisionList - Target MxpiVisionList containing detection result list
+ * @return APP_ERROR
+ */
+APP_ERROR MxpiAlphaposePreProcess::GenerateVisionList(const MxpiObjectList &srcMxpiObjectList,
+                                                      const MxpiVisionList &srcMxpiVisionList,
+                                                      MxpiVisionList &dstMxpiVisionList)
+{
+    // Get object boxes from object detector
+    std::vector<std::vector<float> > objectBoxes = {};
+    GetBoxes(srcMxpiObjectList, objectBoxes);
+    std::vector<cv::Mat> affinedImages = {};
+    if (objectBoxes.size() == 0){
+        LogWarn << "There is no people in this frame or picture";
+        cv::Mat affinedImage(256, 192, CV_8UC3, Scalar(0));
+        affinedImages.push_back(affinedImage);
+    }else{
+        // Get images from image decoder
+        cv::Mat decodedImage;
+        GetDecodedImages(srcMxpiVisionList, decodedImage);
+        // Do affine transform
+        DoWarpAffine(decodedImage, objectBoxes, affinedImages);
+    }
+
+    // Prepare output in the format of MxpiVisionList
+    GenerateMxpiOutput(affinedImages, dstMxpiVisionList);
+    return APP_ERR_OK;
+
+}
+
+/**
+ * @brief Initialize configure parameter.
+ * @param configParamMap
+ * @return APP_ERROR
+ */
+APP_ERROR MxpiAlphaposePreProcess::Init(std::map<std::string, std::shared_ptr<void>> &configParamMap)
+{
+    LogInfo << "MxpiAlphaposePreProcess::Init start.";
+    APP_ERROR ret = APP_ERR_OK;
+    // Get the property values by key
+    std::shared_ptr<string> parentNamePropSptr = std::static_pointer_cast<string>(configParamMap["dataSource"]);
+    parentName_ = *parentNamePropSptr.get();
+    std::shared_ptr<string> imageDecoderPropSptr = std::static_pointer_cast<string>(configParamMap["imageSource"]);
+    imageDecoderName_ = *imageDecoderPropSptr.get();
+    return APP_ERR_OK;
+}
+
+/**
+ * @brief DeInitialize configure parameter.
+ * @return APP_ERROR
+ */
+APP_ERROR MxpiAlphaposePreProcess::DeInit()
+{
+    LogInfo << "MxpiAlphaposePreProcess::DeInit end.";
+    LogInfo << "MxpiAlphaposePreProcess::DeInit end.";
+    return APP_ERR_OK;
+}
+
+/**
+ * @brief Process the data of MxpiBuffer.
+ * @param mxpiBuffer
+ * @return APP_ERROR
+ */
+APP_ERROR MxpiAlphaposePreProcess::Process(std::vector<MxpiBuffer*> &mxpiBuffer)
+{
+    MxpiBuffer *buffer = mxpiBuffer[0];
+    MxpiMetadataManager mxpiMetadataManager(*buffer);
+    MxpiBufferManager mxpiBufferManager;
+    MxpiErrorInfo mxpiErrorInfo;
+    ErrorInfo_.str("");
+    auto errorInfoPtr = mxpiMetadataManager.GetErrorInfo();
+    if (errorInfoPtr != nullptr) {
+        ErrorInfo_ << GetError(APP_ERR_COMM_FAILURE, pluginName_) <<
+        "MxpiAlphaposePreProcess process is not implemented";
+        mxpiErrorInfo.ret = APP_ERR_COMM_FAILURE;
+        mxpiErrorInfo.errorInfo = ErrorInfo_.str();
+        SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
+        LogError << "MxpiAlphaposePreProcess process is not implemented";
+        return APP_ERR_COMM_FAILURE;
+    }
+    // Get the output of objectpostprocessor from buffer
+    shared_ptr<void> objectMetadata = mxpiMetadataManager.GetMetadata(parentName_);
+    if (objectMetadata == nullptr) {
+        ErrorInfo_ << GetError(APP_ERR_METADATA_IS_NULL, pluginName_) << "object metadata is NULL, failed";
+        mxpiErrorInfo.ret = APP_ERR_METADATA_IS_NULL;
+        mxpiErrorInfo.errorInfo = ErrorInfo_.str();
+        SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
+        return APP_ERR_METADATA_IS_NULL; 
+    }
+    shared_ptr<MxpiObjectList> srcMxpiObjectListSptr
+	    = static_pointer_cast<MxpiObjectList>(objectMetadata);
+    MxpiObjectList srcMxpiObjectList = *srcMxpiObjectListSptr;
+
+    MxpiVisionList srcMxpiVisionList;
+    if (imageDecoderName_ == "appInput"){
+        accTest = true;
+        srcMxpiVisionList = mxpiBufferManager.GetHostDataInfo(*buffer).visionlist();
+    }else{
+        // Get the output of objectdetector from buffer
+        shared_ptr<void> imageMetadata = mxpiMetadataManager.GetMetadata(imageDecoderName_);
+        if (imageMetadata == nullptr) {
+            ErrorInfo_ << GetError(APP_ERR_METADATA_IS_NULL, pluginName_) << "imageDecoder metadata is NULL, failed";
+            mxpiErrorInfo.ret = APP_ERR_METADATA_IS_NULL;
+            mxpiErrorInfo.errorInfo = ErrorInfo_.str();
+            SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
+            return APP_ERR_METADATA_IS_NULL; 
+        }
+        shared_ptr<MxpiVisionList> srcMxpiVisionListSptr
+            = static_pointer_cast<MxpiVisionList>(imageMetadata);
+        srcMxpiVisionList = *srcMxpiVisionListSptr;
+    }
+    
+    // Generate output
+    shared_ptr<MxpiVisionList> dstMxpiVisionListSptr =
+            make_shared<MxpiVisionList>();
+    
+    APP_ERROR ret = GenerateVisionList(srcMxpiObjectList, srcMxpiVisionList, *dstMxpiVisionListSptr);
+    if (ret != APP_ERR_OK) {
+        ErrorInfo_ << GetError(ret, pluginName_) << "MxpiAlphaposePreProcess get person's keypoint information failed.";
+        mxpiErrorInfo.ret = ret;
+        mxpiErrorInfo.errorInfo = ErrorInfo_.str();
+        SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
+        return ret;
+    }
+    ret = mxpiMetadataManager.AddProtoMetadata(pluginName_, static_pointer_cast<void>(dstMxpiVisionListSptr));
+    if (ret != APP_ERR_OK) {
+        ErrorInfo_ << GetError(ret, pluginName_) << "MxpiAlphaposePreProcess add metadata failed.";
+        mxpiErrorInfo.ret = ret;
+        mxpiErrorInfo.errorInfo = ErrorInfo_.str();
+        SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
+        return ret;
+    }
+    // Send the data to downstream plugin
+    SendData(0, *buffer);
+    return APP_ERR_OK;
+}
+
+
+/**
+ * @brief Definition the parameter of configure properties.
+ * @return std::vector<std::shared_ptr<void>>
+ */
+std::vector<std::shared_ptr<void>> MxpiAlphaposePreProcess::DefineProperties()
+{
+    std::vector<std::shared_ptr<void>> properties;
+    // Set the type and related information of the properties, and the key is the name
+    auto parentNameProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string>{
+            STRING, "dataSource", "parentName", "the name of previous plugin", "mxpi_objectpostprocessor0", "NULL", "NULL"});
+    auto imageDecoderProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string>{
+            STRING, "imageSource", "imageDecoderName", "the name of image decoder plugin", "mxpi_imagedecoder0", "NULL", "NULL"});
+    properties.push_back(parentNameProSptr);
+    properties.push_back(imageDecoderProSptr);
+
+    return properties;
+}
+
+APP_ERROR MxpiAlphaposePreProcess::SetMxpiErrorInfo(MxpiBuffer &buffer, const std::string plugin_name,
+                                                    const MxpiErrorInfo mxpiErrorInfo)
+{
+    APP_ERROR ret = APP_ERR_OK;
+    // Define an object of MxpiMetadataManager
+    MxpiMetadataManager mxpiMetadataManager(buffer);
+    ret = mxpiMetadataManager.AddErrorInfo(plugin_name, mxpiErrorInfo);
+    if (ret != APP_ERR_OK) {
+        LogError << "Failed to AddErrorInfo.";
+        return ret;
+    }
+    ret = SendData(0, buffer);
+    return ret;
+}
+
+// Register the Sample plugin through macro
+MX_PLUGIN_GENERATE(MxpiAlphaposePreProcess)
