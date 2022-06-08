@@ -31,11 +31,13 @@ using namespace cv;
 namespace {
     const int modelWidth = 192;
     const int modelHeight = 256;   
-    const float aspectRatio = 0.75;
     const int centerxIndex = 0;
     const int centeryIndex = 1;
     const int scalewIndex = 2;
     const int scalehIndex = 3;
+    const float half = 0.5;
+    const float poseCoordNum = 2;
+    const float scoreCoordNum = 1;
     bool accTest = false;
 }
 
@@ -60,12 +62,12 @@ static void GetDecodedImages(const MxTools::MxpiVisionList srcMxpiVisionList, cv
         MemoryHelper::MxbsMallocAndCopy(dstHost, srcDvpp);
 
         // yuv --> bgr
-        int yuvBytesNu = 3;
-        int yuvBytesDe = 2;
+        int yuvBytesMu = 3;
+        int yuvBytesNu = 2;
         int height = srcMxpiVision.visioninfo().heightaligned();
         int width = srcMxpiVision.visioninfo().widthaligned();
-        cv::Mat yuvImage(height * yuvBytesNu / yuvBytesDe, width, CV_8UC1, Scalar(0));
-        memcpy(yuvImage.data, static_cast<unsigned char*>(dstHost.ptrData), width * height * yuvBytesNu / yuvBytesDe * sizeof(unsigned char));
+        cv::Mat yuvImage(height * yuvBytesMu / yuvBytesNu, width, CV_8UC1, Scalar(0));
+        memcpy(yuvImage.data, static_cast<unsigned char*>(dstHost.ptrData), width * height * yuvBytesMu / yuvBytesNu * sizeof(unsigned char));
         Mat rgbImg(height, width, CV_8UC3, Scalar(0, 0, 0));
         cv::cvtColor(yuvImage, rgbImg, COLOR_YUV2BGR_NV12);
         if (rgbImg.isContinuous()){
@@ -82,10 +84,12 @@ static void GetDecodedImages(const MxTools::MxpiVisionList srcMxpiVisionList, cv
  * @param srcMxpiObjectList - Source MxpiObjectList
  * @param objectBoxes - The boxes of object
  */
-static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList,
-                        std::vector<std::vector<float> > &objectBoxes)
+static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList, 
+                     std::vector<std::vector<float> > &objectBoxes)
 {
     int boxInfoNum = 4;
+    float scaleMult = 1.25;
+    float aspectRatio = 0.75;
     for (int i = 0; i < srcMxpiObjectList.objectvec_size(); i++) {      
         MxTools::MxpiObject srcMxpiObject = srcMxpiObjectList.objectvec(i);
         // Filter out person class
@@ -95,8 +99,8 @@ static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList,
             float y0 = srcMxpiObject.y0();            
             float x1 = srcMxpiObject.x1();            
             float y1 = srcMxpiObject.y1();           
-            float centerx = (x1 + x0) * 0.5;
-            float centery = (y1 + y0) * 0.5;       
+            float centerx = (x1 + x0) * half;
+            float centery = (y1 + y0) * half;       
             float boxWidth = x1 - x0;
             float boxHeight = y1 - y0;
             // Adjust the aspect ratio
@@ -105,8 +109,8 @@ static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList,
             }else{
                 boxWidth = boxHeight * aspectRatio;
             }
-            float scalew = boxWidth * 1.25;
-            float scaleh = boxHeight * 1.25;
+            float scalew = boxWidth * scaleMult;
+            float scaleh = boxHeight * scaleMult;
 
             objectBox[centerxIndex] = centerx;
             objectBox[centeryIndex] = centery;
@@ -137,7 +141,7 @@ static void GetThirdPoint(cv::Point2f *mapPoint)
  * @param outputSize - The transformation matrix for affine tranform
  * @param trans - The transformation matrix for affine tranform
  */
-static void GetAffineTransform(const std::vector<float> &center, const std::vector<float> &scale,
+static void GetAffineTransform(const std::vector<float> &center, const std::vector<float> &scale, 
                                 const std::vector<int> &outputSize, cv::Mat &trans)
 {
     int pointNum = 3;
@@ -145,16 +149,17 @@ static void GetAffineTransform(const std::vector<float> &center, const std::vect
     src[0].x = center[0];
     src[0].y = center[1];
     src[1].x = center[0];
-    src[1].y = center[1] - scale[0] * 0.5;
+    src[1].y = center[1] - scale[0] * half;
     GetThirdPoint(src);
     cv::Point2f dst[pointNum];
-    dst[0].x = outputSize[0] * 0.5;
-    dst[0].y = outputSize[1] * 0.5;
-    dst[1].x = outputSize[0] * 0.5;
-    dst[1].y = (outputSize[1] - outputSize[0]) * 0.5;
+    dst[0].x = outputSize[0] * half;
+    dst[0].y = outputSize[1] * half;
+    dst[1].x = outputSize[0] * half;
+    dst[1].y = (outputSize[1] - outputSize[0]) * half;
     GetThirdPoint(dst);
-    // Get the transformation matrix for affine tranform
-    trans = cv::getAffineTransform(dst, src);
+    
+    trans = cv::getAffineTransform(src, dst);
+
 }
 
 /**
@@ -164,8 +169,8 @@ static void GetAffineTransform(const std::vector<float> &center, const std::vect
  * @param affinedImages - The image after affine transformation
  */
 static void DoWarpAffine(const cv::Mat &decodedImage, 
-                        const std::vector<std::vector<float> > &objectBoxes,
-                        std::vector<cv::Mat> &affinedImages)
+                         const std::vector<std::vector<float> > &objectBoxes,
+                         std::vector<cv::Mat> &affinedImages)
 {
     std::vector<int> outputSize = {modelWidth, modelHeight};
     int batchSize = objectBoxes.size();
@@ -176,7 +181,9 @@ static void DoWarpAffine(const cv::Mat &decodedImage,
         std::vector<float> scale = {};
         scale.push_back(objectBoxes[i][scalewIndex]);
         scale.push_back(objectBoxes[i][scalehIndex]);
-        cv::Mat trans(2, 3, CV_32FC1, Scalar(0));   
+        int transxIndex = 3;
+        int transyIndex = 2;
+        cv::Mat trans(transyIndex, transxIndex, CV_32FC1, Scalar(0));   
         // Get transformation matrix for affine transformation
         GetAffineTransform(center, scale, outputSize, trans);  
         cv::Mat dst(modelHeight, modelWidth, CV_8UC3, Scalar(0, 0, 0)); 
@@ -200,14 +207,14 @@ static void DoWarpAffine(const cv::Mat &decodedImage,
  * @return APP_ERROR
  */
 APP_ERROR MxpiAlphaposePreProcess::GenerateMxpiOutput(std::vector<cv::Mat> &affinedImages,
-                                                        MxpiVisionList &dstMxpiVisionList)
+                                                      MxpiVisionList &dstMxpiVisionList)
 {
+    int rgbSize = 3;
     for (int i =0; i < affinedImages.size(); i++){
     
         auto mxpiVisionPtr = dstMxpiVisionList.add_visionvec();
 
         // Set vision infomation
-        mxpiVisionPtr->mutable_visioninfo()->set_format(12);
         mxpiVisionPtr->mutable_visioninfo()->set_width((uint32_t)modelWidth);
         mxpiVisionPtr->mutable_visioninfo()->set_height((uint32_t)modelHeight);
         mxpiVisionPtr->mutable_visioninfo()->set_widthaligned((uint32_t)modelWidth);
@@ -216,14 +223,14 @@ APP_ERROR MxpiAlphaposePreProcess::GenerateMxpiOutput(std::vector<cv::Mat> &affi
         // Copy memmory from host to device
         MxBase::MemoryData srcImage((void *)affinedImages[i].data, (uint32_t)(modelWidth * modelHeight * 3), 
                             MxBase::MemoryData::MEMORY_HOST);
-        MxBase::MemoryData dstImage( (uint32_t)(modelWidth * modelHeight * 3), MxBase::MemoryData::MEMORY_DEVICE);
+        MxBase::MemoryData dstImage( (uint32_t)(modelWidth * modelHeight * rgbSize), MxBase::MemoryData::MEMORY_DEVICE);
         MemoryHelper::MxbsMallocAndCopy(dstImage, srcImage);
         
         // Set vision data
         mxpiVisionPtr->mutable_visiondata()->set_dataptr((const uint64_t)dstImage.ptrData);
         std::string str = (const char *)dstImage.ptrData;
         mxpiVisionPtr->mutable_visiondata()->set_datastr(str);
-        mxpiVisionPtr->mutable_visiondata()->set_datasize(modelWidth * modelHeight * 3);
+        mxpiVisionPtr->mutable_visiondata()->set_datasize(modelWidth * modelHeight * rgbSize);
         mxpiVisionPtr->mutable_visiondata()->set_deviceid(0);
         mxpiVisionPtr->mutable_visiondata()->set_memtype(MxTools::MxpiMemoryType::MXPI_MEMORY_DEVICE);
         mxpiVisionPtr->mutable_visiondata()->set_freefunc(0);
