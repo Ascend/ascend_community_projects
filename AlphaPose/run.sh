@@ -1,4 +1,4 @@
-set -e 
+set -e
 
 MODE=$1
 SPEEDTEST=$2
@@ -20,8 +20,10 @@ if [ ${MODE} = "image" ]; then
 	python image.py
 elif [ ${MODE} = "video" ]; then
     python video.py ${SPEEDTEST}
+elif [ ${MODE} = "evaluate" ]; then
+    python evaluate.py
 else
-    echo -e "The mode must be image or video"
+    echo -e "The mode must be image or video or evaluate"
 fi
 
 exit 0

@@ -16,19 +16,20 @@
 
 #ifndef ALPHAPOSEPOSTPROCESS_MXPIALPHAPOSEPOSTPROCESS_H
 #define ALPHAPOSEPOSTPROCESS_MXPIALPHAPOSEPOSTPROCESS_H
+#include "opencv2/opencv.hpp"
+#include "MxBase/ErrorCode/ErrorCode.h"
 #include "MxTools/Proto/MxpiDataType.pb.h"
 #include "MxTools/PluginToolkit/base/MxPluginBase.h"
 #include "MxTools/PluginToolkit/base/MxPluginGenerator.h"
 #include "MxTools/PluginToolkit/metadata/MxpiMetadataManager.h"
-#include "MxBase/ErrorCode/ErrorCode.h"
 #include "../../proto/mxpiAlphaposeProto.pb.h"
-#include "opencv2/opencv.hpp"
 
 
 /**
 * @api
 * @brief Definition of MxpiAlphaposePostProcess class.
 */
+
 namespace MxPlugins {
     class MxpiAlphaposePostProcess : public MxTools::MxPluginBase {
     public:
@@ -66,8 +67,8 @@ namespace MxPlugins {
          * @return APP_ERROR
          */
         APP_ERROR GeneratePoseList(const MxTools::MxpiObjectList &srcMxpiObjectList,
-                                     const MxTools::MxpiTensorPackageList &srcMxpiTensorPackageList,
-                                     mxpialphaposeproto::MxpiPersonList &dstMxpiPersonList);
+                                   const MxTools::MxpiTensorPackageList &srcMxpiTensorPackageList,
+                                   mxpialphaposeproto::MxpiPersonList &dstMxpiPersonList);
 
         /**
          * @brief Prepare output in the format of MxpiPersonList
@@ -105,9 +106,9 @@ namespace MxPlugins {
          * @return APP_ERROR
          */
         APP_ERROR ExtractKeypointsInfo(const std::vector<std::vector<cv::Mat> > &result,
-                                  const std::vector<std::vector<float> > &objectBoxes,
-                                  std::vector<cv::Mat> &keypointPreds,
-                                  std::vector<cv::Mat> &keypointScores);
+                                       const std::vector<std::vector<float> > &objectBoxes,
+                                       std::vector<cv::Mat> &keypointPreds,
+                                       std::vector<cv::Mat> &keypointScores);
 
     private:
         APP_ERROR SetMxpiErrorInfo(MxTools::MxpiBuffer &buffer, const std::string plugin_name,

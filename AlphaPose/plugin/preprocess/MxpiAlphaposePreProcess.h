@@ -1,14 +1,14 @@
 
 #ifndef ALPHAPOSEPREPROCESS_MXPIALPHAPOSEPREPROCESS_H
 #define ALPHAPOSEPREPROCESS_MXPIALPHAPOSEPREPROCESS_H
+#include "opencv2/opencv.hpp"
+#include "MxBase/ErrorCode/ErrorCode.h"
+#include "MxTools/Proto/MxpiDataType.pb.h"
+#include "MxBase/MemoryHelper/MemoryHelper.h"
 #include "MxTools/PluginToolkit/base/MxPluginGenerator.h"
 #include "MxTools/PluginToolkit/base/MxPluginBase.h"
 #include "MxTools/PluginToolkit/metadata/MxpiMetadataManager.h"
 #include "MxTools/PluginToolkit/buffer/MxpiBufferManager.h"
-#include "MxTools/Proto/MxpiDataType.pb.h"
-#include "MxBase/ErrorCode/ErrorCode.h"
-#include "MxBase/MemoryHelper/MemoryHelper.h"
-#include "opencv2/opencv.hpp"
 
 
 /**

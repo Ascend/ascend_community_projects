@@ -449,9 +449,9 @@ static void GetFinalPose(double maxValue, float confidencePick, cv::Mat &mergePo
     * @return APP_ERROR
  */
 APP_ERROR MxpiAlphaposePostProcess::ExtractKeypointsInfo(const std::vector<std::vector<cv::Mat> > &result,
-                                                     const std::vector<std::vector<float> > &objectBoxes,
-                                                     std::vector<cv::Mat> &keypointPreds,
-                                                     std::vector<cv::Mat> &keypointScores)
+                                                         const std::vector<std::vector<float> > &objectBoxes,
+                                                         std::vector<cv::Mat> &keypointPreds,
+                                                         std::vector<cv::Mat> &keypointScores)
 {
     // Get the max predictive value
     // coords: n*17*2   maxvals: n*17*1
@@ -639,8 +639,8 @@ APP_ERROR MxpiAlphaposePostProcess::GenerateMxpiOutput(std::vector<cv::Mat> &fin
  * @return APP_ERROR
 */
 APP_ERROR MxpiAlphaposePostProcess::GeneratePoseList(const MxpiObjectList &srcMxpiObjectList,
-                                                       const MxpiTensorPackageList &srcMxpiTensorPackageList,
-                                                       mxpialphaposeproto::MxpiPersonList &dstMxpiPersonList)
+                                                     const MxpiTensorPackageList &srcMxpiTensorPackageList,
+                                                     mxpialphaposeproto::MxpiPersonList &dstMxpiPersonList)
 {
     // Get object boxes from object detector
     std::vector<std::vector<float> > objectBoxes = {};
@@ -697,6 +697,7 @@ APP_ERROR MxpiAlphaposePostProcess::Init(std::map<std::string, std::shared_ptr<v
     parentName_ = *parentNamePropSptr.get();
     std::shared_ptr<string> objectDetectorPropSptr = std::static_pointer_cast<string>(configParamMap["objectSource"]);
     objectDetectorName_ = *objectDetectorPropSptr.get();
+    LogInfo << "MxpiAlphaposePostProcess::Init complete.";
     return APP_ERR_OK;
 }
 
@@ -706,8 +707,8 @@ APP_ERROR MxpiAlphaposePostProcess::Init(std::map<std::string, std::shared_ptr<v
  */
 APP_ERROR MxpiAlphaposePostProcess::DeInit()
 {
-    LogInfo << "MxpiAlphaposePostProcess::DeInit end.";
-    LogInfo << "MxpiAlphaposePostProcess::DeInit end.";
+    LogInfo << "MxpiAlphaposePostProcess::DeInit start.";
+    LogInfo << "MxpiAlphaposePostProcess::DeInit complete.";
     return APP_ERR_OK;
 }
 
