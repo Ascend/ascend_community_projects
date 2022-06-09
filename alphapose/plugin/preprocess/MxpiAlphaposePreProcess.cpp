@@ -29,16 +29,14 @@ using namespace std;
 using namespace cv;
 
 namespace {
-    const int modelWidth = 192;
-    const int modelHeight = 256;
-    const int centerxIndex = 0;
-    const int centeryIndex = 1;
-    const int scalewIndex = 2;
-    const int scalehIndex = 3;
-    const float half = 0.5;
-    const float poseCoordNum = 2;
-    const float scoreCoordNum = 1;
-    bool accTest = false;
+    const int MODEL_WIDTH = 192;
+    const int MODEL_HEIGHT = 256;
+    const int CENTERX_INDEX = 0;
+    const int CENTERY_INDEX = 1;
+    const int SCALEW_INDEX = 2;
+    const int SCALEH_INDEX = 3;
+    const float HALF = 0.5;
+    bool ACC_TEST = false;
 }
 
 /**
@@ -48,7 +46,7 @@ namespace {
  */
 static void GetDecodedImages(const MxTools::MxpiVisionList srcMxpiVisionList, cv::Mat &decodedImage)
 {
-    if (accTest) {
+    if (ACC_TEST) {
         MxpiVisionData inputdata = srcMxpiVisionList.visionvec(0).visiondata();
         cv::Mat rawData(1, (uint32_t)inputdata.datasize(), CV_8UC1, (void *)inputdata.dataptr());
         decodedImage = cv::imdecode(rawData, cv::IMREAD_COLOR);
@@ -93,14 +91,14 @@ static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList,
     for (int i = 0; i < srcMxpiObjectList.objectvec_size(); i++) {
         MxTools::MxpiObject srcMxpiObject = srcMxpiObjectList.objectvec(i);
         // Filter out person class
-        if ((accTest) || (srcMxpiObject.classvec(0).classid() == 0)) {
+        if ((ACC_TEST) || (srcMxpiObject.classvec(0).classid() == 0)) {
             std::vector<float> objectBox(boxInfoNum);
             float x0 = srcMxpiObject.x0();
             float y0 = srcMxpiObject.y0();
             float x1 = srcMxpiObject.x1();
             float y1 = srcMxpiObject.y1();
-            float centerx = (x1 + x0) * half;
-            float centery = (y1 + y0) * half;
+            float centerx = (x1 + x0) * HALF;
+            float centery = (y1 + y0) * HALF;
             float boxWidth = x1 - x0;
             float boxHeight = y1 - y0;
             // Adjust the aspect ratio
@@ -112,10 +110,10 @@ static void GetBoxes(const MxTools::MxpiObjectList srcMxpiObjectList,
             float scalew = boxWidth * scaleMult;
             float scaleh = boxHeight * scaleMult;
 
-            objectBox[centerxIndex] = centerx;
-            objectBox[centeryIndex] = centery;
-            objectBox[scalewIndex] = scalew;
-            objectBox[scalehIndex] = scaleh;
+            objectBox[CENTERX_INDEX] = centerx;
+            objectBox[CENTERY_INDEX] = centery;
+            objectBox[SCALEW_INDEX] = scalew;
+            objectBox[SCALEH_INDEX] = scaleh;
             objectBoxes.push_back(objectBox);
         }
     }
@@ -149,13 +147,13 @@ static void GetAffineTransform(const std::vector<float> &center, const std::vect
     src[0].x = center[0];
     src[0].y = center[1];
     src[1].x = center[0];
-    src[1].y = center[1] - scale[0] * half;
+    src[1].y = center[1] - scale[0] * HALF;
     GetThirdPoint(src);
     cv::Point2f dst[pointNum];
-    dst[0].x = outputSize[0] * half;
-    dst[0].y = outputSize[1] * half;
-    dst[1].x = outputSize[0] * half;
-    dst[1].y = (outputSize[1] - outputSize[0]) * half;
+    dst[0].x = outputSize[0] * HALF;
+    dst[0].y = outputSize[1] * HALF;
+    dst[1].x = outputSize[0] * HALF;
+    dst[1].y = (outputSize[1] - outputSize[0]) * HALF;
     GetThirdPoint(dst);
     trans = cv::getAffineTransform(src, dst);
 }
@@ -170,21 +168,21 @@ static void DoWarpAffine(const cv::Mat &decodedImage,
                          const std::vector<std::vector<float> > &objectBoxes,
                          std::vector<cv::Mat> &affinedImages)
 {
-    std::vector<int> outputSize = {modelWidth, modelHeight};
+    std::vector<int> outputSize = {MODEL_WIDTH, MODEL_HEIGHT};
     int batchSize = objectBoxes.size();
     for (int i = 0; i < batchSize; i++) {
         std::vector<float> center = {};
-        center.push_back(objectBoxes[i][centerxIndex]);
-        center.push_back(objectBoxes[i][centeryIndex]);
+        center.push_back(objectBoxes[i][CENTERX_INDEX]);
+        center.push_back(objectBoxes[i][CENTERY_INDEX]);
         std::vector<float> scale = {};
-        scale.push_back(objectBoxes[i][scalewIndex]);
-        scale.push_back(objectBoxes[i][scalehIndex]);
+        scale.push_back(objectBoxes[i][SCALEW_INDEX]);
+        scale.push_back(objectBoxes[i][SCALEH_INDEX]);
         int transxIndex = 3;
         int transyIndex = 2;
         cv::Mat trans(transyIndex, transxIndex, CV_32FC1, Scalar(0));
         // Get transformation matrix for affine transformation
         GetAffineTransform(center, scale, outputSize, trans);
-        cv::Mat dst(modelHeight, modelWidth, CV_8UC3, Scalar(0, 0, 0));
+        cv::Mat dst(MODEL_HEIGHT, MODEL_WIDTH, CV_8UC3, Scalar(0, 0, 0));
         // Affine transformation
         cv::warpAffine(decodedImage, dst, trans, dst.size());
 
@@ -209,21 +207,21 @@ APP_ERROR MxpiAlphaposePreProcess::GenerateMxpiOutput(std::vector<cv::Mat> &affi
     for (int i = 0; i < affinedImages.size(); i++) {
         auto mxpiVisionPtr = dstMxpiVisionList.add_visionvec();
         // Set vision infomation
-        mxpiVisionPtr->mutable_visioninfo()->set_width((uint32_t)modelWidth);
-        mxpiVisionPtr->mutable_visioninfo()->set_height((uint32_t)modelHeight);
-        mxpiVisionPtr->mutable_visioninfo()->set_widthaligned((uint32_t)modelWidth);
-        mxpiVisionPtr->mutable_visioninfo()->set_heightaligned((uint32_t)modelHeight);
+        mxpiVisionPtr->mutable_visioninfo()->set_width((uint32_t)MODEL_WIDTH);
+        mxpiVisionPtr->mutable_visioninfo()->set_height((uint32_t)MODEL_HEIGHT);
+        mxpiVisionPtr->mutable_visioninfo()->set_widthaligned((uint32_t)MODEL_WIDTH);
+        mxpiVisionPtr->mutable_visioninfo()->set_heightaligned((uint32_t)MODEL_HEIGHT);
 
         // Copy memmory from host to device
-        MxBase::MemoryData srcImage((void *)affinedImages[i].data, (uint32_t)(modelWidth * modelHeight * rgbSize),
+        MxBase::MemoryData srcImage((void *)affinedImages[i].data, (uint32_t)(MODEL_WIDTH * MODEL_HEIGHT * rgbSize),
                                     MxBase::MemoryData::MEMORY_HOST);
-        MxBase::MemoryData dstImage((uint32_t)(modelWidth * modelHeight * rgbSize), MxBase::MemoryData::MEMORY_DEVICE);
+        MxBase::MemoryData dstImage((uint32_t)(MODEL_WIDTH * MODEL_HEIGHT * rgbSize), MxBase::MemoryData::MEMORY_DEVICE);
         MemoryHelper::MxbsMallocAndCopy(dstImage, srcImage);
         // Set vision data
         mxpiVisionPtr->mutable_visiondata()->set_dataptr((const uint64_t)dstImage.ptrData);
         std::string str = (const char *)dstImage.ptrData;
         mxpiVisionPtr->mutable_visiondata()->set_datastr(str);
-        mxpiVisionPtr->mutable_visiondata()->set_datasize(modelWidth * modelHeight * rgbSize);
+        mxpiVisionPtr->mutable_visiondata()->set_datasize(MODEL_WIDTH * MODEL_HEIGHT * rgbSize);
         mxpiVisionPtr->mutable_visiondata()->set_deviceid(0);
         mxpiVisionPtr->mutable_visiondata()->set_memtype(MxTools::MxpiMemoryType::MXPI_MEMORY_DEVICE);
         mxpiVisionPtr->mutable_visiondata()->set_freefunc(0);
@@ -251,7 +249,7 @@ APP_ERROR MxpiAlphaposePreProcess::GenerateVisionList(const MxpiObjectList &srcM
     std::vector<cv::Mat> affinedImages = {};
     if (objectBoxes.size() == 0) {
         LogWarn << "There is no people in this frame or picture";
-        cv::Mat affinedImage(modelHeight, modelWidth, CV_8UC3, Scalar(0));
+        cv::Mat affinedImage(MODEL_HEIGHT, MODEL_WIDTH, CV_8UC3, Scalar(0));
         affinedImages.push_back(affinedImage);
     } else {
         // Get images from image decoder
@@ -331,7 +329,7 @@ APP_ERROR MxpiAlphaposePreProcess::Process(std::vector<MxpiBuffer*> &mxpiBuffer)
 
     MxpiVisionList srcMxpiVisionList;
     if (imageDecoderName_ == "appInput") {
-        accTest = true;
+        ACC_TEST = true;
         srcMxpiVisionList = mxpiBufferManager.GetHostDataInfo(*buffer).visionlist();
     } else {
         // Get the output of objectdetector from buffer
@@ -380,9 +378,9 @@ std::vector<std::shared_ptr<void>> MxpiAlphaposePreProcess::DefineProperties()
 {
     std::vector<std::shared_ptr<void>> properties;
     // Set the type and related information of the properties, and the key is the name
-    auto parentNameProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string>{
+    auto parentNameProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string> {
             STRING, "dataSource", "parentName", "the name of previous plugin", "mxpi_objectpostprocessor0", "NULL", "NULL"});
-    auto imageDecoderProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string>{
+    auto imageDecoderProSptr = (std::make_shared<ElementProperty<string>>)(ElementProperty<string> {
             STRING, "imageSource", "imageDecoderName", "the name of image decoder plugin", "mxpi_imagedecoder0", "NULL", "NULL"});
     properties.push_back(parentNameProSptr);
     properties.push_back(imageDecoderProSptr);

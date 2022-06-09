@@ -63,7 +63,8 @@ def main():
         ann_ids = coco.getAnnIds(image_id)
         anns = coco.loadAnns(ann_ids)
         roi_vector = RoiBoxVector()
-        for i in range(len(anns)):
+        annsLen = len(anns)
+        for i, _ in enumerate(range(annsLen)):
             roi = RoiBox()
             roi.x0 = anns[i]['bbox'][0]
             roi.y0 = anns[i]['bbox'][1]
@@ -95,8 +96,7 @@ def main():
         pose_out_list = mxpialphaposeproto.MxpiPersonList()
         pose_out_list.ParseFromString(infer_result.metadataVec[0].serializedMetadata)
         person_num = len(pose_out_list.personInfoVec)
-        i = 0
-        while i < person_num:
+        for i, _ in enumerate(range(person_num)):
             person = pose_out_list.personInfoVec[i]
             keypoints_score = np.zeros((17, 1), dtype = np.float32)
             keypoints_pre = np.zeros((17, 2), dtype = np.float32)
@@ -114,12 +114,9 @@ def main():
             data['category_id'] = 1
             data['keypoints'] = keypoints
             coco_result.append(data)
-            i += 1
 
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # Sets how files are read and written
+    flags = os.O_WRONLY | os.O_CREAT  # Sets how files are read and written
     modes = stat.S_IWUSR | stat.S_IRUSR  # Set file permissions
-    if os.path.exists(detect_file) == 1:
-        os.remove(detect_file)
     with os.fdopen(os.open(detect_file, flags, modes), 'w') as f:
         json.dump(coco_result, f, indent=4)
     # run coco evaluation process using COCO official evaluation tool

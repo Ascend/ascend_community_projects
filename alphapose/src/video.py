@@ -73,9 +73,9 @@ def main():
     frame_count = 0
     wait_count = 0
     while True:
-        infer_result = stream_manager_api.GetResult(stream_name, b'appsink0', key_vec, 5000)
+        infer_result = stream_manager_api.GetResult(stream_name, b'appsink0', key_vec)
         if infer_result.errorCode != 0:
-            if wait_count != 5:
+            if wait_count != 10:
                 print("Please check the rtspUrl of the video is correct or the video exists.")
                 wait_count += 1
                 continue
@@ -98,8 +98,7 @@ def main():
         pose_out_list.ParseFromString(infer_result.metadataVec[POSE_INDEX].serializedMetadata)
         person_num = len(pose_out_list.personInfoVec)
         personlist = []
-        i = 0
-        while i < person_num:
+        for i, _ in enumerate(range(person_num)):
             person = pose_out_list.personInfoVec[i]
             keypoints_score = np.zeros((17, 1), dtype = np.float32)
             keypoints_pre = np.zeros((17, 2), dtype = np.float32)
@@ -114,7 +113,6 @@ def main():
                 'kp_score': keypoints_score,
                 'proposal_score': score,
             })
-            i += 1
         # Whether to conduct speed tests
         if not args.speedtest:
             # visualize and save
@@ -122,15 +120,13 @@ def main():
             vis_image = img[:OUT_HEIGHT, :OUT_WIDTH, :]
             out.write(vis_image)
         # Save key point information to JSON file
-        for i in range(len(personlist)):
+        for i, _ in enumerate(range(person_num)):
             personlist[i]['keypoints'] = personlist[i]['keypoints'].tolist()
             personlist[i]['kp_score'] = personlist[i]['kp_score'].tolist()
             personlist[i]['proposal_score'] = personlist[i]['proposal_score'].tolist()
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # Sets how files are read and written
+        flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT  # Sets how files are read and written
         modes = stat.S_IWUSR | stat.S_IRUSR  # Set file permissions
         json_file = "../out/alphapose.json"
-        if os.path.exists(json_file) == 1:
-            os.remove(json_file)
         with os.fdopen(os.open(json_file, flags, modes), 'a') as f:
             json.dump(personlist, f, indent=2)
         frame_count += 1
