@@ -448,7 +448,7 @@ static void GetFinalPose(double maxValue, float confidencePick, cv::Mat &mergePo
     * @param keypointScores - Source data containing the information of keypoins score
     * @return APP_ERROR
  */
-APP_ERROR MxpiAlphaposePostProcess::ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result,
+APP_ERROR MxpiAlphaposePostProcess::ExtractKeypointsInfo(const std::vector<std::vector<cv::Mat> > &result,
                                                      const std::vector<std::vector<float> > &objectBoxes,
                                                      std::vector<cv::Mat> &keypointPreds,
                                                      std::vector<cv::Mat> &keypointScores)
@@ -638,7 +638,7 @@ APP_ERROR MxpiAlphaposePostProcess::GenerateMxpiOutput(std::vector<cv::Mat> &fin
  * @param dstMxpiPersonList - Target MxpiPersonList containing detection result list
  * @return APP_ERROR
 */
-APP_ERROR MxpiAlphaposePostProcess::GeneratePersonList(const MxpiObjectList &srcMxpiObjectList,
+APP_ERROR MxpiAlphaposePostProcess::GeneratePoseList(const MxpiObjectList &srcMxpiObjectList,
                                                        const MxpiTensorPackageList &srcMxpiTensorPackageList,
                                                        mxpialphaposeproto::MxpiPersonList &dstMxpiPersonList)
 {
@@ -664,7 +664,7 @@ APP_ERROR MxpiAlphaposePostProcess::GeneratePersonList(const MxpiObjectList &src
         // Get The keypoints and their scores
         std::vector<cv::Mat> keypointPreds = {};
         std::vector<cv::Mat> keypointScores = {};
-        ExtractKeypoints(result, objectBoxes, keypointPreds, keypointScores);
+        ExtractKeypointsInfo(result, objectBoxes, keypointPreds, keypointScores);
         // DO pose nms
         if (ACC_TEST) {
             for (int i = 0; i < keypointPreds.size(); i++) {
@@ -764,7 +764,7 @@ APP_ERROR MxpiAlphaposePostProcess::Process(std::vector<MxpiBuffer*> &mxpiBuffer
     // Generate output
     shared_ptr<mxpialphaposeproto::MxpiPersonList> dstMxpiPersonListSptr =
             make_shared<mxpialphaposeproto::MxpiPersonList>();
-    APP_ERROR ret = GeneratePersonList(srcMxpiObjectList, srcMxpiTensorPackageList, *dstMxpiPersonListSptr);
+    APP_ERROR ret = GeneratePoseList(srcMxpiObjectList, srcMxpiTensorPackageList, *dstMxpiPersonListSptr);
     if (ret != APP_ERR_OK) {
         ErrorInfo_ << GetError(ret, pluginName_) << "MxpiAlphaposePostProcess get person's keypoint information failed.";
         mxpiErrorInfo.ret = ret;

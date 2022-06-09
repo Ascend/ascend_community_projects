@@ -63,8 +63,8 @@ def main():
         ann_ids = coco.getAnnIds(image_id)
         anns = coco.loadAnns(ann_ids)
         roi_vector = RoiBoxVector()
-        annsLen = len(anns)
-        for i, _ in enumerate(range(annsLen)):
+        anns_len = len(anns)
+        for i, _ in enumerate(range(anns_len)):
             roi = RoiBox()
             roi.x0 = anns[i]['bbox'][0]
             roi.y0 = anns[i]['bbox'][1]

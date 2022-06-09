@@ -16,10 +16,10 @@
 
 #ifndef ALPHAPOSEPOSTPROCESS_MXPIALPHAPOSEPOSTPROCESS_H
 #define ALPHAPOSEPOSTPROCESS_MXPIALPHAPOSEPOSTPROCESS_H
-#include "MxTools/PluginToolkit/base/MxPluginGenerator.h"
-#include "MxTools/PluginToolkit/base/MxPluginBase.h"
-#include "MxTools/PluginToolkit/metadata/MxpiMetadataManager.h"
 #include "MxTools/Proto/MxpiDataType.pb.h"
+#include "MxTools/PluginToolkit/base/MxPluginBase.h"
+#include "MxTools/PluginToolkit/base/MxPluginGenerator.h"
+#include "MxTools/PluginToolkit/metadata/MxpiMetadataManager.h"
 #include "MxBase/ErrorCode/ErrorCode.h"
 #include "../../proto/mxpiAlphaposeProto.pb.h"
 #include "opencv2/opencv.hpp"
@@ -27,9 +27,8 @@
 
 /**
 * @api
-* @brief Definition of MxpiOpenposePostProcess class.
+* @brief Definition of MxpiAlphaposePostProcess class.
 */
-
 namespace MxPlugins {
     class MxpiAlphaposePostProcess : public MxTools::MxPluginBase {
     public:
@@ -66,7 +65,7 @@ namespace MxPlugins {
          * @param dstMxpiPersonList - Target MxpiPersonList containing detection result list
          * @return APP_ERROR
          */
-        APP_ERROR GeneratePersonList(const MxTools::MxpiObjectList &srcMxpiObjectList,
+        APP_ERROR GeneratePoseList(const MxTools::MxpiObjectList &srcMxpiObjectList,
                                      const MxTools::MxpiTensorPackageList &srcMxpiTensorPackageList,
                                      mxpialphaposeproto::MxpiPersonList &dstMxpiPersonList);
 
@@ -105,7 +104,7 @@ namespace MxPlugins {
          * @param keypointScores - Source data containing the information of keypoins score
          * @return APP_ERROR
          */
-        APP_ERROR ExtractKeypoints(const std::vector<std::vector<cv::Mat> > &result,
+        APP_ERROR ExtractKeypointsInfo(const std::vector<std::vector<cv::Mat> > &result,
                                   const std::vector<std::vector<float> > &objectBoxes,
                                   std::vector<cv::Mat> &keypointPreds,
                                   std::vector<cv::Mat> &keypointScores);

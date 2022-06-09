@@ -13,7 +13,7 @@
 
 /**
  * @api
- * @brief Definition of MxpiOpenposePreProcess class.
+ * @brief Definition of MxpiAlphaposePreProcess class.
  */
 
 namespace MxPlugins {

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.mitations under the License.
 
-set -e 
+set -e
 
 current_folder="$( cd "$(dirname "$0")" ;pwd -P )"
 
