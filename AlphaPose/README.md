@@ -169,7 +169,7 @@ ATC run success, welcome to the next use.
 
 ### 4.2 AlphaPose 模型转换
 
-第二个模型是 AlphaPose 模型，onnx 模型可通过[地址](https://www.hiascend.com/zh/software/modelzoo/detail/1/ba2a4c054a094ef595da288ecbc7d7b4)获取。下载后使用模型转换工具 ATC 将 onnx 模型转换为 om 模型。
+第二个模型是 AlphaPose 模型，onnx 模型可通过[地址](https://alphapose-model.obs.cn-north-4.myhuaweicloud.com/AlphaPose/fast_res50_256x192_bs1.onnx)获取。下载后使用模型转换工具 ATC 将 onnx 模型转换为 om 模型。
 
 模型转换，步骤如下：
 
