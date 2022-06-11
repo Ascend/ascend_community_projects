@@ -2,7 +2,7 @@
 
 ## 1 介绍
 
-AlphaPose 人体关键点估计前、后处理插件基于 MindX SDK 开发，在昇腾芯片上进行人体关键点估计，将结果进行可视化并保存。主要处理流程为：输入视频 >视频解码 >图像缩放 >行人检测模型推理 >行人检测模型后处理 >人体关键点估计模型前处理 >人体关键点估计模型推理  > 人体关键点估计模型后处理 >可视化 >视频编码。
+AlphaPose 人体关键点估计前、后处理插件基于 MindX SDK 开发，在昇腾芯片上进行人体关键点估计，将结果进行可视化并保存。主要处理流程为：输入视频 >视频解码 >图像缩放 >行人检测模型推理 >行人检测模型后处理 >人体关键点估计模型前处理 >人体关键点估计模型推理  > 人体关键点估计模型后处理 >关键点输出及可视化 >视频编码。
 
 人体关键点检测是指在行人检测的基础上，对检测出来的所有行人进行人体 17 个关键点的检测，包括鼻子、左眼、右眼、左耳、右耳、左肩、右肩、左肘、右肘、左手腕、右手腕、左髋、右髋、左膝、右膝、左踝、右踝。然后将关键点正确配对组成相应的人体骨架，展示人体姿态。本方案采取 AlphaPose 人体关键点检测模型，将待检测图片输入模型进行推理，推理得到包含人体 17 个关键点信息的 Heatmaps，再从 Heatmaps 中提取得到人体关键点位置等信息。
 
@@ -83,13 +83,25 @@ Atlas 200DK
 
 ### 1.5 技术实现流程图
 
-![](https://gitee.com/seven-day/mindxsdk-referenceapps/raw/master/contrib/AlphaPose/image/image1.png)
+![](./image/SDK流程图.png)
+
+AlphaPose模型前处理插件的输入有两个，一个是视频解码插件输出的 YUV 格式的图像帧，一个是检测后处理插件输出的图像帧中人体的位置信息。AlphaPose模型前处理插件整体流程为：
+
+1.  读取视频解码插件输出的 yuv 格式的图像帧数据，并对其进行 YUV 到 RGB 色域的转换。
+2.  读取检测后处理插件输出的图像帧中人体的位置信息，根据该位置信息计算人体中心的位置与人体所占面积的宽高。
+3.  根据前面两个步骤所获得的信息，对第一步的 RGB 图像进行放射变换。
+
+AlphaPose模型后处理插件的输入也有有两个，一个是检测后处理插件输出的图像帧中人体的位置信息，一个是AlphaPose模型推理插件输出的张量，包含包含图像帧中检测到的所有人体 17 个关键点信息的 Heatmaps。后处理插件的整体流程为：
+
+1.  读取检测后处理插件输出的图像帧中人体的位置信息，根据该位置信息计算人体中心的位置与人体所占面积的宽高。
+2.  读取检测AlphaPose模型推理插件输出的包含包含图像帧中检测到的所有人体 17 个关键点信息的 Heatmaps，寻找每张 Heatmap 中的最大值作为该关键点的得分，最大值的位置作为该关键点在 Heatmap 中的位置，然后再结合第一步的信息通过放射变换获取该关键点在原图上的坐标。
+3.  进行PoseNMS，通过姿态距离+空间距离作为度量标准，设定阈值，筛选出单一的姿态。
 
 
 
 ## 2 环境依赖
 
-推荐系统为 ubantu 18.04，环境依赖软件和版本如下表：
+推荐系统为 ubuntu 18.04，环境依赖软件和版本如下表：
 
 | 软件名称            | 版本          |
 | ------------------- | ------------- |
@@ -117,7 +129,7 @@ export LD_LIBRARY_PATH="${MX_SDK_HOME}/lib/modelpostprocessors":"${MX_SDK_HOME}/
 export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 ```
 
-[^注]:其中 **${SDK安装路径}** 替换为用户的 SDK 安装路径，install_path 替换为开发套件包所在路径。LD_LIBRARY_PATH 用以加载开发套件包中 lib 库。
+[^注]: 其中 **${SDK安装路径}** 替换为用户的 SDK 安装路径，install_path 替换为开发套件包所在路径。LD_LIBRARY_PATH 用以加载开发套件包中 lib 库。
 
 
 
@@ -241,17 +253,17 @@ bash run.sh video --speedtest
 
 ![性能测试结果](./image/speedtest.png)
 
-注：输入视频帧率应高于25，否则无法发挥全部性能。
+[^注]: 输入视频帧率应高于25，否则无法发挥全部性能。且由于 Alphapose 人体关键点估计是一种自上而下的方式，所以实际推理速度与视频中的人数存在负相关关系，即人数越多，推理用时越多，速度越慢。上述展示的推理速度是在视频帧大小为 720*1280，且视频中只有一个人的条件下所得到的性能。
 
 #### 7.2 精度测试
 
 1.  安装 COCO 数据集 python API。
 
     ```shell
-    pip install pycocotools
+    pip3 install pycocotools
     ```
 
-2.  下载 COCO VAL 2017 数据集，下载链接：。在`AlphaPose/src` 目录下创建 `dataset` 目录，将数据集压缩文件解压至 `AlphaPose/src/dataset` 目录下。确保下载完数据集和标注文件后的 `AlphaPose/src` 目录结构为：
+2.  下载 COCO VAL 2017 数据集，[验证集下载链接](http://images.cocodataset.org/zips/val2017.zip)，[验证集标签下载链接](http://images.cocodataset.org/annotations/annotations_trainval2017.zip)。在`AlphaPose/src` 目录下创建 `dataset` 目录，将验证集和标签压缩文件解压至 `AlphaPose/src/dataset` 目录下。确保下载完数据集和标注文件后的 `AlphaPose/src` 目录结构为：
 
     ```
     .
@@ -263,13 +275,8 @@ bash run.sh video --speedtest
     │       ├── 000000581781.jpg
     │       └── other-images
     ├── evaluate.py
-    ├── main.py
-    ├── models
-    │   ├── convert_to_onnx.py
-    │   ├── insert_op.cfg
-    │   └── model_conversion.sh
-    └── pipeline
-        └── Openpose.pipeline
+    ├── image.py
+    └── video.py
     ```
 
     
@@ -281,7 +288,6 @@ bash run.sh video --speedtest
     ```
 
     命令执行结束后输出 COCO 格式的评测结果，并生成 val2017_keypoint_detect_result.json 检测结果文件。输出结果如下图所示：
-    
     ![精度测试结果](./image/acctest.png)
 
 
@@ -296,8 +302,5 @@ bash run.sh video --speedtest
 
 **解决方案：**
 
-检查 `AlphaPose/src/video.py` 中的 `OUT_WIDTH` 和 `OUT_HEIGHT` 参数，确保这两参数的值是输入的 .264 视频的宽和高。
+检查 `AlphaPose/src/video.py` 中的 `VIDEO_WIDTH` 和 `VIDEO_HEIGHT` 参数，确保这两参数的值是输入的 .264 视频的宽和高。
 
-
-
-#### 8.2 

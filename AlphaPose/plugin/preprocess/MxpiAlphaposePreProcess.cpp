@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 #include "MxpiAlphaposePreProcess.h"
-#include <numeric>
-#include <algorithm>
-#include <math.h>
 #include "opencv2/opencv.hpp"
 #include "MxBase/Log/Log.h"
-#include "MxBase/Tensor/TensorBase/TensorBase.h"
 #include <string>
 
 using namespace MxBase;

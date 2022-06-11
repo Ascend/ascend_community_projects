@@ -50,13 +50,16 @@ def main():
     stream_name = b'alphapose'
     in_plugin_id = 0
     image_dir = '../data'
+    if os.path.exists(image_dir) != 1:
+        print("Please create a folder for your test pictures.")
+        exit()
+    if len(os.listdir(image_dir)) ==0:
+        print("There are no test pictures in the folder.")
+        exit()
     for file_path in os.listdir(image_dir):
         image_name = file_path
         file_path = os.path.join(image_dir, file_path)
         # Construct the input of the stream
-        if os.path.exists(file_path) != 1:
-            print("The test image does not exist.")
-            exit()
         with open(file_path, 'rb') as f:
             data_input.data = f.read()
 
@@ -88,8 +91,6 @@ def main():
                 keypoints_pre[j][0] = person.keyPoints[j].x
                 keypoints_pre[j][1] = person.keyPoints[j].y
             score = np.array(person.confidence)
-            print("keypoints_pre: ", keypoints_pre)
-            print("keypoints_score: ", keypoints_score)
             personlist.append({
                 'keypoints': keypoints_pre,
                 'kp_score': keypoints_score,
@@ -110,7 +111,7 @@ def main():
         modes = stat.S_IWUSR | stat.S_IRUSR  # Set file permissions
         json_file = "../out/{}.json".format(image_name)
         with os.fdopen(os.open(json_file, flags, modes), 'w') as f:
-            json.dump(personlist, f)
+            json.dump(personlist, f, indent=2)
         print('result was written successfully')
 
     stream_manager_api.DestroyAllStreams()

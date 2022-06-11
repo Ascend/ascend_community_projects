@@ -37,8 +37,8 @@ import mxpiAlphaposeProto_pb2 as mxpialphaposeproto
 
 DECODE_INDEX = 0
 POSE_INDEX = 1
-OUT_WIDTH = 720
-OUT_HEIGHT = 1280
+VIDEO_WIDTH = 720
+VIDEO_HEIGHT = 1280
 YUV_BYTES_NU = 3
 YUV_BYTES_DE = 2
 
@@ -66,10 +66,13 @@ def main():
     key_vec.push_back(b"mxpi_videodecoder0")
     key_vec.push_back(b"mxpi_alphaposepostprocess0")
 
+    if (VIDEO_WIDTH == 0) or (VIDEO_HEIGHT == 0):
+        print("The width and height of the input and output video should not be zero")
+        exit()
     # Example Initialize the video encoder
     fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')  # H.264 codec
     out = cv2.VideoWriter(filename="../out/alphapose.avi", fourcc=fourcc, fps=24,
-                        frameSize=(OUT_WIDTH, OUT_HEIGHT), isColor=True)
+                        frameSize=(VIDEO_WIDTH, VIDEO_HEIGHT), isColor=True)
     frame_count = 0
     wait_count = 0
     while True:
@@ -82,7 +85,6 @@ def main():
             else:
                 break
 
-        '**************************mxpi_videodecoder0**************************'
         # Obtain the results of videodecoder
         vision_list = MxpiDataType.MxpiVisionList()
         vision_list.ParseFromString(infer_result.metadataVec[DECODE_INDEX].serializedMetadata)
@@ -117,7 +119,7 @@ def main():
         if not args.speedtest:
             # visualize and save
             img = visualize(img_bgr, personlist)
-            vis_image = img[:OUT_HEIGHT, :OUT_WIDTH, :]
+            vis_image = img[:VIDEO_HEIGHT, :VIDEO_WIDTH, :]
             out.write(vis_image)
         # Save key point information to JSON file
         for i, _ in enumerate(range(person_num)):

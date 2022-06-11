@@ -19,7 +19,6 @@
 #include <math.h>
 #include "opencv2/opencv.hpp"
 #include "MxBase/Log/Log.h"
-#include "MxBase/Tensor/TensorBase/TensorBase.h"
 
 using namespace MxBase;
 using namespace MxPlugins;
