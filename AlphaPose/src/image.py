@@ -53,7 +53,7 @@ def main():
     if os.path.exists(image_dir) != 1:
         print("Please create a folder for your test pictures.")
         exit()
-    if len(os.listdir(image_dir)) ==0:
+    if len(os.listdir(image_dir)) == 0:
         print("There are no test pictures in the folder.")
         exit()
     for file_path in os.listdir(image_dir):
