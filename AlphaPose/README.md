@@ -14,8 +14,6 @@ Atlas 200DK
 
 本样例配套的 CANN 版本为 [5.0.5alpha001](https://www.hiascend.com/software/cann/community)。支持的 SDK 版本为 [2.0.4](https://www.hiascend.com/software/Mindx-sdk)。
 
-在 Atlas200DK 上进行环境搭建可参考：[开发板环境搭建](https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_projects/tutorials/200dk开发板环境搭建.md)。
-
 ### 1.3 软件方案介绍
 
 基于 MindX SDK 的 AlphaPose 人体关键点估计业务流程为：待检测视频存放在 live555 服务器上经 mxpi_rtspsrc 拉流插件输入，然后使用视频解码插件 mxpi_videodecoder 将视频解码成图片，再通过图像缩放插件 mxpi_imageresize 将图像缩放至满足行人检测模型要求的输入图像大小要求，缩放后的图像输入行人检测模型推理插件 mxpi_tensorinfer0 得到行人检测结果，本项目开发的 AlphaPose 前处理插件处理行人推理结果，得到满足AlphaPose模型要求的输入图像，AlphaPose 前处理后的图像经过 AlphaPose 模型推理插件 mxpi_tensorinfer1 得到包含人体 17 个关键点信息的 Heatmaps，本项目开发的 AlphaPose 后处理插件处理 AlphaPose 模型推理结果，得到人体关键点位置与置信度信息。最后输出插件 appsink 获取 AlphaPose 后处理插件输出结果，并在外部进行人体姿态可视化描绘与视频编码。
