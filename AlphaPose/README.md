@@ -43,6 +43,7 @@ Atlas 200DK
 ├── build.sh
 ├── image
 │   ├── acctest.png
+│   ├── SDK流程图.png
 │   └── speedtest.png
 ├── models
 │   ├── aipp_192_256_rgb.cfg
@@ -104,7 +105,7 @@ AlphaPose模型后处理插件的输入也有有两个，一个是检测后处�
 | 软件名称            | 版本          |
 | ------------------- | ------------- |
 | MindX SDK           | 2.0.4         |
-| ubuntu              | 18.04.1 LTS   |
+| ubuntu              | 18.04.5 LTS   |
 | Ascend-CANN-toolkit | 5.0.5alpha001 |
 | python              | 3.9.2         |
 
@@ -167,7 +168,7 @@ ATC run success, welcome to the next use.
 
 ### 4.2 AlphaPose 模型转换
 
-第二个模型是 AlphaPose 模型，onnx 模型可通过[地址](https://alphapose-model.obs.cn-north-4.myhuaweicloud.com/AlphaPose/fast_res50_256x192_bs1.onnx)获取。下载后使用模型转换工具 ATC 将 onnx 模型转换为 om 模型。
+第二个模型是 AlphaPose 模型，onnx 模型可通过[地址](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/AlphaPose/model.zip)获取。下载后使用模型转换工具 ATC 将 onnx 模型转换为 om 模型。
 
 模型转换，步骤如下：
 
