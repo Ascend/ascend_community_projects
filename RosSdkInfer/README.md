@@ -71,7 +71,7 @@ $source devel/setup.bash
 
 4、检测环境变量
 
-$echo $ROS_PACKAGE_PATH
+echo  $ROS_PACKAGE_PATH
 
 5、创建功能包
 
@@ -141,6 +141,8 @@ source ~/catkin_ws/devel/setup.bash
 准备好jpg格式的图片放在任意目录下，并且修改my_py_test_server.py中的路径
 
 修改my_py_test_client.py中的图片的读取路径已经图片的保存路径
+
+下载yolov3模型https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/RosSdkInfer/yolov3.rar，并且放于项目models/下
 
 3、运行
 
