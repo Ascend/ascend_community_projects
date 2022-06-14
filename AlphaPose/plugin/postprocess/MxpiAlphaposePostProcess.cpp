@@ -590,7 +590,7 @@ APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds,
         // Delete humans who have more than MATCH_THREAD keypoints overlap and high similarity
         std::vector<int> mergeIds = {};
         DeletePerson(tmpSize, pickId, finalDists, numMatchKeypoints, keypointPreds, keypointScores,
-                    humanIds, humanScores, confidence, mergeIds);
+                     humanIds, humanScores, confidence, mergeIds);
         double maxValue;
         cv::Point maxIdx;
         cv::minMaxLoc(scoresPick, NULL, &maxValue, NULL, &maxIdx);

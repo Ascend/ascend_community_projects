@@ -14,8 +14,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import cv2
 import math
+import cv2
 import numpy as np
 
 YELLOW = (0, 255, 255)
@@ -25,6 +25,7 @@ PURPLE = (255, 0, 255)
 RED = (0, 0, 255)
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
+
 
 def visualize_fast(frame, result):
     line_pair = [
@@ -38,7 +39,8 @@ def visualize_fast(frame, result):
     # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
     point_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),
                 (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),
-                (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255)]
+                (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127),
+                (0, 255, 255)]
     line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
                 (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
                 (77, 222, 255), (255, 156, 127),
@@ -91,7 +93,8 @@ def visualize(frame, result):
     # LHip, RHip, LKnee, Rknee, LAnkle, RAnkle, Neck
     point_color = [(0, 255, 255), (0, 191, 255), (0, 255, 102), (0, 77, 255), (0, 255, 0),
                 (77, 255, 255), (77, 255, 204), (77, 204, 255), (191, 255, 77), (77, 191, 255), (191, 255, 77),
-                (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127), (0, 255, 255)]
+                (204, 77, 255), (77, 255, 204), (191, 77, 255), (77, 255, 191), (127, 77, 255), (77, 255, 127),
+                (0, 255, 255)]
     line_color = [(0, 215, 255), (0, 255, 204), (0, 134, 255), (0, 255, 50),
                 (77, 255, 222), (77, 196, 255), (77, 135, 255), (191, 255, 77), (77, 255, 77),
                 (77, 222, 255), (255, 156, 127),
@@ -115,12 +118,12 @@ def visualize(frame, result):
             if scores[n] > 0.05:
                 point_img = img.copy()
                 part_line[n] = (int(preds[n, 0]), int(preds[n, 1]))
-                cv2.circle(point_img, (part_line[n][0], part_line[n][1]), 2, point_color[n], -1)
+                cv2.circle(point_img, (int(preds[n, 0]), int(preds[n, 1])), 2, point_color[n], -1)
                 # Now create a mask of logo and create its inverse mask also
                 transparency = float(max(0, min(1, scores[n])))
                 img = cv2.addWeighted(point_img, transparency, img, 1-transparency, 0)
             n += 1
-         # Draw limbs
+        # Draw limbs
         for i, (start_pair, end_pair) in enumerate(line_pair):
             if start_pair in part_line and end_pair in part_line:
                 line_img = img.copy()
