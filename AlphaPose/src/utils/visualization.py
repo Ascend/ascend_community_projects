@@ -110,42 +110,42 @@ def visualize(frame, result):
         preds = np.concatenate((preds, middle_preds))
         scores = np.concatenate((scores, middle_scores))
         # Draw keypoints
-        for n in range(scores.shape[0]):
-            if scores[n] <= 0.05:
-                continue
-            point_x, point_y = int(preds[n, 0]), int(preds[n, 1])
-            part_line[n] = (int(point_x), int(point_y))
-            point_img = img.copy()
-            cv2.circle(point_img, (int(point_x), int(point_y)), 2, point_color[n], -1)
-            # Now create a mask of logo and create its inverse mask also
-            transparency = float(max(0, min(1, scores[n])))
-            img = cv2.addWeighted(point_img, transparency, img, 1-transparency, 0)
+        n = 0
+        while n < scores.shape[0]:
+            if scores[n] > 0.05:
+                point_img = img.copy()
+                part_line[n] = (int(preds[n, 0]), int(preds[n, 1]))
+                cv2.circle(point_img, (part_line[n][0], part_line[n][1]), 2, point_color[n], -1)
+                # Now create a mask of logo and create its inverse mask also
+                transparency = float(max(0, min(1, scores[n])))
+                img = cv2.addWeighted(point_img, transparency, img, 1-transparency, 0)
+            n += 1
          # Draw limbs
         for i, (start_pair, end_pair) in enumerate(line_pair):
             if start_pair in part_line and end_pair in part_line:
+                line_img = img.copy()
+                stick_width = (scores[start_pair] + scores[end_pair]) + 1
                 start_point = part_line.get(start_pair)
                 end_point = part_line.get(end_pair)
-                line_img = img.copy()
 
-                coord_x = (start_point[0], end_point[0])
-                coord_y = (start_point[1], end_point[1])
-                coord_mx = np.mean(coord_x)
-                coord_my = np.mean(coord_y)
-                length = ((start_point[1] - end_point[1]) ** 2 +
-                          (start_point[0] - end_point[0]) ** 2) ** 0.5
+                coord_mx = np.mean((start_point[0], end_point[0]))
+                coord_my = np.mean((start_point[1], end_point[1]))
+
+                length = math.sqrt(pow((start_point[1] - end_point[1]), 2) +
+                          pow((start_point[0] - end_point[0]), 2))
                 angle_degrees = math.atan2(start_point[1] - end_point[1], start_point[0] - end_point[0])
                 angle = math.degrees(angle_degrees)
-                stick_width = (scores[start_pair] + scores[end_pair]) + 1
-                polygon = cv2.ellipse2Poly((int(coord_mx), int(coord_my)), (int(length/2),
-                                           int(stick_width)), int(angle), 0, 360, 1)
-                if i < len(line_color):
-                    cv2.fillConvexPoly(line_img, polygon, line_color[i])
-                else:
+                polygon = cv2.ellipse2Poly((math.floor(coord_mx), math.floor(coord_my)),
+                                            (math.floor(length * 0.5), math.floor(stick_width)),
+                                            math.floor(angle), 0, 360, 1)
+                if i >= len(line_color):
                     cv2.line(line_img, start_point, end_point, (255, 255, 255), 1)
-                if n < len(point_color):
-                    transparency = float(max(0, min(1, 0.5 * (scores[start_pair] + scores[end_pair])-0.1)))
                 else:
+                    cv2.fillConvexPoly(line_img, polygon, line_color[i])
+                if n >= len(point_color):
                     transparency = float(max(0, min(1, (scores[start_pair] + scores[end_pair]))))
+                else:
+                    transparency = float(max(0, min(1, 0.5 * (scores[start_pair] + scores[end_pair])-0.1)))
 
                 img = cv2.addWeighted(line_img, transparency, img, 1 - transparency, 0)
     return img
