@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2021 Huawei Technologies Co., Ltd
+# Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,9 +11,9 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.mitations under the License.
+# limitations under the License.
 
-set -e 
+set -e
 
 current_folder="$( cd "$(dirname "$0")" ;pwd -P )"
 
@@ -21,7 +21,7 @@ function build_plugin() {
     build_path=${current_folder}/build
     plugin_path=${MX_SDK_HOME}/lib/plugins
     plugin_name="libmxpi_alphaposepostprocess.so"
-    
+
     if [ -d "$build_path" ]; then
         rm -rf "$build_path"
     else
@@ -31,7 +31,7 @@ function build_plugin() {
     cd "$build_path"
     cmake ..
     make -j4
-    
+
     chmod 440 "$plugin_name"
     if [ -e "${plugin_path}/${plugin_name}" ];
         then rm -rf "${plugin_path}/${plugin_name}"

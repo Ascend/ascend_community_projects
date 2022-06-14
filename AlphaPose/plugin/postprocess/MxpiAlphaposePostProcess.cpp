@@ -399,6 +399,50 @@ static void PoseMergeFast(const cv::Mat &predsPick, const std::vector<cv::Mat> &
 }
 
 /**
+ * @brief Delete the selected person
+ * @param tmpSize - the number of person now
+ * @param pickId - The person id picked
+ * @param keypointPreds - Source data containing the information of keypoints position
+ * @param keypointScores - Source data containing the information of keypoins score
+ * @param humanIds - A collection of person ids
+ * @param humanScores - A collection of the information of person's score
+ * @param confidence - A collection of the confidece of person
+ * @param mergeIds - A collection of the pose to merge
+ */
+static void DeletePerson(int tmpSize, int pickId,
+                         std::vector<float> &finalDists, std::vector<int> &numMatchKeypoints,
+                         std::vector<cv::Mat> &keypointPreds, std::vector<cv::Mat> &keypointScores,
+                         std::vector<int> &humanIds, std::vector<float> &humanScores,
+                         std::vector<float> &confidence, std::vector<int> &mergeIds)
+{
+    int count = 0;
+    float gma = 22.48;
+    for (int i = 0; i < tmpSize; i++) {
+        if ((finalDists[i] > gma)||(numMatchKeypoints[i] > MATCH_THREAD)) {
+            int deleteId = i - count;
+            int mergeId = humanIds[deleteId];
+            mergeIds.push_back(mergeId);
+            keypointPreds.erase(keypointPreds.begin() + deleteId);
+            keypointScores.erase(keypointScores.begin() + deleteId);
+            humanIds.erase(humanIds.begin() + deleteId);
+            humanScores.erase(humanScores.begin() + deleteId);
+            confidence.erase(confidence.begin() + deleteId);
+            count ++;
+        }
+    }
+    if (mergeIds.size() == 0) {
+        int deleteId = pickId;
+        int mergeId = humanIds[deleteId];
+        mergeIds.push_back(mergeId);
+        keypointPreds.erase(keypointPreds.begin() + deleteId);
+        keypointScores.erase(keypointScores.begin() + deleteId);
+        humanIds.erase(humanIds.begin() + deleteId);
+        humanScores.erase(humanScores.begin() + deleteId);
+        confidence.erase(confidence.begin() + deleteId);
+    }
+}
+
+/**
  * @brief Get final pose
  * @param maxValue - The max value of picked object's keypoints scores
  * @param confidencePick - The confidence of picked object
@@ -499,24 +543,15 @@ APP_ERROR MxpiAlphaposePostProcess::ExtractKeypointsInfo(const std::vector<std::
  * @param personScores - Target data containing the information of person's score
  * @return APP_ERROR
 */
-APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds,
-                                            std::vector<cv::Mat> &keypointScores,
-                                            std::vector<std::vector<float> > &objectBoxes,
-                                            std::vector<cv::Mat> &finalPoses,
-                                            std::vector<cv::Mat> &finalScores,
-                                            std::vector<float> &personScores)
+APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds, std::vector<cv::Mat> &keypointScores,
+                                            std::vector<std::vector<float> > &objectBoxes, std::vector<cv::Mat> &finalPoses,
+                                            std::vector<cv::Mat> &finalScores, std::vector<float> &personScores)
 {
-    float gma = 22.48;
     float alpha = 0.1;
     int batchNum = keypointScores.size();
-    std::vector<float> confidence(batchNum);
-    std::vector<float> boxWidth(batchNum);
-    std::vector<float> boxHeight(batchNum);
-    std::vector<float> refDists(batchNum);
-    std::vector<float> humanScores(batchNum);
-    std::vector<int> humanIds(batchNum);
-    std::vector<float> finalDists(batchNum);
-    std::vector<int> numMatchKeypoints(batchNum);
+    std::vector<float> confidence(batchNum), boxWidth(batchNum), boxHeight(batchNum);
+    std::vector<float> refDists(batchNum), humanScores(batchNum), finalDists(batchNum);
+    std::vector<int> humanIds(batchNum), numMatchKeypoints(batchNum);
     for (int i = 0; i < batchNum; i++) {
         for (int j = 0; j < keypointScores[i].rows; j++) {
             float *ptr = keypointScores[i].ptr<float>(j);
@@ -554,47 +589,16 @@ APP_ERROR MxpiAlphaposePostProcess::PoseNms(std::vector<cv::Mat> &keypointPreds,
         PCKMatch(pickId, refDist, keypointPreds, numMatchKeypoints);
         // Delete humans who have more than MATCH_THREAD keypoints overlap and high similarity
         std::vector<int> mergeIds = {};
-        std::vector<int> deleteIds = {};
-        int count = 0;
-        for (int i = 0; i < tmpSize; i++) {
-            if ((finalDists[i] > gma)||(numMatchKeypoints[i] > MATCH_THREAD)) {
-                int deleteId = i - count;
-                int mergeId = humanIds[deleteId];
-                mergeIds.push_back(mergeId);
-                keypointPreds.erase(keypointPreds.begin() + deleteId);
-                keypointScores.erase(keypointScores.begin() + deleteId);
-                humanIds.erase(humanIds.begin() + deleteId);
-                humanScores.erase(humanScores.begin() + deleteId);
-                confidence.erase(confidence.begin() + deleteId);
-                count ++;
-            }
-        }
-        if (mergeIds.size() == 0) {
-            int deleteId = pickId;
-            int mergeId = humanIds[deleteId];
-            mergeIds.push_back(mergeId);
-            keypointPreds.erase(keypointPreds.begin() + deleteId);
-            keypointScores.erase(keypointScores.begin() + deleteId);
-            humanIds.erase(humanIds.begin() + deleteId);
-            humanScores.erase(humanScores.begin() + deleteId);
-            confidence.erase(confidence.begin() + deleteId);
-        }
-
+        DeletePerson(tmpSize, pickId, finalDists, numMatchKeypoints, keypointPreds, keypointScores,
+                    humanIds, humanScores, confidence, mergeIds);
         double maxValue;
         cv::Point maxIdx;
         cv::minMaxLoc(scoresPick, NULL, &maxValue, NULL, &maxIdx);
         if (maxValue >= SCORE_THREAD) {
             cv::Mat mergePose(KEY_POINTS_NUM, POSE_COORD_NUM, CV_32FC1, Scalar(0));
             cv::Mat mergeScore(KEY_POINTS_NUM, SCORE_COORD_NUM, CV_32FC1, Scalar(0));
-            if (mergeIds.size() == 1) {
-                mergePose = originKeypointPreds[mergeIds[0]].clone();
-                mergeScore = originKeypointScores[mergeIds[0]].clone();
-            } else {
-                PoseMergeFast(predsPick, originKeypointPreds, originKeypointScores,
-                              refDist, mergeIds, mergePose, mergeScore);
-            }
-            GetFinalPose(maxValue, confidencePick, mergePose,
-                         mergeScore, finalPoses, finalScores, personScores);
+            PoseMergeFast(predsPick, originKeypointPreds, originKeypointScores, refDist, mergeIds, mergePose, mergeScore);
+            GetFinalPose(maxValue, confidencePick, mergePose, mergeScore, finalPoses, finalScores, personScores);
         }
     }
     return APP_ERR_OK;

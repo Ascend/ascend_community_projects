@@ -1,23 +1,19 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-"""
-
- Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
-
-"""
+# Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import argparse
 import json
 import os
@@ -30,7 +26,7 @@ import numpy as np
 
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, StringVector
-from utils.visualization import visualize
+from utils.visualization import visualize, visualize_fast
 sys.path.append("../proto/")
 import mxpiAlphaposeProto_pb2 as mxpialphaposeproto
 
@@ -102,8 +98,9 @@ def main():
         personlist = []
         for i, _ in enumerate(range(person_num)):
             person = pose_out_list.personInfoVec[i]
-            keypoints_score = np.zeros((17, 1), dtype = np.float32)
-            keypoints_pre = np.zeros((17, 2), dtype = np.float32)
+            keypoints_num = 17
+            keypoints_score = np.zeros((keypoints_num, 1), dtype = np.float32)
+            keypoints_pre = np.zeros((keypoints_num, 2), dtype = np.float32)
             for j in range(len(person.keyPoints)):
                 keypoints_score[j][0] = person.keyPoints[j].score
                 keypoints_pre[j][0] = person.keyPoints[j].x
@@ -112,7 +109,7 @@ def main():
             personlist.append({
                 'frame': frame_count,
                 'keypoints': keypoints_pre,
-                'kp_score': keypoints_score,
+                'keypoints_score': keypoints_score,
                 'proposal_score': score,
             })
         # Whether to conduct speed tests
@@ -124,7 +121,7 @@ def main():
         # Save key point information to JSON file
         for i, _ in enumerate(range(person_num)):
             personlist[i]['keypoints'] = personlist[i]['keypoints'].tolist()
-            personlist[i]['kp_score'] = personlist[i]['kp_score'].tolist()
+            personlist[i]['keypoints_score'] = personlist[i]['keypoints_score'].tolist()
             personlist[i]['proposal_score'] = personlist[i]['proposal_score'].tolist()
         flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT  # Sets how files are read and written
         modes = stat.S_IWUSR | stat.S_IRUSR  # Set file permissions

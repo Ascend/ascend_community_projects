@@ -136,10 +136,10 @@ export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 
 推理中涉及到第三方软件依赖如下表所示。
 
-| 依赖软件 | 版本       | 说明                           | 使用教程                                                     |
-| -------- | ---------- | ------------------------------ | ------------------------------------------------------------ |
-| live555  | 1.09       | 实现视频转rstp进行推流         | [链接](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/Live555%E7%A6%BB%E7%BA%BF%E8%A7%86%E9%A2%91%E8%BD%ACRTSP%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md) |
-| ffmpeg   | 2021-07-21 | 实现mp4格式视频转为264格式视频 | [链接](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/pc%E7%AB%AFffmpeg%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B.md#https://ffmpeg.org/download.html) |
+| 依赖软件 | 版本       | 说明                           | 使用教程                                                |
+| -------- | ---------- | ------------------------------ | ------------------------------------------------------- |
+| live555  | 1.09       | 实现视频转rstp进行推流         | [链接](https://gitee.com/ascend/mindxsdk-referenceapps) |
+| ffmpeg   | 2021-07-21 | 实现mp4格式视频转为264格式视频 | [链接](https://gitee.com/ascend/mindxsdk-referenceapps) |
 
 
 
@@ -191,7 +191,7 @@ ATC run success, welcome to the next use.
 
 ## 5 准备
 
-按照第 3 小结**软件依赖**安装 live555 和 ffmpeg，按照 [Live555离线视频转RTSP说明文档 ](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99/Live555%E7%A6%BB%E7%BA%BF%E8%A7%86%E9%A2%91%E8%BD%ACRTSP%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)将 mp4 视频转换为 h264 格式。并将生成的 264 格式的视频上传到 `live/mediaServer` 目录下，然后修改 `AlphaPose/pipeline` 目录下的 `video.pipeline` 文件中 mxpi_rtspsrc0 的内容。
+按照第 3 小结**软件依赖**安装 live555 和 ffmpeg，按照 [Live555离线视频转RTSP说明文档 ](https://gitee.com/ascend/mindxsdk-referenceapps)将 mp4 视频转换为 h264 格式。并将生成的 264 格式的视频上传到 `live/mediaServer` 目录下，然后修改 `AlphaPose/pipeline` 目录下的 `video.pipeline` 文件中 mxpi_rtspsrc0 的内容。
 
 ```
         "mxpi_rtspsrc0": {
@@ -248,9 +248,7 @@ bash run.sh image
 bash run.sh video --speedtest
 ```
 
-结果将如下图所示，终端会每 10 帧打印一次当前帧数，前 10 帧的运行时间以及前10帧的平均帧率。
-
-![性能测试结果](./image/speedtest.png)
+命令运行后终端会每 10 帧打印一次当前帧数，前 10 帧的运行时间以及前10帧的平均帧率。经测试，性能可以达到 19 fps 左右，满足性能要求。
 
 [^注]: 输入视频帧率应高于25，否则无法发挥全部性能。且由于 Alphapose 人体关键点估计是一种自上而下的方式，所以实际推理速度与视频中的人数存在负相关关系，即人数越多，推理用时越多，速度越慢。上述展示的推理速度是在视频帧大小为 720*1280，且视频中只有一个人的条件下所得到的性能。
 
@@ -278,7 +276,7 @@ bash run.sh video --speedtest
     └── video.py
     ```
 
-    
+
 
 3.  执行第 6 小节 **编译与运行** 中的步骤 1 至步骤 3 完成准备工作，进入 `AlphaPose` 目录，在 `AlphaPose` 目录下执行命令：
 
@@ -286,9 +284,7 @@ bash run.sh video --speedtest
     bash run.sh evaluate
     ```
 
-    命令执行结束后输出 COCO 格式的评测结果，并生成 val2017_keypoint_detect_result.json 检测结果文件。输出结果如下图所示：
-    ![精度测试结果](./image/acctest.png)
-
+    命令执行结束后输出 COCO 格式的评测结果，并生成 val2017_keypoint_detect_result.json 检测结果文件。经测试，在coco验证集上的 mAP 为 0.732，满足精度要求。
 
 
 ## 8 常见问题
