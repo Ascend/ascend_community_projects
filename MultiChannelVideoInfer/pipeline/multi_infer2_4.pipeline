@@ -1,0 +1,389 @@
+{
+    "inferofflinevideo": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "mxpi_rtspsrc0": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "0"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder0"
+        },
+        "mxpi_rtspsrc1": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "1"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder1"
+        },
+        "mxpi_rtspsrc2": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "2"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder2"
+        },
+        "mxpi_rtspsrc3": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "3"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder3"
+        },
+        "mxpi_rtspsrc4": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "4"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder4"
+        },
+        "mxpi_rtspsrc5": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "5"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder5"
+        },
+        "mxpi_rtspsrc6": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "6"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder6"
+        },
+        "mxpi_rtspsrc7": {
+            "props": {
+                "rtspUrl": "rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "7"
+            },
+            "factory": "mxpi_rtspsrc",
+            "next": "mxpi_videodecoder7"
+        },
+        "mxpi_videodecoder0": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "0"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe0"
+        },
+        "mxpi_videodecoder1": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "1"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe1"
+        },
+        "mxpi_videodecoder2": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "2"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe2"
+        },
+        "mxpi_videodecoder3": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "3"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe3"
+        },
+        "mxpi_videodecoder4": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "4"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe4"
+        },
+        "mxpi_videodecoder5": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "5"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe5"
+        },
+        "mxpi_videodecoder6": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "6"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe6"
+        },
+        "mxpi_videodecoder7": {
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12",
+                "deviceId": "0",
+                "vdecChannelId": "7"
+            },
+            "factory": "mxpi_videodecoder",
+            "next": "mxpi_skipframe7"
+        },
+        "mxpi_skipframe0":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial0:0",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_skipframe1":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial0:1",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_skipframe2":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial1:0",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_skipframe3":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial1:1",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_skipframe4":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial2:0",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_skipframe5":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial2:1",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_skipframe6":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial3:0",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_skipframe7":{
+            "factory":"mxpi_skipframe",
+            "next":"mxpi_parallel2serial3:1",
+            "props":{
+                "frameNum":"2"
+            }
+        },
+        "mxpi_parallel2serial0":{
+            "factory":"mxpi_parallel2serial",
+            "props":{
+                "dataSource":"mxpi_videodecoder0,mxpi_videodecoder1"
+            },
+            "next":"mxpi_imageresize0"
+        },
+        "mxpi_parallel2serial1":{
+            "factory":"mxpi_parallel2serial",
+            "props":{
+                "dataSource":"mxpi_videodecoder2,mxpi_videodecoder3"
+            },
+            "next":"mxpi_imageresize1"
+        },
+        "mxpi_parallel2serial2":{
+            "factory":"mxpi_parallel2serial",
+            "props":{
+                "dataSource":"mxpi_videodecoder4,mxpi_videodecoder5"
+            },
+            "next":"mxpi_imageresize2"
+        },
+        "mxpi_parallel2serial3":{
+            "factory":"mxpi_parallel2serial",
+            "props":{
+                "dataSource":"mxpi_videodecoder6,mxpi_videodecoder7"
+            },
+            "next":"mxpi_imageresize3"
+        },
+        "mxpi_imageresize0": {
+            "props": {
+                "dataSource": "mxpi_parallel2serial0",
+                "resizeHeight": "416",
+                "resizeWidth": "416",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "queue0"
+        },
+        "mxpi_imageresize1": {
+            "props": {
+                "dataSource": "mxpi_parallel2serial1",
+                "resizeHeight": "416",
+                "resizeWidth": "416",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "queue1"
+        },
+        "mxpi_imageresize2": {
+            "props": {
+                "dataSource": "mxpi_parallel2serial2",
+                "resizeHeight": "416",
+                "resizeWidth": "416",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "queue2"
+        },
+        "mxpi_imageresize3": {
+            "props": {
+                "dataSource": "mxpi_parallel2serial3",
+                "resizeHeight": "416",
+                "resizeWidth": "416",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "queue3"
+        },
+        "queue0":{
+            "props":{
+                "max-size-buffers":"500"
+            },
+            "factory":"queue",
+            "next":"mxpi_modelinfer0"
+        },
+        "queue1":{
+            "props":{
+                "max-size-buffers":"500"
+            },
+            "factory":"queue",
+            "next":"mxpi_modelinfer1"
+        },
+        "queue2":{
+            "props":{
+                "max-size-buffers":"500"
+            },
+            "factory":"queue",
+            "next":"mxpi_modelinfer2"
+        },
+        "queue3":{
+            "props":{
+                "max-size-buffers":"500"
+            },
+            "factory":"queue",
+            "next":"mxpi_modelinfer3"
+        },
+        "mxpi_modelinfer0": {
+            "props": {
+                "dataSource": "mxpi_imageresize0",
+                "modelPath": "./models/yolov3/yolov3_tf_bs1_fp16.om",
+                "postProcessConfigPath": "./models/yolov3/yolov3_tf_bs1_fp16.cfg",
+                "labelPath": "./models/yolov3/coco.names",
+                "postProcessLibPath": "libMpYOLOv3PostProcessor.so",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_modelinfer",
+            "next": "mxpi_dataserialize0"
+        },
+        "mxpi_modelinfer1": {
+            "props": {
+                "dataSource": "mxpi_imageresize1",
+                "modelPath": "./models/yolov3/yolov3_tf_bs1_fp16.om",
+                "postProcessConfigPath": "./models/yolov3/yolov3_tf_bs1_fp16.cfg",
+                "labelPath": "./models/yolov3/coco.names",
+                "postProcessLibPath": "libMpYOLOv3PostProcessor.so",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_modelinfer",
+            "next": "mxpi_dataserialize1"
+        },
+        "mxpi_modelinfer2": {
+            "props": {
+                "dataSource": "mxpi_imageresize2",
+                "modelPath": "./models/yolov3/yolov3_tf_bs1_fp16.om",
+                "postProcessConfigPath": "./models/yolov3/yolov3_tf_bs1_fp16.cfg",
+                "labelPath": "./models/yolov3/coco.names",
+                "postProcessLibPath": "libMpYOLOv3PostProcessor.so",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_modelinfer",
+            "next": "mxpi_dataserialize2"
+        },
+        "mxpi_modelinfer3": {
+            "props": {
+                "dataSource": "mxpi_imageresize3",
+                "modelPath": "./models/yolov3/yolov3_tf_bs1_fp16.om",
+                "postProcessConfigPath": "./models/yolov3/yolov3_tf_bs1_fp16.cfg",
+                "labelPath": "./models/yolov3/coco.names",
+                "postProcessLibPath": "libMpYOLOv3PostProcessor.so",
+                "deviceId": "0"
+            },
+            "factory": "mxpi_modelinfer",
+            "next": "mxpi_dataserialize3"
+        },
+        "mxpi_dataserialize0": {
+            "props": {
+                "outputDataKeys": "mxpi_modelinfer0"
+            },
+            "factory": "mxpi_dataserialize",
+            "next": "mxpi_parallel2serial4:0"
+        },
+        "mxpi_dataserialize1": {
+            "props": {
+                "outputDataKeys": "mxpi_modelinfer1"
+            },
+            "factory": "mxpi_dataserialize",
+            "next": "mxpi_parallel2serial4:1"
+        },
+        "mxpi_dataserialize2": {
+            "props": {
+                "outputDataKeys": "mxpi_modelinfer2"
+            },
+            "factory": "mxpi_dataserialize",
+            "next": "mxpi_parallel2serial4:2"
+        },
+        "mxpi_dataserialize3": {
+            "props": {
+                "outputDataKeys": "mxpi_modelinfer3"
+            },
+            "factory": "mxpi_dataserialize",
+            "next": "mxpi_parallel2serial4:3"
+        },
+        "mxpi_parallel2serial4":{
+            "factory":"mxpi_parallel2serial",
+            "next":"appsink0"
+        },
+        "appsink0": {
+            "props": {
+                "blocksize": "409600000"
+                },
+            "factory": "appsink"
+        }
+    }
+}
