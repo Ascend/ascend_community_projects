@@ -42,39 +42,39 @@ Atlas 200DK
 ├── README.md
 ├── build.sh
 ├── image
-│   ├── acctest.png
-│   ├── SDK流程图.png
-│   └── speedtest.png
+│   ├── acctest.png
+│   ├── SDK流程图.png
+│   └── speedtest.png
 ├── models
-│   ├── aipp_192_256_rgb.cfg
-│   ├── aipp_yolov3_416_416.aippconfig
-│   ├── yolov3.names
-│   └── yolov3_tf_bs1_fp16.cfg
+│   ├── aipp_192_256_rgb.cfg
+│   ├── aipp_yolov3_416_416.aippconfig
+│   ├── yolov3.names
+│   └── yolov3_tf_bs1_fp16.cfg
 ├── pipeline
-│   ├── evaluate.pipeline
-│   ├── image.pipeline
-│   └── video.pipeline
+│   ├── evaluate.pipeline
+│   ├── image.pipeline
+│   └── video.pipeline
 ├── plugin
-│   ├── postprocess
-│   │   ├── CMakeLists.txt
-│   │   ├── MxpiAlphaposePostProcess.cpp
-│   │   ├── MxpiAlphaposePostProcess.h
-│   │   └── build.sh
-│   └── preprocess
-│       ├── CMakeLists.txt
-│       ├── MxpiAlphaposePreProcess.cpp
-│       ├── MxpiAlphaposePreProcess.h
-│       └── build.sh
+│   ├── postprocess
+│   │   ├── CMakeLists.txt
+│   │   ├── MxpiAlphaposePostProcess.cpp
+│   │   ├── MxpiAlphaposePostProcess.h
+│   │   └── build.sh
+│   └── preprocess
+│       ├── CMakeLists.txt
+│       ├── MxpiAlphaposePreProcess.cpp
+│       ├── MxpiAlphaposePreProcess.h
+│       └── build.sh
 ├── proto
-│   ├── CMakeLists.txt
-│   ├── build.sh
-│   └── mxpiAlphaposeProto.proto
+│   ├── CMakeLists.txt
+│   ├── build.sh
+│   └── mxpiAlphaposeProto.proto
 ├── run.sh
 └── src
     ├── evaluate.py
     ├── image.py
     ├── utils
-    │   └── visualization.py
+    │   └── visualization.py
     └── video.py
 ```
 
@@ -90,13 +90,20 @@ AlphaPose模型前处理插件的输入有两个，一个是视频解码插件�
 2.  读取检测后处理插件输出的图像帧中人体的位置信息，根据该位置信息计算人体中心的位置与人体所占面积的宽高。
 3.  根据前面两个步骤所获得的信息，对第一步的 RGB 图像进行放射变换。
 
-AlphaPose模型后处理插件的输入也有有两个，一个是检测后处理插件输出的图像帧中人体的位置信息，一个是AlphaPose模型推理插件输出的张量，包含包含图像帧中检测到的所有人体 17 个关键点信息的 Heatmaps。后处理插件的整体流程为：
+AlphaPose模型后处理插件的输入也有两个，一个是检测后处理插件输出的图像帧中人体的位置信息，一个是AlphaPose模型推理插件输出的张量，包含图像帧中检测到的所有人体 17 个关键点信息的 Heatmaps。后处理插件的整体流程为：
 
 1.  读取检测后处理插件输出的图像帧中人体的位置信息，根据该位置信息计算人体中心的位置与人体所占面积的宽高。
-2.  读取检测AlphaPose模型推理插件输出的包含包含图像帧中检测到的所有人体 17 个关键点信息的 Heatmaps，寻找每张 Heatmap 中的最大值作为该关键点的得分，最大值的位置作为该关键点在 Heatmap 中的位置，然后再结合第一步的信息通过放射变换获取该关键点在原图上的坐标。
+2.  读取检测AlphaPose模型推理插件输出的包含图像帧中检测到的所有人体 17 个关键点信息的 Heatmaps，寻找每张 Heatmap 中的最大值作为该关键点的得分，最大值的位置作为该关键点在 Heatmap 中的位置，然后再结合第一步的信息通过放射变换获取该关键点在原图上的坐标。
 3.  进行PoseNMS，通过姿态距离+空间距离作为度量标准，设定阈值，筛选出单一的姿态。
 
+###  1.6 特性及适应场景
 
+本案例可以满足人体关键点估计内容，但同时对输入的图像或视频有以下限制：
+
+1.  输入图像要求为 jpg、jpeg、JPG、JPEG编码格式。
+2.  输入视频要求为 h264 或 h265 的格式。
+3.  当输入图片或视频帧中中的人员过于密集，会影响检测效果。
+4.  适用于单视频流输入。
 
 ## 2 环境依赖
 
@@ -111,35 +118,26 @@ AlphaPose模型后处理插件的输入也有有两个，一个是检测后处�
 
 在编译运行项目前，需要设置环境变量：
 
-```shell
-export LD_LIBRARY_PATH=/var/davinci/driver/lib64:/var/davinci/driver/lib64/common:/var/davinci/driver/lib64/driver:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/usr/local/Ascend/ascend-toolkit/latest/lib64:/usr/local/Ascend/ascend-toolkit/latest/compiler/lib64/plugin/opskernel:/usr/local/Ascend/ascend-toolkit/latest/compiler/lib64/plugin/nnengine:$LD_LIBRARY_PATH
-export PYTHONPATH=/usr/local/Ascend/ascend-toolkit/latest/python/site-packages:/usr/local/Ascend/ascend-toolkit/latest/opp/op_impl/built-in/ai_core/tbe:$PYTHONPATH
-export PATH=/usr/local/Ascend/ascend-toolkit/latest/bin:/usr/local/Ascend/ascend-toolkit/latest/compiler/ccec_compiler/bin:$PATH
-export ASCEND_AICPU_PATH=/usr/local/Ascend/ascend-toolkit/latest
-export ASCEND_OPP_PATH=/usr/local/Ascend/ascend-toolkit/latest/opp
-export TOOLCHAIN_HOME=/usr/local/Ascend/ascend-toolkit/latest/toolkit
-export ASCEND_AUTOML_PATH=/usr/local/Ascend/ascend-toolkit/latest/tools
+-   MindX SDK 环境变量介绍
 
-export MX_SDK_HOME=${SDK安装路径}/mxVision
-export GST_PLUGIN_SCANNER="${MX_SDK_HOME}/opensource/libexec/gstreamer-1.0/gst-plugin-scanner"
-export GST_PLUGIN_PATH="${MX_SDK_HOME}/opensource/lib/gstreamer-1.0":"${MX_SDK_HOME}/lib/plugins"
-export LD_LIBRARY_PATH="${MX_SDK_HOME}/lib/modelpostprocessors":"${MX_SDK_HOME}/lib":"${MX_SDK_HOME}/opensource/lib":"${MX_SDK_HOME}/opensource/lib64":${LD_LIBRARY_PATH}
-export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
-```
+    ```shell
+    . ${SDK-path}/set_env.sh
+    ```
 
-[^注]: 其中 **${SDK安装路径}** 替换为用户的 SDK 安装路径，install_path 替换为开发套件包所在路径。LD_LIBRARY_PATH 用以加载开发套件包中 lib 库。
+-   CANN 环境变量介绍
 
-
+    ```shell
+    . ${ascend-toolkit-path}/set_env.sh
+    ```
 
 ## 3 软件依赖
 
 推理中涉及到第三方软件依赖如下表所示。
 
-| 依赖软件 | 版本       | 说明                           | 使用教程                                                |
-| -------- | ---------- | ------------------------------ | ------------------------------------------------------- |
-| live555  | 1.09       | 实现视频转rstp进行推流         | [链接](https://gitee.com/ascend/mindxsdk-referenceapps) |
-| ffmpeg   | 2021-07-21 | 实现mp4格式视频转为264格式视频 | [链接](https://gitee.com/ascend/mindxsdk-referenceapps) |
+| 依赖软件 | 版本       | 说明                             | 使用教程                                                     |
+| -------- | ---------- | -------------------------------- | ------------------------------------------------------------ |
+| live555  | 1.09       | 实现视频转 rstp 进行推流         | [链接](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/参考资料/Live555离线视频转RTSP说明文档.md) |
+| ffmpeg   | 2022-06-27 | 实现 mp4 格式视频转为264格式视频 | [链接](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/参考资料/pc端ffmpeg安装教程.md) |
 
 
 
@@ -191,7 +189,7 @@ ATC run success, welcome to the next use.
 
 ## 5 准备
 
-按照第 3 小结**软件依赖**安装 live555 和 ffmpeg，按照 [Live555离线视频转RTSP说明文档 ](https://gitee.com/ascend/mindxsdk-referenceapps)将 mp4 视频转换为 h264 格式。并将生成的 264 格式的视频上传到 `live/mediaServer` 目录下，然后修改 `AlphaPose/pipeline` 目录下的 `video.pipeline` 文件中 mxpi_rtspsrc0 的内容。
+按照第 3 小结**软件依赖**安装 live555 和 ffmpeg，按照 [Live555离线视频转RTSP说明文档 ](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/参考资料/Live555离线视频转RTSP说明文档.md) 将 mp4 视频转换为 h264 格式。并将生成的 264 格式的视频上传到 `live/mediaServer` 目录下，然后修改 `AlphaPose/pipeline` 目录下的 `video.pipeline` 文件中 mxpi_rtspsrc0 的内容。
 
 ```
         "mxpi_rtspsrc0": {
@@ -208,7 +206,7 @@ ATC run success, welcome to the next use.
 
 ## 6 编译与运行
 
-**步骤1** 按照第2小结 **环境依赖** 中的步骤设置环境变量。
+**步骤1** 按照第 2 小节 **环境依赖** 中的步骤设置环境变量。
 
 **步骤2** 按照第 4 小节 **模型转换** 中的步骤获得 om 模型文件，放置在 `AlphaPose/models` 目录下。
 
@@ -297,5 +295,15 @@ bash run.sh video --speedtest
 
 **解决方案：**
 
-检查 `AlphaPose/src/video.py` 中的 `VIDEO_WIDTH` 和 `VIDEO_HEIGHT` 参数，确保这两参数的值是输入的 .264 视频的宽和高。
+1.  检查 `AlphaPose/src/video.py` 中的 `VIDEO_WIDTH` 和 `VIDEO_HEIGHT` 参数，确保这两参数的值是输入的 .264 视频的宽和高。
+2.  去掉运行命令的 `--speedtest` 选项，在进行性能测试时将不进行视频编码操作。
 
+#### 8.2 视频流推理自动退出
+
+**问题描述：**
+
+运行视频流推理时，一个视频流推理到最后会出现提示 `Please check the rtspUrl of the video is correct or the video exists`，然后自动退出。
+
+**解决方案：**
+
+这是因为没有做循环推流，只是有限的视频流，当有限的视频流结束时，将收不到推流，即断流。可以参考  [Live555离线视频转RTSP说明文档 ](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/参考资料/Live555离线视频转RTSP说明文档.md)  设置循环推流。
