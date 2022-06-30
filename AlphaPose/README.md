@@ -295,7 +295,7 @@ bash run.sh video --speedtest
 
 **解决方案：**
 
-1.  检查 `AlphaPose/src/video.py` 中的 `VIDEO_WIDTH` 和 `VIDEO_HEIGHT` 参数，确保这两参数的值是输入的 .264 视频的宽和高。
+1.  检查 `AlphaPose/src/video.py` 中的 `VIDEO_WIDTH` 和 `VIDEO_HEIGHT` 参数，确保这两参数的值是输入的视频的宽和高。
 2.  去掉运行命令的 `--speedtest` 选项，在进行性能测试时将不进行视频编码操作。
 
 #### 8.2 视频流推理自动退出
