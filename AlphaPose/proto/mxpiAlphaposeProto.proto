@@ -1,0 +1,28 @@
+syntax = "proto3";
+package mxpialphaposeproto;
+message MxpiMetaHeader
+{
+string parentName = 1;
+int32 memberId = 2;
+string dataSource = 3;
+}
+
+
+message MxpiKeypointInfo
+{
+float x = 1;
+float y = 2;
+float score = 3;
+}
+
+message MxpiPersonInfo
+{
+repeated MxpiMetaHeader headerVec = 1;
+repeated MxpiKeypointInfo keyPoints = 2;
+float confidence = 4;
+}
+
+message MxpiPersonList
+{
+repeated MxpiPersonInfo personInfoVec = 1;
+}
