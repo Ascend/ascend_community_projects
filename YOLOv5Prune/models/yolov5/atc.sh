@@ -1,0 +1,12 @@
+cd ./models/yolov5/
+source env.sh
+atc \
+--model=prune55_t.onnx \
+--framework=5 \
+--output=./prune55_t_rgb \
+--input_format=NCHW \
+--input_shape="images:1,3,512,512" \
+--enable_small_channel=1 \
+--soc_version=Ascend310 \
+--out_nodes="Transpose_260:0;Transpose_308:0;Transpose_356:0" \
+cd - 
