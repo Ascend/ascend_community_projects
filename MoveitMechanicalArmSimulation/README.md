@@ -137,9 +137,5 @@ rosrun moveit_tutorials state_note.py
 
 **步骤3** 在move_group_python_interface_tutorial.py的端口按提示改变机械臂的状态，并且实时地检测并且写入串口设备
 
-```
-chmod +x state_note.py
-rosrun moveit_tutorials state_note.py
-```
 
-![](../figures/moveit.jpg)
+![](../figures/joint_state.jpg)

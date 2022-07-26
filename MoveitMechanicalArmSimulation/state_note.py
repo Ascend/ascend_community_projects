@@ -52,7 +52,7 @@ if __name__ == '__main__':
   group_name = "panda_arm"
   move_group = moveit_commander.MoveGroupCommander(group_name)
 
-  ser = serial.Serial('/dev/ttyAMA0', 3000000, 8, 'N', 1) # 'COM7', 3000000, bytesize=8, parity='N', stopbits=1
+  ser = serial.Serial('/dev/ttyAMA0', 3000000, 8, 'N', 1)
   flag = ser.is_open
 
   if flag:
@@ -63,7 +63,7 @@ if __name__ == '__main__':
   time_step = 0
   begin_time = datetime.datetime.now()
   one_step = 2
-  
+
   while True:
     cur_time = (datetime.datetime.now() - begin_time).total_seconds()
     if cur_time >= (time_step + one_step):
@@ -71,8 +71,12 @@ if __name__ == '__main__':
       
       joint_goal = move_group.get_current_joint_values()
       print("joint:", joint_goal[0], joint_goal[1], joint_goal[2], joint_goal[3], joint_goal[4], joint_goal[5], joint_goal[6])
-      ser.write("help".encode('utf-8'))
-      print("ok?")
+      # ser.write("help".encode('utf-8'))
+      joint_len = len(joint_goal)
+      for i in range(joint_len):
+        tmp_val = joint_goal[i]
+        str = '%.3f'%tmp_val
+        ser.write(str.encode('utf-8'))
     if ISSIGINTUP:
       ser.close()
       print("Exit")
