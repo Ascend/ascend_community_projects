@@ -21,7 +21,6 @@
 import datetime
 import threading
 import sys
-import copy
 import signal
 from math import pi
 import rospy
