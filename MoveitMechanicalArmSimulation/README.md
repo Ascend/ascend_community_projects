@@ -128,10 +128,9 @@ roslaunch panda_moveit_config demo.launch~/ws_moveit/src/moveit_tutorials/doc/mo
 rosrun moveit_tutorials move_group_python_interface_tutorial.py
 ```
 
-**步骤2** 启动检测节点，把state_note.py拷贝到~/ws_moveit/src/moveit_tutorials/doc/move_group_python_interface/scripts下，改变权限并且运行。
+**步骤2** 启动检测节点，把state_note.py拷贝到~/ws_moveit/src/moveit_tutorials/doc/move_group_python_interface/scripts下，改变添加可执行权限并且运行。
 
 ```
-chmod +x state_note.py
 rosrun moveit_tutorials state_note.py
 ```
 

@@ -64,22 +64,22 @@ if __name__ == '__main__':
         print('Open Error')
         exit()
 
-    time_step = 0
+    TIME_STEP = 0
     begin_time = datetime.datetime.now()
-    one_step = 2
+    ONE_STEP = 2
 
     while True:
         cur_time = (datetime.datetime.now() - begin_time).total_seconds()
-        if cur_time >= (time_step + one_step):
-            time_step = time_step + one_step
+        if cur_time >= (TIME_STEP + ONE_STEP):
+            TIME_STEP = TIME_STEP + ONE_STEP
         
-            joint_goal = move_group.get_current_joint_values()
-            print("joint:", joint_goal[0], joint_goal[1], joint_goal[2], joint_goal[3], joint_goal[4], joint_goal[5], joint_goal[6])
+            joints = move_group.get_current_joint_values()
+            print("joint:", joints[0], joints[1], joints[2], joints[3], joints[4], joints[5], joints[6])
             # write state to uart dev
-            joint_len = len(joint_goal)
+            joint_len = len(joints)
             for i in range(joint_len):
-                tmp_val = joint_goal[i]
-                str = '%.3f'%tmp_val
+                tmp_val = joints[i]
+                str = '%.3f' % tmp_val
                 ser.write(str.encode('utf-8'))
         if ISSIGINTUP:
             ser.close()
