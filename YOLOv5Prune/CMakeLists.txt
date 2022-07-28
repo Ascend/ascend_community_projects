@@ -39,7 +39,7 @@ link_directories(
     ${MX_SDK_HOME}/opensource/lib64/
 )
 
-add_executable(main main_sdk.cpp)
+add_executable(main main.cpp)
 
 target_link_libraries(main glog mxbase plugintoolkit mxpidatatype streammanager cpprest mindxsdk_protobuf opencv_world)
 

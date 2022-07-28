@@ -1,9 +1,17 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2020-2021. All rights reserved.
- * Description: Complete Sample Implementation of Target Detection in C++.
- * Author: MindX SDK
- * Create: 2021
- * History: NA
+# Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
  */
 
 #include <cstring>
@@ -91,11 +99,11 @@ std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
 }
 }
 struct Result{
-    public:
-        float x0,y0,x1,y1;     //box
-        std::string class_name;
-        int class_id;
-        float conf;
+public:
+    float x0,y0,x1,y1;     //box
+    std::string class_name;
+    int class_id;
+    float conf;
 
 };
 cv::Mat letterBox(const cv::Mat& src)
@@ -190,7 +198,6 @@ std::vector<Result> ParseResult(const std::string& result){
     return res;
 }
 void SaveImage(const std::string& result, const cv::Mat src,const std::string& line){
-    // web::json::value jsonText = web::json::value::parse(result);
     auto res = ParseResult(result);
     for(auto it : res){
         cv::Scalar color = cv::Scalar(color_list[it.class_id][0], color_list[it.class_id][1], color_list[it.class_id][2]);
@@ -220,15 +227,25 @@ void SaveTxt(const std::string& result, const std::string& line){
 
 int main(int argc, char* argv[])
 {
+    if(argc < 2){
+        std::string msg = "usage : bash run.sh [image_set] [pipline_file]";
+        cout<<msg;
+        return 1;
+
+    }
+    const std::string image_set_file = argv[1];
+    const std::string pipelineConfigPath = argv[2];
+
+    bool eval = pipelineConfigPath.find("eval") != std::string::npos;
+
     bool save_image = false, save_txt = true, speed = false;
 
-    const std::string imagesetfile = "/home/wangshengke3/VOCdevkit/VOC2007/ImageSets/Main/test.txt";
     double time_min = DBL_MAX;
     double time_max = -DBL_MAX;
     double time_avg = 0;
     long loop_num = 0;
 
-    std::ifstream in(imagesetfile);
+    std::ifstream in(image_set_file);
     std::ofstream *outfile;
     std::string line;
 
@@ -240,7 +257,7 @@ int main(int argc, char* argv[])
     }
 
     int inPluginId = 0;
-    std::string pipelineConfigPath = "pipeline/Sample.pipeline";
+    
     // read pipeline config file
     std::string pipelineConfig = ReadPipelineConfig(pipelineConfigPath);
     if (pipelineConfig == "") {
