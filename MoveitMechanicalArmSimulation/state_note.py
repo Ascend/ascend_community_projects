@@ -78,8 +78,8 @@ if __name__ == '__main__':
             joint_len = len(joints)
             for i in range(joint_len):
                 tmp_val = joints[i]
-                str = '%.3f' % tmp_val
-                ser.write(str.encode('utf-8'))
+                val_str = '%.3f' % tmp_val
+                ser.write(val_str.encode('utf-8'))
         if ISSIGINTUP:
             ser.close()
             print("Exit")
