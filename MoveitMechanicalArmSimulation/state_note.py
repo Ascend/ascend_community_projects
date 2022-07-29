@@ -25,11 +25,6 @@ import signal
 from math import pi
 import rospy
 import moveit_commander
-import moveit_msgs.msg
-import geometry_msgs.msg
-
-from std_msgs.msg import String
-from moveit_commander.conversions import pose_to_list
 import serial
 
 
