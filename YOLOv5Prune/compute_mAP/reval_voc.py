@@ -1,10 +1,13 @@
 """Reval = re-eval. Re-evaluate saved detections."""
 
-import os, sys, argparse
+import os
+import sys
+import argparse
 import numpy as np
 import _pickle as cPickle
 
 from voc_eval import voc_eval
+
 
 def parse_args():
     """
@@ -26,10 +29,12 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 def get_voc_results_file_template(image_set, out_dir = '.'):
     filename = 'det_' + image_set + '_{:s}.txt'
     path = os.path.join(out_dir, filename)
     return path
+
 
 def do_python_eval(devkit_path, year, image_set, classes, output_dir):
     annopath = os.path.join(
@@ -45,18 +50,15 @@ def do_python_eval(devkit_path, year, image_set, classes, output_dir):
         image_set + '.txt')
     cachedir = os.path.join(devkit_path, 'annotations_cache')
     aps = []
-    # The PASCAL VOC metric changed in 2010
-    # use_07_metric = True if int(year) < 2010 else False
-    # print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
     use_07_metric = False
-    print('devkit_path=',devkit_path,', year = ',year)
+    print('devkit_path=', devkit_path,', year = ', year)
 
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
     for i, cls in enumerate(classes):
         if cls == '__background__':
             continue
-        filename = get_voc_results_file_template(image_set,output_dir).format(cls)
+        filename = get_voc_results_file_template(image_set, output_dir).format(cls)
         rec, prec, ap = voc_eval(
             filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.55,
             use_07_metric=use_07_metric)
@@ -84,7 +86,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     output_dir = os.path.abspath(args.output_dir[0])
-    print(output_dir);
+    print(output_dir)
     with open(args.class_file, 'r') as f:
         lines = f.readlines()
 

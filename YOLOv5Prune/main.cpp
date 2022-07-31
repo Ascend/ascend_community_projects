@@ -21,8 +21,9 @@
 #include "MxBase/Log/Log.h"
 #include "MxStream/StreamManager/MxStreamManager.h"
 #include "opencv4/opencv2/opencv.hpp"
-#include "color.h"
-
+const int color_list[20][3] ={{216, 82, 24}, {236, 176, 31}, {125, 46, 141}, {118, 171, 47}, {76, 189, 237}, {238, 19, 46},
+                              {76, 76, 76}, {153, 153, 153}, {255, 0, 0}, {255, 127, 0}, {190, 190, 0},{0, 255, 0}, {0, 0, 255},
+                              {170, 0, 255}, {84, 84, 0}, {84, 170, 0}, {84, 255, 0}, {170, 84, 0}, {170, 170, 0}, {170, 255, 0}}
 
 float pad_w = 0.0, pad_h = 0.0;
 float ratio = 1.0;
@@ -98,17 +99,16 @@ std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
     return pipelineConfig;
 }
 }
-struct Result{
+struct Result
+{
 public:
-    float x0,y0,x1,y1;     //box
+    float x0,y0,x1,y1; 
     std::string class_name;
     int class_id;
     float conf;
-
 };
 cv::Mat letterBox(const cv::Mat& src)
 {
-
 	int in_w = src.cols;
 	int in_h = src.rows;
 	int tar_w = 512;
@@ -120,22 +120,25 @@ cv::Mat letterBox(const cv::Mat& src)
 	pad_w = tar_w - inside_w;
     pad_h = tar_h - inside_h;
 	cv::Mat resize_img;
-	cv::resize(src, resize_img, cv::Size(inside_w, inside_h));  //最小的Resize
+	cv::resize(src, resize_img, cv::Size(inside_w, inside_h));  
 	cv::cvtColor(resize_img, resize_img, cv::COLOR_BGR2RGB);
-	pad_w = pad_w / 2;
-	pad_h = pad_h / 2;
+    const int div = 2;
+	pad_w = pad_w / div;
+	pad_h = pad_h / div;
 
 	int topPad = int(std::round(pad_h - 0.1));
 	int btmPad = int(std::round(pad_h + 0.1));
 	int leftPad = int(std::round(pad_w - 0.1));
 	int rightPad = int(std::round(pad_w + 0.1));
 
-	cv::copyMakeBorder(resize_img, resize_img, topPad, btmPad, leftPad, rightPad, cv::BORDER_CONSTANT, cv::Scalar(0, 135, 0));
+    int b = 0, g = 135, r = 0; 
+	cv::copyMakeBorder(resize_img, resize_img, topPad, btmPad, leftPad, rightPad, cv::BORDER_CONSTANT, cv::Scalar(b, g, r));
     cv::cvtColor(resize_img, resize_img, cv::COLOR_BGR2RGB);
 
 	return resize_img;
 }
-std::vector<Result> ParseResult(const std::string& result){
+std::vector<Result> ParseResult(const std::string& result)
+{
     std::vector<Result> res;
     web::json::value jsonText = web::json::value::parse(result);
     if (jsonText.is_object()) {
@@ -197,14 +200,15 @@ std::vector<Result> ParseResult(const std::string& result){
     }
     return res;
 }
-void SaveImage(const std::string& result, const cv::Mat src,const std::string& line){
+void SaveImage(const std::string& result, const cv::Mat src,const std::string& line)
+{
     auto res = ParseResult(result);
     for(auto it : res){
         cv::Scalar color = cv::Scalar(color_list[it.class_id][0], color_list[it.class_id][1], color_list[it.class_id][2]);
         cv::Rect rect(it.x0, it.y0, it.x1 - it.x0, it.y1 - it.y0);
         cv::rectangle(src, rect, color);
         char text[256];
-        sprintf(text, "%s %.1f%%", it.class_name.c_str(), it.conf * 100);
+        sprintf(text, "%s %.1f%", it.class_name.c_str(), it.conf);
         int baseLine = 0;
         cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
         cv::rectangle(src, cv::Rect(cv::Point(it.x0, it.y0), cv::Size(label_size.width, label_size.height + baseLine)), color, -1);
@@ -212,7 +216,8 @@ void SaveImage(const std::string& result, const cv::Mat src,const std::string& l
     }
     cv::imwrite("./image_result/"+line+".jpg", src);  
 }
-void SaveTxt(const std::string& result, const std::string& line){
+void SaveTxt(const std::string& result, const std::string& line)
+{
     // web::json::value jsonText = web::json::value::parse(result);
     auto res = ParseResult(result);
     for(auto it : res){
