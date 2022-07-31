@@ -3,7 +3,7 @@ source env.sh
 atc \
 --model=prune55_t.onnx \
 --framework=5 \
---output=./prune55_t_rgb \
+--output=./prune55_t \
 --input_format=NCHW \
 --input_shape="images:1,3,512,512" \
 --enable_small_channel=1 \

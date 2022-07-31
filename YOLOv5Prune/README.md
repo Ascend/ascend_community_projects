@@ -199,17 +199,20 @@ ATC run success, welcome to the next use.
 
 ## 5 编译与运行
 
-**步骤1** 按照第2小结**环境依赖**中的步骤设置环境变量。
+**步骤1** 修改run.sh中的环境变量为正确的路径。
 
-**步骤2** 按照第 4 小节 **模型获取** 中的步骤获得模型文件，放置对应目录下。
+**步骤2** 按照第 4 小节**模型获取** 中的步骤获得模型文件，放置对应目录下。
 
 **步骤3** 运行。执行命令：
 
 ```shell
 #task_type为detect、speed或eval
-#image_set是一个文本文件，每一行是一个不包含后缀的图片名，eval时使用，VOCdevkit/VOC2007/ImageSets/Main/test.txt
-#path为image_set中图片所在目录，例如VOCdevkit/VOC2007/JPEGImages/
-bash run.sh [task_type][image_path][image_set][path]
-
+#task_type为detect或speed时：
+#image_set是一个文本文件，每一行是一个不包含后缀的图片名，例如，VOCdevkit/VOC2007/ImageSets/Main/test.txt
+#image_dir为image_set中图片所在目录，例如，VOCdevkit/VOC2007/JPEGImages/
+bash run.sh [task_type][image_set][image_dir]
+#task_type为eval时：
+#dataset_path为标准VOC数据集路径，例如，./data/VOCdevkit/
+bash run.sh [task_type][dataset_path]
 ```
 

@@ -11,7 +11,7 @@
       "props": {
         "parentName": "mxpi_imagedecoder0",
         "modelPath": "models/yolov5/prune55_t.om",
-        "postProcessConfigPath": "models/yolov5/yolov5.cfg",
+        "postProcessConfigPath": "models/yolov5/yolov5_eval.cfg",
         "labelPath": "models/yolov5/voc.names",
         "postProcessLibPath": "libMpYOLOv5PostProcessor.so"
       },

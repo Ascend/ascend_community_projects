@@ -24,8 +24,8 @@
 #include "color.h"
 
 
-float pad_w, pad_h;
-float ratio;
+float pad_w = 0.0, pad_h = 0.0;
+float ratio = 1.0;
 
 
 namespace {
@@ -227,18 +227,27 @@ void SaveTxt(const std::string& result, const std::string& line){
 
 int main(int argc, char* argv[])
 {
-    if(argc < 2){
-        std::string msg = "usage : bash run.sh [image_set] [pipline_file]";
-        cout<<msg;
+    if(argc < 3){
+        std::string msg = "usage : bash run.sh [task_type][image_set][image_dir] or bash run.sh eval [dataset_path]";
+        std::cout<<msg<<std::endl;
         return 1;
-
     }
-    const std::string image_set_file = argv[1];
-    const std::string pipelineConfigPath = argv[2];
+    const std::string task = argv[1];
+    std::string image_set_file = argv[2];
+    std::string image_set_path = argv[3];
+    std::string pipelineConfigPath = "";
+    if(task == "eval"){
+        pipelineConfigPath = "pipeline/eval.pipeline";
+    }else if(task == "speed" || task == "detect"){
+        pipelineConfigPath = "pipeline/detect.pipeline";
+    }else {
+        std::cout<<"Undefined task!"<<std::endl;
+        return 1;
+    }
+    bool save_image = false, save_txt = false;
 
-    bool eval = pipelineConfigPath.find("eval") != std::string::npos;
-
-    bool save_image = false, save_txt = true, speed = false;
+    if(task == "eval") save_txt = true;
+    if(task == "detect") save_image = true;
 
     double time_min = DBL_MAX;
     double time_max = -DBL_MAX;
@@ -246,7 +255,6 @@ int main(int argc, char* argv[])
     long loop_num = 0;
 
     std::ifstream in(image_set_file);
-    std::ofstream *outfile;
     std::string line;
 
     if(save_image){
@@ -282,22 +290,26 @@ int main(int argc, char* argv[])
 
         while(getline(in, line)){
             loop_num++;
-
             std::string streamName = "detection";
-            std::string img_path = "/home/wangshengke3/VOCdevkit/VOC2007/JPEGImages/"+line+".jpg";
-
-            cv::Mat src = cv::imread(img_path);
-            cv::Mat img = letterBox(src);
-            cv::imwrite("./tmp.jpg", img);
-  
+            std::string img_path = image_set_path+'/'+line+".jpg";
             MxStream::MxstDataInput dataBuffer;
-            ret = ReadFile("./tmp.jpg", dataBuffer);
-
+            cv::Mat src;
+            auto start = clock();
+            if(task == "eval"){
+                src = cv::imread(img_path);
+                cv::Mat img = letterBox(src);
+                cv::imwrite("./tmp.jpg", img);
+                ret = ReadFile("./tmp.jpg", dataBuffer);
+            }else if(task == "detect"){
+                src = cv::imread(img_path);
+                ret = ReadFile(img_path,dataBuffer);
+            }else{
+                ret = ReadFile(img_path,dataBuffer);
+            }
             if (ret != APP_ERR_OK) {
                 LogError << GetError(ret) << "Failed to read image file.";
                 return ret;
             }
-            auto start = clock();
             // send data into stream
             ret = mxStreamManager.SendData(streamName, inPluginId, dataBuffer);
             if (ret != APP_ERR_OK) {
@@ -319,7 +331,6 @@ int main(int argc, char* argv[])
             time_max = (std::max)(time_max, time);
             time_avg += time;
             std::string result = std::string((char *)output->dataPtr, output->dataSize);
-            // LogInfo <<"Results:" << result;
 
             if(save_image == true)
                 SaveImage(result, src, line);
@@ -331,14 +342,15 @@ int main(int argc, char* argv[])
             dataBuffer.dataPtr = nullptr;                         
         }
         time_avg /= loop_num;
-        char msg[256];
-        sprintf(msg,"image count = %ld\n min = %.2fms  max = %.2fms  avg = %.2fms \n avg fps = %.2f", loop_num, time_min *1000, time_max*1000, time_avg*1000, 1000/time_max*1000);
-        LogInfo<<"推理时间统计：";
-        LogInfo<<msg;
     }
 
     in.close();
-    mxStreamManager.DestroyAllStreams();                   
+    mxStreamManager.DestroyAllStreams();  
+
+    char msg[256];
+    sprintf(msg,"image count = %ld \nmin = %.2fms  max = %.2fms  avg = %.2fms \navg fps = %.2f fps\n", loop_num, time_min *1000, time_max*1000, time_avg*1000, 1000/(time_avg*1000));
+    std::cout<<"时间统计：\n";
+    std::cout<< msg;
 
     return 0;
 }
