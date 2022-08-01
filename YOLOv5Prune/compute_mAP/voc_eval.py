@@ -145,26 +145,26 @@ def voc_eval(detpath,
     tp = np.zeros(nd)
     fp = np.zeros(nd)
     for d in range(nd):
-        recall = class_recs[image_ids[d]]
+        recall = class_recs.get(image_ids[d])
         bb = bounding_box[d, :].astype(float)
         ovmax = -np.inf
-        BBGT = recall['bbox'].astype(float)
+        bounding_box_gt = recall['bbox'].astype(float)
 
-        if BBGT.size > 0:
+        if bounding_box_gt.size > 0:
             # compute overlaps
             # intersection
-            ixmin = np.maximum(BBGT[:, 0], bb[0])
-            iymin = np.maximum(BBGT[:, 1], bb[1])
-            ixmax = np.minimum(BBGT[:, 2], bb[2])
-            iymax = np.minimum(BBGT[:, 3], bb[3])
+            ixmin = np.maximum(bounding_box_gt[:, 0], bb[0])
+            iymin = np.maximum(bounding_box_gt[:, 1], bb[1])
+            ixmax = np.minimum(bounding_box_gt[:, 2], bb[2])
+            iymax = np.minimum(bounding_box_gt[:, 3], bb[3])
             iw = np.maximum(ixmax - ixmin + 1., 0.)
             ih = np.maximum(iymax - iymin + 1., 0.)
             inters = iw * ih
 
             # union
             uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
-                   (BBGT[:, 2] - BBGT[:, 0] + 1.) *
-                   (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
+                   (bounding_box_gt[:, 2] - bounding_box_gt[:, 0] + 1.) *
+                   (bounding_box_gt[:, 3] - bounding_box_gt[:, 1] + 1.) - inters)
 
             overlaps = inters / uni
             ovmax = np.max(overlaps)

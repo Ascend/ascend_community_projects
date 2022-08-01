@@ -22,8 +22,8 @@
 #include "MxStream/StreamManager/MxStreamManager.h"
 #include "opencv4/opencv2/opencv.hpp"
 const int color_list[20][3] = { {216, 82, 24}, {236, 176, 31}, {125, 46, 141}, {118, 171, 47}, {76, 189, 237}, {238, 19, 46},
-                                {76, 76, 76}, {153, 153, 153}, {255, 0, 0}, {255, 127, 0}, {190, 190, 0},{0, 255, 0}, {0, 0, 255},
-                                {170, 0, 255}, {84, 84, 0}, {84, 170, 0}, {84, 255, 0}, {170, 84, 0}, {170, 170, 0}, {170, 255, 0}}
+                            {76, 76, 76}, {153, 153, 153}, {255, 0, 0}, {255, 127, 0}, {190, 190, 0}, {0, 255, 0}, {0, 0, 255},
+                            {170, 0, 255}, {84, 84, 0}, {84, 170, 0}, {84, 255, 0}, {170, 84, 0}, {170, 170, 0}, {170, 255, 0}}
 
 float pad_w = 0.0, pad_h = 0.0;
 float ratio = 1.0;
@@ -253,7 +253,7 @@ int run()
         return APP_ERR_COMM_INIT_FAIL;
     }
     MxStream::MxStreamManager mxStreamManager;
-    // init stream manager 
+    // init stream manager
     APP_ERROR ret = mxStreamManager.InitManager();
     if (ret != APP_ERR_OK) {
         LogError << GetError(ret) << "Failed to init Stream manager.";
@@ -308,11 +308,11 @@ int run()
             time_max = (std::max)(time_max, time);
             time_avg += time;
             std::string result = std::string((char *)output->dataPtr, output->dataSize);
-            if (saveImage == true) { SaveImage(result, src, line); }              
+            if (saveImage == true) { SaveImage(result, src, line); }      
             if (saveTxt == true) { SaveTxt(result, line); }
             delete output;
             delete dataBuffer.dataPtr;
-            dataBuffer.dataPtr = nullptr; 
+            dataBuffer.dataPtr = nullptr;
         }
         time_avg /= loop_num;
     }
@@ -322,9 +322,10 @@ int run()
 }
 int main(int argc, char* argv[])
 {
-    task = argv[1];
-    imageSetFile = argv[2];
-    imageSetPath = argv[3];
+    int index = 1;
+    task = argv[index++];
+    imageSetFile = argv[index++];
+    imageSetPath = argv[index];
     if (task == "eval") {
         pipelineConfigPath = "pipeline/eval.pipeline";
     }else if (task == "speed" || task == "detect") {
@@ -334,7 +335,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     if (task == "eval") { saveTxt = true; }
-    if (task == "detect") { saveImage = true; } 
+    if (task == "detect") { saveImage = true; }
 
     if (saveImage) { system("rm -rf image_result && mkdir image_result"); }
     if (saveTxt) { system("rm -rf txt_result && mkdir txt_result"); }
