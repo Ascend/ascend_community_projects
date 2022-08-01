@@ -81,7 +81,7 @@ std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
 {
     std::ifstream file(pipelineConfigPath.c_str(), std::ifstream::binary);
     if (!file) {
-        LogError << pipelineConfigPath <<" file dose not exist.";
+        LogError << pipelineConfigPath << " file dose not exist.";
         return "";
     }
     file.seekg(0, std::ifstream::end);
@@ -188,10 +188,10 @@ std::vector<Result> ParseResult(const std::string& result)
                 }
                 int topPad = int(std::round(pad_h - 0.1));
 	            int leftPad = int(std::round(pad_w - 0.1));
-                tmp.x0 = std::max((tmp.x0 - leftPad)/ratio, 0.0f);
-                tmp.y0 = std::max((tmp.y0 - topPad)/ratio, 0.0f);
-                tmp.x1 = (tmp.x1 - leftPad)/ratio;
-                tmp.y1 = (tmp.y1 - topPad)/ratio;
+                tmp.x0 = std::max((tmp.x0 - leftPad) / ratio, 0.0f);
+                tmp.y0 = std::max((tmp.y0 - topPad) / ratio, 0.0f);
+                tmp.x1 = (tmp.x1 - leftPad) / ratio;
+                tmp.y1 = (tmp.y1 - topPad) / ratio;
        
                 res.push_back(tmp);
             }
@@ -225,7 +225,7 @@ void SaveTxt(const std::string& result, const std::string& line)
         std::ofstream outfile("./txt_result/det_test_" + it.className + ".txt", std::ios::app);
         char text[256];
         sprintf(text, "%s %f %f %f %f %f\n", line.c_str(), it.conf, it.x0, it.y0, it.x1, it.y1);
-        outfile<<text;
+        outfile << text;
         outfile.close();
     }
 }
@@ -331,7 +331,7 @@ int main(int argc, char* argv[])
     }else if (task == "speed" || task == "detect") {
         pipelineConfigPath = "pipeline/detect.pipeline";
     }else {
-        std::cout<<"Undefined task!"<<std::endl;
+        std::cout << "Undefined task!" << std::endl;
         return 1;
     }
     if (task == "eval") { saveTxt = true; }
@@ -341,12 +341,12 @@ int main(int argc, char* argv[])
     if (saveTxt) { system("rm -rf txt_result && mkdir txt_result"); }
     int ret = run();
     if (ret != 0) {
-        std::cout<<"Failed to run"<<std::endl;
+        std::cout << "Failed to run" << std::endl;
         return 1;
     }
     char msg[256];
     const int millisecondPerSec = 1000;
-    sprintf(msg, "image count = %ld \nmin = %.2fms  max = %.2fms  avg = %.2fms \navg fps = %.2f fps\n", loop_num, time_min*millisecondPerSec, time_max*millisecondPerSec, time_avg*millisecondPerSec, millisecondPerSec/(time_avg*millisecondPerSec));
+    sprintf(msg, "image count = %ld \nmin = %.2fms  max = %.2fms  avg = %.2fms \navg fps = %.2f fps\n", loop_num, time_min * millisecondPerSec, time_max * millisecondPerSec, time_avg * millisecondPerSec, millisecondPerSec / (time_avg * millisecondPerSec));
     std::cout << "时间统计：\n";
     std::cout << msg;
 
