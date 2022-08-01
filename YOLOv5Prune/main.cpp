@@ -21,9 +21,9 @@
 #include "MxBase/Log/Log.h"
 #include "MxStream/StreamManager/MxStreamManager.h"
 #include "opencv4/opencv2/opencv.hpp"
-const int color_list[20][3] ={{216, 82, 24}, {236, 176, 31}, {125, 46, 141}, {118, 171, 47}, {76, 189, 237}, {238, 19, 46},
-                              {76, 76, 76}, {153, 153, 153}, {255, 0, 0}, {255, 127, 0}, {190, 190, 0},{0, 255, 0}, {0, 0, 255},
-                              {170, 0, 255}, {84, 84, 0}, {84, 170, 0}, {84, 255, 0}, {170, 84, 0}, {170, 170, 0}, {170, 255, 0}}
+const int color_list[20][3] = { {216, 82, 24}, {236, 176, 31}, {125, 46, 141}, {118, 171, 47}, {76, 189, 237}, {238, 19, 46},
+                                {76, 76, 76}, {153, 153, 153}, {255, 0, 0}, {255, 127, 0}, {190, 190, 0},{0, 255, 0}, {0, 0, 255},
+                                {170, 0, 255}, {84, 84, 0}, {84, 170, 0}, {84, 255, 0}, {170, 84, 0}, {170, 170, 0}, {170, 255, 0}}
 
 float pad_w = 0.0, pad_h = 0.0;
 float ratio = 1.0;
@@ -102,9 +102,9 @@ std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
 struct Result
 {
 public:
-    float x0,y0,x1,y1; 
-    std::string class_name;
-    int class_id;
+    float x0, y0, x1, y1; 
+    std::string className;
+    int classId;
     float conf;
 };
 cv::Mat letterBox(const cv::Mat& src)
@@ -130,7 +130,6 @@ cv::Mat letterBox(const cv::Mat& src)
 	int btmPad = int(std::round(pad_h + 0.1));
 	int leftPad = int(std::round(pad_w - 0.1));
 	int rightPad = int(std::round(pad_w + 0.1));
-
     int b = 0, g = 135, r = 0; 
 	cv::copyMakeBorder(resize_img, resize_img, topPad, btmPad, leftPad, rightPad, cv::BORDER_CONSTANT, cv::Scalar(b, g, r));
     cv::cvtColor(resize_img, resize_img, cv::COLOR_BGR2RGB);
@@ -155,11 +154,11 @@ std::vector<Result> ParseResult(const std::string& result)
                 auto it = modelInferObject.find("classVec");
                 if (it != modelInferObject.end()) {
                     auto class_iter = it->second.as_array().begin();
-                    if(class_iter->is_object()){
+                    if(class_iter->is_object()) {
                         auto classObject = class_iter->as_object();
                         auto class_it = classObject.find("className");
                         if (class_it != classObject.end()) {
-                            tmp.class_name = class_it->second.as_string();
+                            tmp.className = class_it->second.as_string();
                         }
                         class_it = classObject.find("confidence");
                         if (class_it != classObject.end()) {
@@ -167,10 +166,10 @@ std::vector<Result> ParseResult(const std::string& result)
                         }
                         class_it = classObject.find("classId");
                         if (class_it != classObject.end()) {
-                            tmp.class_id = float(class_it->second.as_integer());
+                            tmp.classId = float(class_it->second.as_integer());
                         }
                     }
-                }  
+                }
                 it = modelInferObject.find("x0");
                 if (it != modelInferObject.end()) {
                     tmp.x0 = float(it->second.as_double());
@@ -186,17 +185,17 @@ std::vector<Result> ParseResult(const std::string& result)
                 it = modelInferObject.find("y1");
                 if (it != modelInferObject.end()) {
                     tmp.y1 = float(it->second.as_double());
-                } 
+                }
                 int topPad = int(std::round(pad_h - 0.1));
 	            int leftPad = int(std::round(pad_w - 0.1));
-                tmp.x0 = std::max((tmp.x0 - leftPad)/ratio , 0.0f);
+                tmp.x0 = std::max((tmp.x0 - leftPad)/ratio, 0.0f);
                 tmp.y0 = std::max((tmp.y0 - topPad)/ratio, 0.0f);
                 tmp.x1 = (tmp.x1 - leftPad)/ratio;
-                tmp.y1 = (tmp.y1 - topPad)/ratio;    
+                tmp.y1 = (tmp.y1 - topPad)/ratio;
        
                 res.push_back(tmp);
             } 
-        }    
+        }
     }
     return res;
 }
@@ -204,44 +203,52 @@ void SaveImage(const std::string& result, const cv::Mat src,const std::string& l
 {
     auto res = ParseResult(result);
     for(auto it : res){
-        cv::Scalar color = cv::Scalar(color_list[it.class_id][0], color_list[it.class_id][1], color_list[it.class_id][2]);
+        cv::Scalar color = cv::Scalar(color_list[it.classId][0], color_list[it.classId][1], color_list[it.classId][2]);
         cv::Rect rect(it.x0, it.y0, it.x1 - it.x0, it.y1 - it.y0);
         cv::rectangle(src, rect, color);
         char text[256];
-        sprintf(text, "%s %.1f%", it.class_name.c_str(), it.conf);
+        sprintf(text, "%s %.1f%", it.className.c_str(), it.conf);
         int baseLine = 0;
+        double fontScale = 0.4;
+        cv::Scalar fontColor = cv::Scalar(255, 255, 255);
         cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
         cv::rectangle(src, cv::Rect(cv::Point(it.x0, it.y0), cv::Size(label_size.width, label_size.height + baseLine)), color, -1);
-        cv::putText(src, text, cv::Point(it.x0, it.y0 + label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
+        cv::putText(src, text, cv::Point(it.x0, it.y0 + label_size.height), cv::FONT_HERSHEY_SIMPLEX, fontScale, fontColor);
     }
-    cv::imwrite("./image_result/"+line+".jpg", src);  
+    cv::imwrite("./image_result/"+line+".jpg", src);
 }
 void SaveTxt(const std::string& result, const std::string& line)
 {
     // web::json::value jsonText = web::json::value::parse(result);
     auto res = ParseResult(result);
-    for(auto it : res){
-        std::ofstream outfile("./txt_result/det_test_" + it.class_name + ".txt", std::ios::app);
+    for(auto it : res) {
+        std::ofstream outfile("./txt_result/det_test_" + it.className + ".txt", std::ios::app);
         char text[256];
         sprintf(text, "%s %f %f %f %f %f\n", line.c_str(), it.conf, it.x0, it.y0, it.x1, it.y1);
         outfile<<text;
         outfile.close();
     }
- 
 }
+
+double time_min = DBL_MAX;
+double time_max = -DBL_MAX;
+double time_avg = 0;
+long loop_num = 0;
+bool saveImage = false, saveTxt = false;
+const int minArgNum = 3;
 
 int main(int argc, char* argv[])
 {
-    if(argc < 3){
+    if(argc < minArgNum) {
         std::string msg = "usage : bash run.sh [task_type][image_set][image_dir] or bash run.sh eval [dataset_path]";
         std::cout<<msg<<std::endl;
         return 1;
     }
     const std::string task = argv[1];
-    std::string image_set_file = argv[2];
-    std::string image_set_path = argv[3];
+    std::string imageSetFile = argv[2];
+    std::string imageSetPath = argv[3];
     std::string pipelineConfigPath = "";
-    if(task == "eval"){
+    if(task == "eval") {
         pipelineConfigPath = "pipeline/eval.pipeline";
     }else if(task == "speed" || task == "detect"){
         pipelineConfigPath = "pipeline/detect.pipeline";
@@ -249,23 +256,16 @@ int main(int argc, char* argv[])
         std::cout<<"Undefined task!"<<std::endl;
         return 1;
     }
-    bool save_image = false, save_txt = false;
+    if(task == "eval") { saveTxt = true; }
+    if(task == "detect") { saveImage = true; } 
 
-    if(task == "eval") save_txt = true;
-    if(task == "detect") save_image = true;
-
-    double time_min = DBL_MAX;
-    double time_max = -DBL_MAX;
-    double time_avg = 0;
-    long loop_num = 0;
-
-    std::ifstream in(image_set_file);
+    std::ifstream in(imageSetFile);
     std::string line;
 
-    if(save_image){
+    if(saveImage) {
         system("rm -rf image_result && mkdir image_result");
     }
-    if(save_txt){
+    if(saveTxt) {
         system("rm -rf txt_result && mkdir txt_result");
     }
 
@@ -291,25 +291,24 @@ int main(int argc, char* argv[])
         return ret;
     }
 
-    if(in){
-
-        while(getline(in, line)){
+    if(in) {
+        while(getline(in, line)) {
             loop_num++;
             std::string streamName = "detection";
-            std::string img_path = image_set_path+'/'+line+".jpg";
+            std::string img_path = imageSetPath+'/'+line+".jpg";
             MxStream::MxstDataInput dataBuffer;
             cv::Mat src;
             auto start = clock();
-            if(task == "eval"){
+            if(task == "eval") {
                 src = cv::imread(img_path);
                 cv::Mat img = letterBox(src);
                 cv::imwrite("./tmp.jpg", img);
                 ret = ReadFile("./tmp.jpg", dataBuffer);
-            }else if(task == "detect"){
+            }else if(task == "detect") {
                 src = cv::imread(img_path);
-                ret = ReadFile(img_path,dataBuffer);
-            }else{
-                ret = ReadFile(img_path,dataBuffer);
+                ret = ReadFile(img_path, dataBuffer);
+            }else {
+                ret = ReadFile(img_path, dataBuffer);
             }
             if (ret != APP_ERR_OK) {
                 LogError << GetError(ret) << "Failed to read image file.";
@@ -322,7 +321,7 @@ int main(int argc, char* argv[])
                 delete dataBuffer.dataPtr;
                 dataBuffer.dataPtr = nullptr;
                 return ret;
-            }            
+            }
             // get stream output
             MxStream::MxstDataOutput* output = mxStreamManager.GetResult(streamName, inPluginId);
             if (output == nullptr) {
@@ -330,30 +329,28 @@ int main(int argc, char* argv[])
                 delete dataBuffer.dataPtr;
                 dataBuffer.dataPtr = nullptr;
                 return ret;
-            }  
+            }
             double time =  (double)(clock() - start) / CLOCKS_PER_SEC;
             time_min = (std::min)(time_min, time);
             time_max = (std::max)(time_max, time);
             time_avg += time;
             std::string result = std::string((char *)output->dataPtr, output->dataSize);
 
-            if(save_image == true)
-                SaveImage(result, src, line);
-            if(save_txt == true)
-                SaveTxt(result, line);
-
+            if(saveImage == true) { SaveImage(result, src, line); }              
+            if(saveTxt == true) { SaveTxt(result, line); }
             delete output;    // destroy streams
             delete dataBuffer.dataPtr;
-            dataBuffer.dataPtr = nullptr;                         
+            dataBuffer.dataPtr = nullptr;          
         }
         time_avg /= loop_num;
     }
 
     in.close();
-    mxStreamManager.DestroyAllStreams();  
+    mxStreamManager.DestroyAllStreams();
 
     char msg[256];
-    sprintf(msg,"image count = %ld \nmin = %.2fms  max = %.2fms  avg = %.2fms \navg fps = %.2f fps\n", loop_num, time_min *1000, time_max*1000, time_avg*1000, 1000/(time_avg*1000));
+    const int millisecondPerSec = 1000;
+    sprintf(msg, "image count = %ld \nmin = %.2fms  max = %.2fms  avg = %.2fms \navg fps = %.2f fps\n", loop_num, time_min*millisecondPerSec, time_max*millisecondPerSec, time_avg*millisecondPerSec, millisecondPerSec/(time_avg*millisecondPerSec));
     std::cout<<"时间统计：\n";
     std::cout<< msg;
 

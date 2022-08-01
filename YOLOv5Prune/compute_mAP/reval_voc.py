@@ -26,8 +26,7 @@ def parse_args():
         parser.print_help()
         sys.exit(1)
 
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def get_voc_results_file_template(image_set, out_dir = '.'):
@@ -51,7 +50,6 @@ def do_python_eval(devkit_path, year, image_set, classes, output_dir):
     cachedir = os.path.join(devkit_path, 'annotations_cache')
     aps = []
     use_07_metric = False
-    print('devkit_path=', devkit_path,', year = ', year)
 
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
@@ -64,7 +62,8 @@ def do_python_eval(devkit_path, year, image_set, classes, output_dir):
             use_07_metric=use_07_metric)
         aps += [ap]
         print('AP for {} = {:.4f}'.format(cls, ap))
-        with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
+        os.system('touch '+os.path.join(output_dir, cls + '_pr.pkl'))
+        with open(os.path.join(output_dir, cls + '_pr.pkl'), 'rb+') as f:
             cPickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
     print('Mean AP = {:.4f}'.format(np.mean(aps)))
     print('~~~~~~~~')
@@ -85,12 +84,11 @@ def do_python_eval(devkit_path, year, image_set, classes, output_dir):
 if __name__ == '__main__':
     args = parse_args()
 
-    output_dir = os.path.abspath(args.output_dir[0])
+    dir = os.path.abspath(args.output_dir[0])
     print(output_dir)
-    with open(args.class_file, 'r') as f:
-        lines = f.readlines()
+    with open(args.class_file, 'r') as file:
+        lines = file.readlines()
 
-    classes = [t.strip('\n') for t in lines]
-
+    classname = [t.strip('\n') for t in lines]
     print('Evaluating detections')
-    do_python_eval(args.voc_dir, args.year, args.image_set, classes, output_dir)
+    do_python_eval(args.voc_dir, args.year, args.image_set, classname, dir)

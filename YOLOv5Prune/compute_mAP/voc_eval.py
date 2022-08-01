@@ -102,8 +102,8 @@ def voc_eval(detpath,
         recs = {}
         for i, imagename in enumerate(imagenames):
             recs[imagename] = parse_rec(annopath.format(imagename))
-
-        with open(cachefile, 'wb') as f:
+        os.system('touch '+cachefile)
+        with open(cachefile, 'rb+') as f:
             cPickle.dump(recs, f)
     else:
         # load
