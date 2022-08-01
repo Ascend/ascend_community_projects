@@ -84,11 +84,11 @@ def do_python_eval(devkit_path, year, image_set, classes, output_dir):
 if __name__ == '__main__':
     args = parse_args()
 
-    dir = os.path.abspath(args.output_dir[0])
+    res_dir = os.path.abspath(args.output_dir[0])
     print(output_dir)
     with open(args.class_file, 'r') as file:
         lines = file.readlines()
 
-    classname = [t.strip('\n') for t in lines]
+    class_name = [t.strip('\n') for t in lines]
     print('Evaluating detections')
-    do_python_eval(args.voc_dir, args.year, args.image_set, classname, dir)
+    do_python_eval(args.voc_dir, args.year, args.image_set, class_name, res_dir)

@@ -102,7 +102,7 @@ std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
 struct Result
 {
 public:
-    float x0, y0, x1, y1; 
+    float x0, y0, x1, y1;
     std::string className;
     int classId;
     float conf;
@@ -120,7 +120,7 @@ cv::Mat letterBox(const cv::Mat& src)
 	pad_w = tar_w - inside_w;
     pad_h = tar_h - inside_h;
 	cv::Mat resize_img;
-	cv::resize(src, resize_img, cv::Size(inside_w, inside_h));  
+	cv::resize(src, resize_img, cv::Size(inside_w, inside_h));
 	cv::cvtColor(resize_img, resize_img, cv::COLOR_BGR2RGB);
     const int div = 2;
 	pad_w = pad_w / div;
@@ -130,7 +130,7 @@ cv::Mat letterBox(const cv::Mat& src)
 	int btmPad = int(std::round(pad_h + 0.1));
 	int leftPad = int(std::round(pad_w - 0.1));
 	int rightPad = int(std::round(pad_w + 0.1));
-    int b = 0, g = 135, r = 0; 
+    int b = 0, g = 135, r = 0;
 	cv::copyMakeBorder(resize_img, resize_img, topPad, btmPad, leftPad, rightPad, cv::BORDER_CONSTANT, cv::Scalar(b, g, r));
     cv::cvtColor(resize_img, resize_img, cv::COLOR_BGR2RGB);
 
@@ -154,7 +154,7 @@ std::vector<Result> ParseResult(const std::string& result)
                 auto it = modelInferObject.find("classVec");
                 if (it != modelInferObject.end()) {
                     auto class_iter = it->second.as_array().begin();
-                    if(class_iter->is_object()) {
+                    if (class_iter->is_object()) {
                         auto classObject = class_iter->as_object();
                         auto class_it = classObject.find("className");
                         if (class_it != classObject.end()) {
@@ -194,15 +194,15 @@ std::vector<Result> ParseResult(const std::string& result)
                 tmp.y1 = (tmp.y1 - topPad)/ratio;
        
                 res.push_back(tmp);
-            } 
+            }
         }
     }
     return res;
 }
-void SaveImage(const std::string& result, const cv::Mat src,const std::string& line)
+void SaveImage(const std::string& result, const cv::Mat src, const std::string& line)
 {
     auto res = ParseResult(result);
-    for(auto it : res){
+    for (auto it : res) {
         cv::Scalar color = cv::Scalar(color_list[it.classId][0], color_list[it.classId][1], color_list[it.classId][2]);
         cv::Rect rect(it.x0, it.y0, it.x1 - it.x0, it.y1 - it.y0);
         cv::rectangle(src, rect, color);
@@ -221,7 +221,7 @@ void SaveTxt(const std::string& result, const std::string& line)
 {
     // web::json::value jsonText = web::json::value::parse(result);
     auto res = ParseResult(result);
-    for(auto it : res) {
+    for (auto it : res) {
         std::ofstream outfile("./txt_result/det_test_" + it.className + ".txt", std::ios::app);
         char text[256];
         sprintf(text, "%s %f %f %f %f %f\n", line.c_str(), it.conf, it.x0, it.y0, it.x1, it.y1);
@@ -234,43 +234,18 @@ double time_min = DBL_MAX;
 double time_max = -DBL_MAX;
 double time_avg = 0;
 long loop_num = 0;
+std::string pipelineConfigPath = "";
+const std::string streamName = "detection";
+std::string task;
+std::string imageSetFile;
+std::string imageSetPath;
 bool saveImage = false, saveTxt = false;
-const int minArgNum = 3;
+int inPluginId = 0;
 
-int main(int argc, char* argv[])
+int run()
 {
-    if(argc < minArgNum) {
-        std::string msg = "usage : bash run.sh [task_type][image_set][image_dir] or bash run.sh eval [dataset_path]";
-        std::cout<<msg<<std::endl;
-        return 1;
-    }
-    const std::string task = argv[1];
-    std::string imageSetFile = argv[2];
-    std::string imageSetPath = argv[3];
-    std::string pipelineConfigPath = "";
-    if(task == "eval") {
-        pipelineConfigPath = "pipeline/eval.pipeline";
-    }else if(task == "speed" || task == "detect"){
-        pipelineConfigPath = "pipeline/detect.pipeline";
-    }else {
-        std::cout<<"Undefined task!"<<std::endl;
-        return 1;
-    }
-    if(task == "eval") { saveTxt = true; }
-    if(task == "detect") { saveImage = true; } 
-
     std::ifstream in(imageSetFile);
     std::string line;
-
-    if(saveImage) {
-        system("rm -rf image_result && mkdir image_result");
-    }
-    if(saveTxt) {
-        system("rm -rf txt_result && mkdir txt_result");
-    }
-
-    int inPluginId = 0;
-    
     // read pipeline config file
     std::string pipelineConfig = ReadPipelineConfig(pipelineConfigPath);
     if (pipelineConfig == "") {
@@ -278,7 +253,7 @@ int main(int argc, char* argv[])
         return APP_ERR_COMM_INIT_FAIL;
     }
     MxStream::MxStreamManager mxStreamManager;
-    // init stream manager           
+    // init stream manager 
     APP_ERROR ret = mxStreamManager.InitManager();
     if (ret != APP_ERR_OK) {
         LogError << GetError(ret) << "Failed to init Stream manager.";
@@ -290,21 +265,19 @@ int main(int argc, char* argv[])
         LogError << GetError(ret) << "Failed to create Stream.";
         return ret;
     }
-
-    if(in) {
-        while(getline(in, line)) {
+    if (in) {
+        while (getline(in, line)) {
             loop_num++;
-            std::string streamName = "detection";
             std::string img_path = imageSetPath+'/'+line+".jpg";
             MxStream::MxstDataInput dataBuffer;
             cv::Mat src;
             auto start = clock();
-            if(task == "eval") {
+            if (task == "eval") {
                 src = cv::imread(img_path);
                 cv::Mat img = letterBox(src);
                 cv::imwrite("./tmp.jpg", img);
                 ret = ReadFile("./tmp.jpg", dataBuffer);
-            }else if(task == "detect") {
+            }else if (task == "detect") {
                 src = cv::imread(img_path);
                 ret = ReadFile(img_path, dataBuffer);
             }else {
@@ -335,24 +308,46 @@ int main(int argc, char* argv[])
             time_max = (std::max)(time_max, time);
             time_avg += time;
             std::string result = std::string((char *)output->dataPtr, output->dataSize);
-
-            if(saveImage == true) { SaveImage(result, src, line); }              
-            if(saveTxt == true) { SaveTxt(result, line); }
-            delete output;    // destroy streams
+            if (saveImage == true) { SaveImage(result, src, line); }              
+            if (saveTxt == true) { SaveTxt(result, line); }
+            delete output;
             delete dataBuffer.dataPtr;
-            dataBuffer.dataPtr = nullptr;          
+            dataBuffer.dataPtr = nullptr; 
         }
         time_avg /= loop_num;
     }
-
     in.close();
     mxStreamManager.DestroyAllStreams();
+    return 0;
+}
+int main(int argc, char* argv[])
+{
+    task = argv[1];
+    imageSetFile = argv[2];
+    imageSetPath = argv[3];
+    if (task == "eval") {
+        pipelineConfigPath = "pipeline/eval.pipeline";
+    }else if (task == "speed" || task == "detect") {
+        pipelineConfigPath = "pipeline/detect.pipeline";
+    }else {
+        std::cout<<"Undefined task!"<<std::endl;
+        return 1;
+    }
+    if (task == "eval") { saveTxt = true; }
+    if (task == "detect") { saveImage = true; } 
 
+    if (saveImage) { system("rm -rf image_result && mkdir image_result"); }
+    if (saveTxt) { system("rm -rf txt_result && mkdir txt_result"); }
+    int ret = run();
+    if (ret != 0) {
+        std::cout<<"Failed to run"<<std::endl;
+        return 1;
+    }
     char msg[256];
     const int millisecondPerSec = 1000;
     sprintf(msg, "image count = %ld \nmin = %.2fms  max = %.2fms  avg = %.2fms \navg fps = %.2f fps\n", loop_num, time_min*millisecondPerSec, time_max*millisecondPerSec, time_avg*millisecondPerSec, millisecondPerSec/(time_avg*millisecondPerSec));
-    std::cout<<"时间统计：\n";
-    std::cout<< msg;
+    std::cout << "时间统计：\n";
+    std::cout << msg;
 
     return 0;
 }

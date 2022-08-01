@@ -115,10 +115,10 @@ def voc_eval(detpath,
     class_recs = {}
     npos = 0
     for imagename in imagenames:
-        R = [obj for obj in recs[imagename] if obj['name'] == classname]
-        bbox = np.array([x['bbox'] for x in R])
-        difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
-        det = [False] * len(R)
+        recall = [obj for obj in recs.get(imagename) if obj['name'] == classname]
+        bbox = np.array([x['bbox'] for x in recall])
+        difficult = np.array([x['difficult'] for x in recall]).astype(np.bool)
+        det = [False] * len(recall)
         npos = npos + sum(~difficult)
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
@@ -132,12 +132,12 @@ def voc_eval(detpath,
     splitlines = [x.strip().split(' ') for x in lines]
     image_ids = [x[0] for x in splitlines]
     confidence = np.array([float(x[1]) for x in splitlines])
-    BB = np.array([[float(z) for z in x[2:]] for x in splitlines])
+    bounding_box = np.array([[float(z) for z in x[2:]] for x in splitlines])
 
     # sort by confidence
     sorted_ind = np.argsort(-confidence)
     sorted_scores = np.sort(-confidence)
-    BB = BB[sorted_ind, :]
+    bounding_box = bounding_box[sorted_ind, :]
     image_ids = [image_ids[x] for x in sorted_ind]
 
     # go down dets and mark TPs and FPs
@@ -145,10 +145,10 @@ def voc_eval(detpath,
     tp = np.zeros(nd)
     fp = np.zeros(nd)
     for d in range(nd):
-        R = class_recs[image_ids[d]]
-        bb = BB[d, :].astype(float)
+        recall = class_recs[image_ids[d]]
+        bb = bounding_box[d, :].astype(float)
         ovmax = -np.inf
-        BBGT = R['bbox'].astype(float)
+        BBGT = recall['bbox'].astype(float)
 
         if BBGT.size > 0:
             # compute overlaps
@@ -171,10 +171,10 @@ def voc_eval(detpath,
             jmax = np.argmax(overlaps)
 
         if ovmax > ovthresh:
-            if not R['difficult'][jmax]:
-                if not R['det'][jmax]:
+            if not recall['difficult'][jmax]:
+                if not recall['det'][jmax]:
                     tp[d] = 1.
-                    R['det'][jmax] = 1
+                    recall['det'][jmax] = 1
                 else:
                     fp[d] = 1.
         else:
