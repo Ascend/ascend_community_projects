@@ -45,8 +45,6 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 │       ├── aipp_yolov5.cfg
 │       ├── atc.sh
 │       ├── env.sh
-│       ├── prune55_t.om
-│       ├── prune55_t.onnx
 │       ├── voc.names
 │       ├── yolov5_detect.cfg
 │       └── yolov5_eval.cfg

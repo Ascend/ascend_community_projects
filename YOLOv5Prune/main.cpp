@@ -308,7 +308,7 @@ int run()
             time_max = (std::max)(time_max, time);
             time_avg += time;
             std::string result = std::string((char *)output->dataPtr, output->dataSize);
-            if (saveImage == true) { SaveImage(result, src, line); }      
+            if (saveImage == true) { SaveImage(result, src, line); }   
             if (saveTxt == true) { SaveTxt(result, line); }
             delete output;
             delete dataBuffer.dataPtr;
