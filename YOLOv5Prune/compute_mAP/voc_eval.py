@@ -26,13 +26,13 @@ def parse_xml(filename):
     objects = []
     for obj in tree.findall('object'):
         obj_struct = {}
-        obj_struct['name'] = obj.find('name').text
-        obj_struct['difficult'] = int(obj.find('difficult').text)
         bbox = obj.find('bndbox')
         obj_struct['bbox'] = [int(bbox.find('xmin').text),
                               int(bbox.find('ymin').text),
                               int(bbox.find('xmax').text),
                               int(bbox.find('ymax').text)]
+        obj_struct['name'] = obj.find('name').text
+        obj_struct['difficult'] = int(obj.find('difficult').text)
         objects.append(obj_struct)
 
     return objects
@@ -50,9 +50,8 @@ def voc_ap(rec, prec):
         mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
 
     i = np.where(mrec[1:] != mrec[:-1])[0]
-    ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
 
-    return ap
+    return np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
 
 
 def voc_eval(detpath,
@@ -61,23 +60,6 @@ def voc_eval(detpath,
              classname,
              cachedir,
              ovthresh=0.5):
-    """rec, prec, ap = voc_eval(detpath,
-                                annopath,
-                                imagesetfile,
-                                classname,
-                                [ovthresh])
-
-    Top level function that does the PASCAL VOC evaluation.
-
-    detpath: Path to detections
-        detpath.format(classname) should produce the detection results file.
-    annopath: Path to annotations
-        annopath.format(imagename) should be the xml annotations file.
-    imagesetfile: Text file containing the list of images, one image per line.
-    classname: Category name (duh)
-    cachedir: Directory for caching the annotations
-    [ovthresh]: Overlap threshold (default = 0.5)
-    """
     if not os.path.isdir(cachedir):
         os.mkdir(cachedir)
     cachefile = os.path.join(cachedir, 'annots.pkl')
@@ -86,17 +68,18 @@ def voc_eval(detpath,
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
 
-    if not os.path.isfile(cachefile):
+    if os.path.isfile(cachefile):
+        print('cachefile = ', cachefile)
+        with open(cachefile, 'rb') as f:
+            recs = pickel.load(f)
+    else:
         recs = {}
         for i, imagename in enumerate(imagenames):
             recs[imagename] = parse_xml(annopath.format(imagename))
         os.system('touch '+cachefile)
         with open(cachefile, 'rb+') as f:
             pickel.dump(recs, f)
-    else:
-        print('!!! cachefile = ', cachefile)
-        with open(cachefile, 'rb') as f:
-            recs = pickel.load(f)
+
     class_recs = {}
     npos = 0
     for imagename in imagenames:
@@ -104,10 +87,10 @@ def voc_eval(detpath,
         bbox = np.array([x['bbox'] for x in recall])
         difficult = np.array([x['difficult'] for x in recall]).astype(np.bool)
         det = [False] * len(recall)
-        npos = npos + sum(~difficult)
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det}
+        npos = npos + sum(~difficult)
 
     detfile = detpath.format(classname)
     with open(detfile, 'r') as f:
@@ -118,10 +101,10 @@ def voc_eval(detpath,
     confidence = np.array([float(x[1]) for x in splitlines])
     bounding_box = np.array([[float(z) for z in x[2:]] for x in splitlines])
 
-    sorted_ind = np.argsort(-confidence)
-    sorted_scores = np.sort(-confidence)
-    bounding_box = bounding_box[sorted_ind, :]
-    image_ids = [image_ids[x] for x in sorted_ind]
+    ind = np.argsort(-confidence)
+    scores = np.sort(-confidence)
+    bounding_box = bounding_box[ind, :]
+    image_ids = [image_ids[x] for x in ind]
 
     nd = len(image_ids)
     tp = np.zeros(nd)
@@ -137,9 +120,7 @@ def voc_eval(detpath,
             iymin = np.maximum(bounding_box_gt[:, 1], bb[1])
             ixmax = np.minimum(bounding_box_gt[:, 2], bb[2])
             iymax = np.minimum(bounding_box_gt[:, 3], bb[3])
-            iw = np.maximum(ixmax - ixmin + 1., 0.)
-            ih = np.maximum(iymax - iymin + 1., 0.)
-            inters = iw * ih
+            inters = np.maximum(ixmax - ixmin + 1., 0.) * np.maximum(iymax - iymin + 1., 0.)
 
             union = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
                    (bounding_box_gt[:, 2] - bounding_box_gt[:, 0] + 1.) *
