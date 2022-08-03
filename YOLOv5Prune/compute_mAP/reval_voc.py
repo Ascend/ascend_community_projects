@@ -18,7 +18,7 @@ import os
 import sys
 import argparse
 import numpy as np
-import _pickle as cPickle
+import _pickle as pickle
 
 from voc_eval import voc_eval
 
@@ -31,14 +31,8 @@ def parse_args():
     parser.add_argument('output_dir', nargs=1, help='results directory',
                         type=str)
     parser.add_argument('--voc_dir', dest='voc_dir', default='data/VOCdevkit', type=str)
-    parser.add_argument('--year', dest='year', default='2007', type=str)
     parser.add_argument('--image_set', dest='image_set', default='test', type=str)
-
     parser.add_argument('--classes', dest='class_file', default='models/yolov5/voc.names', type=str)
-
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
 
     return parser.parse_args()
 
@@ -49,50 +43,38 @@ def get_voc_results_file_template(image_set, out_dir = '.'):
     return path
 
 
-def do_python_eval(devkit_path, year, image_set, classes, output_dir):
+def do_eval(devkit_path, image_set, classes, output_dir):
     annopath = os.path.join(
         devkit_path,
-        'VOC' + year,
+        'VOC2007',
         'Annotations',
         '{}.xml')
     imagesetfile = os.path.join(
         devkit_path,
-        'VOC' + year,
+        'VOC2007',
         'ImageSets',
         'Main',
         image_set + '.txt')
     cachedir = os.path.join(devkit_path, 'annotations_cache')
     aps = []
-    use_07_metric = False
 
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
     for i, cls in enumerate(classes):
-        if cls == '__background__':
-            continue
         filename = get_voc_results_file_template(image_set, output_dir).format(cls)
         rec, prec, ap = voc_eval(
-            filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.55,
-            use_07_metric=use_07_metric)
+            filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.55)
         aps += [ap]
         print('AP for {} = {:.4f}'.format(cls, ap))
         os.system('touch '+os.path.join(output_dir, cls + '_pr.pkl'))
         with open(os.path.join(output_dir, cls + '_pr.pkl'), 'rb+') as f:
-            cPickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
+            pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
     print('Mean AP = {:.4f}'.format(np.mean(aps)))
     print('~~~~~~~~')
     print('Results:')
     for ap in aps:
         print('{:.3f}'.format(ap))
     print('{:.3f}'.format(np.mean(aps)))
-    print('~~~~~~~~')
-    print('')
-    print('--------------------------------------------------------------')
-    print('Results computed with the **unofficial** Python eval code.')
-    print('Results should be very close to the official MATLAB eval code.')
-    print('-- Thanks, The Management')
-    print('--------------------------------------------------------------')
-
 
 
 if __name__ == '__main__':
@@ -105,4 +87,5 @@ if __name__ == '__main__':
 
     class_name = [t.strip('\n') for t in lines]
     print('Evaluating detections')
-    do_python_eval(args.voc_dir, args.year, args.image_set, class_name, res_dir)
+    year = "2007"
+    do_eval(args.voc_dir, year, args.image_set, class_name, res_dir)

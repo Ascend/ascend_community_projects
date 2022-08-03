@@ -13,7 +13,6 @@
 # limitations under the License.
 
 cd ./models/yolov5/
-source env.sh
 atc \
 --model=prune55_t.onnx \
 --framework=5 \

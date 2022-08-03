@@ -37,14 +37,14 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 
 ```
 ├── CMakeLists.txt
-├── color.h
-├── get_voc.sh
+├── compute_mAP
+│   ├── reval_voc.py
+│   └── voc_eval.py
 ├── main.cpp
 ├── models
 │   └── yolov5
 │       ├── aipp_yolov5.cfg
 │       ├── atc.sh
-│       ├── env.sh
 │       ├── voc.names
 │       ├── yolov5_detect.cfg
 │       └── yolov5_eval.cfg
@@ -197,9 +197,9 @@ ATC run success, welcome to the next use.
 
 ## 5 编译与运行
 
-**步骤1** 修改run.sh中的环境变量为正确的路径。
+**步骤1** 按照第 2 小结**环境依赖**中的步骤设置环境变量。
 
-**步骤2** 按照第 4 小节**模型获取** 中的步骤获得模型文件，放置对应目录下。
+**步骤2** 按照第 4 小节**模型获取**中的步骤获得模型文件，放置对应目录下。
 
 **步骤3** 运行。执行命令：
 
