@@ -84,7 +84,6 @@ if __name__ == '__main__':
     print(output_dir)
     with open(args.class_file, 'r') as file:
         lines = file.readlines()
-
     class_name = [t.strip('\n') for t in lines]
     print('Evaluating detections')
     do_eval(args.voc_dir, args.image_set, class_name, res_dir)
