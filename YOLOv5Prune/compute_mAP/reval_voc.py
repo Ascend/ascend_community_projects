@@ -87,5 +87,4 @@ if __name__ == '__main__':
 
     class_name = [t.strip('\n') for t in lines]
     print('Evaluating detections')
-    year = "2007"
-    do_eval(args.voc_dir, year, args.image_set, class_name, res_dir)
+    do_eval(args.voc_dir, args.image_set, class_name, res_dir)
