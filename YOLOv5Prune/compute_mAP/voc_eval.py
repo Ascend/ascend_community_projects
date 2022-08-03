@@ -21,26 +21,26 @@ import numpy as np
 
 
 def parse_xml(filename):
-    """ Parse a PASCAL VOC xml file """
+    """ Parse xml file """
     tree = ET.parse(filename)
     objects = []
     for obj in tree.findall('object'):
-        obj_struct = {}
+        object = {}
         bbox = obj.find('bndbox')
-        obj_struct['bbox'] = [int(bbox.find('xmin').text),
+        object['bbox'] = [int(bbox.find('xmin').text),
                               int(bbox.find('ymin').text),
                               int(bbox.find('xmax').text),
                               int(bbox.find('ymax').text)]
-        obj_struct['name'] = obj.find('name').text
-        obj_struct['difficult'] = int(obj.find('difficult').text)
-        objects.append(obj_struct)
+        object['name'] = obj.find('name').text
+        object['difficult'] = int(obj.find('difficult').text)
+        objects.append(object)
 
     return objects
 
 
-def voc_ap(rec, prec):
+def ap(rec, prec):
     """ 
-    ap = voc_ap(rec, prec)
+    ap = ap(rec, prec)
     Compute VOC AP given precision and recall.
     """
     mrec = np.concatenate(([0.], rec, [1.]))
@@ -51,20 +51,20 @@ def voc_ap(rec, prec):
 
     i = np.where(mrec[1:] != mrec[:-1])[0]
 
-    return np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
+    return np.sum(mpre[i + 1] * (mrec[i + 1] - mrec[i]))
 
 
-def voc_eval(detpath,
-             annopath,
-             imagesetfile,
-             classname,
-             cachedir,
-             ovthresh=0.5):
+def eval(detpath,
+        annopath,
+        imageset,
+        classname,
+        cachedir,
+        ovthresh=0.5):
     if not os.path.isdir(cachedir):
         os.mkdir(cachedir)
     cachefile = os.path.join(cachedir, 'annots.pkl')
 
-    with open(imagesetfile, 'r') as f:
+    with open(imageset, 'r') as f:
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
 
@@ -144,6 +144,6 @@ def voc_eval(detpath,
     tp = np.cumsum(tp)
     rec = tp / float(npos)
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = voc_ap(rec, prec)
+    ap = ap(rec, prec)
 
     return rec, prec, ap
