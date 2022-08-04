@@ -20,7 +20,8 @@ import argparse
 import numpy as np
 import _pickle as pickle
 
-from voc_eval import eval
+from voc_eval import evaluate
+
 
 
 def parse_args():
@@ -62,7 +63,7 @@ def do_eval(devkit_path, image_set, classes, output_dir):
         os.mkdir(output_dir)
     for i, cls in enumerate(classes):
         filename = get_voc_results_file_template(image_set, output_dir).format(cls)
-        rec, prec, ap = eval(
+        rec, prec, ap = evaluate(
             filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.55)
         aps += [ap]
         print('AP for {} = {:.4f}'.format(cls, ap))

@@ -25,20 +25,20 @@ def parse_xml(filename):
     tree = ET.parse(filename)
     objects = []
     for obj in tree.findall('object'):
-        object = {}
+        object_info = {}
         bbox = obj.find('bndbox')
-        object['bbox'] = [int(bbox.find('xmin').text),
+        object_info['bbox'] = [int(bbox.find('xmin').text),
                               int(bbox.find('ymin').text),
                               int(bbox.find('xmax').text),
                               int(bbox.find('ymax').text)]
-        object['name'] = obj.find('name').text
-        object['difficult'] = int(obj.find('difficult').text)
-        objects.append(object)
+        object_info['name'] = obj.find('name').text
+        object_info['difficult'] = int(obj.find('difficult').text)
+        objects.append(object_info)
 
     return objects
 
 
-def ap(rec, prec):
+def get_ap(rec, prec):
     """ 
     ap = ap(rec, prec)
     Compute VOC AP given precision and recall.
@@ -54,7 +54,7 @@ def ap(rec, prec):
     return np.sum(mpre[i + 1] * (mrec[i + 1] - mrec[i]))
 
 
-def eval(detpath,
+def evaluate(detpath,
         annopath,
         imageset,
         classname,
@@ -144,6 +144,6 @@ def eval(detpath,
     tp = np.cumsum(tp)
     rec = tp / float(npos)
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = ap(rec, prec)
+    ap = get_ap(rec, prec)
 
     return rec, prec, ap
