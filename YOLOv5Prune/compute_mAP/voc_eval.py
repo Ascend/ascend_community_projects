@@ -34,7 +34,8 @@ def ap(rec, prec):
     i = np.where(mrec[1:] != mrec[:-1])[0]
 
     return np.sum(mpre[i + 1] * (mrec[i + 1] - mrec[i]))
-    
+
+
 def parse_xml(filename):
     """ Parse xml file """
     tree = ET.parse(filename)
@@ -51,6 +52,7 @@ def parse_xml(filename):
         objects.append(object_info)
 
     return objects
+
 
 def evaluate(detpath,
         annopath,
