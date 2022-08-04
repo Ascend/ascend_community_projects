@@ -38,7 +38,7 @@ def parse_xml(filename):
     return objects
 
 
-def get_ap(rec, prec):
+def ap(rec, prec):
     """ 
     ap = ap(rec, prec)
     Compute VOC AP given precision and recall.
@@ -120,13 +120,13 @@ def evaluate(detpath,
             iymin = np.maximum(bounding_box_gt[:, 1], bb[1])
             ixmax = np.minimum(bounding_box_gt[:, 2], bb[2])
             iymax = np.minimum(bounding_box_gt[:, 3], bb[3])
-            inters = np.maximum(ixmax - ixmin + 1., 0.) * np.maximum(iymax - iymin + 1., 0.)
 
             union = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
                    (bounding_box_gt[:, 2] - bounding_box_gt[:, 0] + 1.) *
-                   (bounding_box_gt[:, 3] - bounding_box_gt[:, 1] + 1.) - inters)
+                   (bounding_box_gt[:, 3] - bounding_box_gt[:, 1] + 1.) - 
+                   np.maximum(ixmax - ixmin + 1., 0.) * np.maximum(iymax - iymin + 1., 0.))
 
-            overlaps = inters / union
+            overlaps = np.maximum(ixmax - ixmin + 1., 0.) * np.maximum(iymax - iymin + 1., 0.) / union
             ovmax = np.max(overlaps)
             jmax = np.argmax(overlaps)
 
@@ -144,6 +144,5 @@ def evaluate(detpath,
     tp = np.cumsum(tp)
     rec = tp / float(npos)
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = get_ap(rec, prec)
-
-    return rec, prec, ap
+    
+    return rec, prec, ap(rec, prec)
