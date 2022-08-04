@@ -20,6 +20,21 @@ import _pickle as pickel
 import numpy as np
 
 
+def ap(rec, prec):
+    """ 
+    ap = ap(rec, prec)
+    Compute VOC AP given precision and recall.
+    """
+    mrec = np.concatenate(([0.], rec, [1.]))
+    mpre = np.concatenate(([0.], prec, [0.]))
+
+    for i in range(mpre.size - 1, 0, -1):
+        mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+
+    i = np.where(mrec[1:] != mrec[:-1])[0]
+
+    return np.sum(mpre[i + 1] * (mrec[i + 1] - mrec[i]))
+    
 def parse_xml(filename):
     """ Parse xml file """
     tree = ET.parse(filename)
@@ -36,23 +51,6 @@ def parse_xml(filename):
         objects.append(object_info)
 
     return objects
-
-
-def ap(rec, prec):
-    """ 
-    ap = ap(rec, prec)
-    Compute VOC AP given precision and recall.
-    """
-    mrec = np.concatenate(([0.], rec, [1.]))
-    mpre = np.concatenate(([0.], prec, [0.]))
-
-    for i in range(mpre.size - 1, 0, -1):
-        mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
-
-    i = np.where(mrec[1:] != mrec[:-1])[0]
-
-    return np.sum(mpre[i + 1] * (mrec[i + 1] - mrec[i]))
-
 
 def evaluate(detpath,
         annopath,
