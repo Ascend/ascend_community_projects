@@ -18,6 +18,7 @@
 """
 
 
+import os
 import datetime
 import threading
 import sys
@@ -49,7 +50,12 @@ if __name__ == '__main__':
     GROUP_NAME = "panda_arm"
     move_group = moveit_commander.MoveGroupCommander(GROUP_NAME)
 
-    ser = serial.Serial('/dev/ttyAMA0', 3000000, 8, 'N', 1)
+    uart_path = '/dev/ttyAMA0'
+    if os.path.exists(uart_path) == False:
+        print("dev path is not exist!")
+        exit()
+
+    ser = serial.Serial(uart_path, 3000000, 8, 'N', 1)
     flag = ser.is_open
 
     if flag:
