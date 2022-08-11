@@ -242,6 +242,55 @@ std::string imageSetPath;
 bool saveImage = false, saveTxt = false;
 int inPluginId = 0;
 
+int work(const std::string& id, MxStream::MxStreamManager& mxStreamManager)
+{
+    std::string img_path = imageSetPath+'/'+id+".jpg";
+    MxStream::MxstDataInput dataBuffer;
+    cv::Mat src;
+    if (task == "eval") {
+        src = cv::imread(img_path);
+        cv::Mat img = letterBox(src);
+        cv::imwrite("./tmp.jpg", img);
+        ret = ReadFile("./tmp.jpg", dataBuffer);
+    }else if (task == "detect") {
+        src = cv::imread(img_path);
+        ret = ReadFile(img_path, dataBuffer);
+    }else {
+        ret = ReadFile(img_path, dataBuffer);
+    }
+    if (ret != APP_ERR_OK) {
+        LogError << GetError(ret) << "Failed to read image file.";
+        return ret;
+    }
+    // send data into stream
+    ret = mxStreamManager.SendData(streamName, inPluginId, dataBuffer);
+    if (ret != APP_ERR_OK) {
+        LogError << GetError(ret) << "Failed to send data to stream.";
+        delete dataBuffer.dataPtr;
+        dataBuffer.dataPtr = nullptr;
+        return ret;
+    }
+    // get stream output
+    MxStream::MxstDataOutput* output = mxStreamManager.GetResult(streamName, inPluginId);
+    if (output == nullptr) {
+        LogError << "Failed to get pipeline output.";
+        delete dataBuffer.dataPtr;
+        dataBuffer.dataPtr = nullptr;
+        return ret;
+    }
+    double time =  (double)(clock() - start) / CLOCKS_PER_SEC;
+    time_min = (std::min)(time_min, time);
+    time_max = (std::max)(time_max, time);
+    time_avg += time;
+    std::string result = std::string((char *)output->dataPtr, output->dataSize);
+    if (saveImage == true) { SaveImage(result, src, id); }
+    if (saveTxt == true) { SaveTxt(result, id); }
+    delete output;
+    delete dataBuffer.dataPtr;
+    dataBuffer.dataPtr = nullptr;
+
+    return 0;
+}
 int run()
 {
     std::ifstream in(imageSetFile);
@@ -268,51 +317,7 @@ int run()
     if (in) {
         while (getline(in, line)) {
             loop_num++;
-            std::string img_path = imageSetPath+'/'+line+".jpg";
-            MxStream::MxstDataInput dataBuffer;
-            cv::Mat src;
-            auto start = clock();
-            if (task == "eval") {
-                src = cv::imread(img_path);
-                cv::Mat img = letterBox(src);
-                cv::imwrite("./tmp.jpg", img);
-                ret = ReadFile("./tmp.jpg", dataBuffer);
-            }else if (task == "detect") {
-                src = cv::imread(img_path);
-                ret = ReadFile(img_path, dataBuffer);
-            }else {
-                ret = ReadFile(img_path, dataBuffer);
-            }
-            if (ret != APP_ERR_OK) {
-                LogError << GetError(ret) << "Failed to read image file.";
-                return ret;
-            }
-            // send data into stream
-            ret = mxStreamManager.SendData(streamName, inPluginId, dataBuffer);
-            if (ret != APP_ERR_OK) {
-                LogError << GetError(ret) << "Failed to send data to stream.";
-                delete dataBuffer.dataPtr;
-                dataBuffer.dataPtr = nullptr;
-                return ret;
-            }
-            // get stream output
-            MxStream::MxstDataOutput* output = mxStreamManager.GetResult(streamName, inPluginId);
-            if (output == nullptr) {
-                LogError << "Failed to get pipeline output.";
-                delete dataBuffer.dataPtr;
-                dataBuffer.dataPtr = nullptr;
-                return ret;
-            }
-            double time =  (double)(clock() - start) / CLOCKS_PER_SEC;
-            time_min = (std::min)(time_min, time);
-            time_max = (std::max)(time_max, time);
-            time_avg += time;
-            std::string result = std::string((char *)output->dataPtr, output->dataSize);
-            if (saveImage == true) { SaveImage(result, src, line); }
-            if (saveTxt == true) { SaveTxt(result, line); }
-            delete output;
-            delete dataBuffer.dataPtr;
-            dataBuffer.dataPtr = nullptr;
+            work(line, mxStreamManager);
         }
         time_avg /= loop_num;
     }
