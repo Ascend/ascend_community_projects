@@ -1,0 +1,77 @@
+{
+    "pfe": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "appsrc0": {
+            "props": {
+                "blocksize": "1200000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:0"
+        },
+        "appsrc1": {
+            "props": {
+                "blocksize": "1200000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:1"
+        },
+        "appsrc2": {
+            "props": {
+                "blocksize": "1200000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:2"
+        },
+        "appsrc3": {
+            "props": {
+                "blocksize": "1200000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:3"
+        },
+        "appsrc4": {
+            "props": {
+                "blocksize": "12000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:4"
+        },
+        "appsrc5": {
+            "props": {
+                "blocksize": "1200000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:5"
+        },
+        "appsrc6": {
+            "props": {
+                "blocksize": "1200000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:6"
+        },
+        "appsrc7": {
+            "props": {
+                "blocksize": "1200000"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0:7"
+        },
+        "mxpi_tensorinfer0": {
+            "props": {
+                "dataSource":"appsrc0,appsrc1,appsrc2,appsrc3,appsrc4,appsrc5,appsrc6,appsrc7",
+                "modelPath": "../models/model_om/pfe.om"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "appsink0"
+        },
+        "appsink0": {
+            "props": {
+                "blocksize": "10000000000"
+            },
+            "factory": "appsink"
+        }
+    }
+}

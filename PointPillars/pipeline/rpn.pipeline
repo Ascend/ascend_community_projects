@@ -1,0 +1,28 @@
+{
+    "rpn": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "appsrc0": {
+            "props": {
+                "blocksize": "13713408"
+            },
+           "factory": "appsrc",
+           "next": "mxpi_tensorinfer0"
+        },
+        "mxpi_tensorinfer0": {
+            "props": {
+                "dataSource":"appsrc0",
+                "modelPath": "../models/model_om/rpn.om"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "appsink0"
+        },
+        "appsink0": {
+            "props": {
+                "blocksize": "10000000000"
+            },
+            "factory": "appsink"
+        }
+    }
+}
