@@ -30,6 +30,28 @@ float ratio = 1.0;
 
 
 namespace {
+std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
+{
+    std::ifstream file(pipelineConfigPath.c_str(), std::ifstream::binary);
+    if (!file) {
+        LogError << pipelineConfigPath << " file dose not exist.";
+        return "";
+    }
+    file.seekg(0, std::ifstream::end);
+    uint32_t fileSize = file.tellg();
+    file.seekg(0);
+    auto dataPtr = new (std::nothrow) char[fileSize];
+    if (dataPtr == nullptr) {
+        LogError << GetError(APP_ERR_COMM_INIT_FAIL) << "The pointer is null.";
+        return "";
+    }
+    std::unique_ptr<char[]> data(dataPtr);
+    file.read(data.get(), fileSize);
+    file.close();
+    std::string pipelineConfig(data.get(), fileSize);
+    return pipelineConfig;
+}
+
 APP_ERROR ReadFile(const std::string& filePath, MxStream::MxstDataInput& dataBuffer)
 {
     char c[PATH_MAX + 1] = { 0x00 };
@@ -75,28 +97,6 @@ APP_ERROR ReadFile(const std::string& filePath, MxStream::MxstDataInput& dataBuf
     }
     fclose(fp);
     return APP_ERR_COMM_FAILURE;
-}
-
-std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
-{
-    std::ifstream file(pipelineConfigPath.c_str(), std::ifstream::binary);
-    if (!file) {
-        LogError << pipelineConfigPath << " file dose not exist.";
-        return "";
-    }
-    file.seekg(0, std::ifstream::end);
-    uint32_t fileSize = file.tellg();
-    file.seekg(0);
-    auto dataPtr = new (std::nothrow) char[fileSize];
-    if (dataPtr == nullptr) {
-        LogError << GetError(APP_ERR_COMM_INIT_FAIL) << "The pointer is null.";
-        return "";
-    }
-    std::unique_ptr<char[]> data(dataPtr);
-    file.read(data.get(), fileSize);
-    file.close();
-    std::string pipelineConfig(data.get(), fileSize);
-    return pipelineConfig;
 }
 }
 struct Result
