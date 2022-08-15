@@ -70,15 +70,15 @@ int main(void)
 
 	memset(fb_base, 0xff, frame_buffer_size); // 将全屏设为白色
  
-	for (i = x-r; i <= x+r; i++)
+	for (i = x - r; i <= x + r; i++)
 	{
-		set_pixel_color(i, y+sqrt(r*r-(x-i)*(x-i)), 0x0000);
-		set_pixel_color(i, y-sqrt(r*r-(x-i)*(x-i)), 0x0000);
+		set_pixel_color(i, y + sqrt(r * r - (x - i) * (x - i)), 0x0000);
+		set_pixel_color(i, y - sqrt(r * r - (x - i) * (x - i)), 0x0000);
 	}
-	for (i = y-r; i <= y+r; i++)
+	for (i = y - r; i <= y + r; i++)
         {
-                set_pixel_color(x+sqrt(r*r-(y-i)*(y-i)), i, 0x0000);
-                set_pixel_color(x-sqrt(r*r-(y-i)*(y-i)), i, 0x0000);
+                set_pixel_color(x + sqrt(r * r - (y - i) * (y - i)), i, 0x0000);
+                set_pixel_color(x - sqrt(r * r - (y - i) * (y - i)), i, 0x0000);
         }
 
 	munmap(fb_base, frame_buffer_size); // 释放显存映射
