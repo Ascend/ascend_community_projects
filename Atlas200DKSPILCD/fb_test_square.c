@@ -24,7 +24,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
-struct g_fb_var_screeninfo vinfo = {0}; // 定义结构体变量，读取屏幕信息时用来记录屏幕可变信息的
+struct fb_var_screeninfo g_vinfo = {0}; // 定义结构体变量，读取屏幕信息时用来记录屏幕可变信息的
 unsigned char *g_fb_base; // 显存的基地址
 unsigned int g_line_length;
 unsigned int g_bytes_per_pixel; // 每像素占用字节数
@@ -50,15 +50,15 @@ int main(void)
 		return -1;
 	}
 
-	if (ioctl(fd_fb, FBIOGET_VSCREENINFO, &vinfo)) // 获取可变的参数g_fb_var_screeninfo的值
+	if (ioctl(fd_fb, FBIOGET_VSCREENINFO, &g_vinfo)) // 获取可变的参数fb_var_screeninfo的值
 	{
 		perror("ioctl");
 		return -1;
 	}
 
-	g_bytes_per_pixel = vinfo.bits_per_pixel / bits_per_byte;
-	g_line_length = vinfo.xres_virtual * g_bytes_per_pixel;
-	frame_buffer_size = vinfo.xres_virtual * vinfo.yres_virtual * g_bytes_per_pixel;
+	g_bytes_per_pixel = g_vinfo.bits_per_pixel / bits_per_byte;
+	g_line_length = g_vinfo.xres_virtual * g_bytes_per_pixel;
+	frame_buffer_size = g_vinfo.xres_virtual * g_vinfo.yres_virtual * g_bytes_per_pixel;
 
 	g_fb_base = (unsigned char *)mmap(NULL, frame_buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd_fb, 0); // 通过mmap获取显存地址
 	if (g_fb_base == (unsigned char *)-1)
