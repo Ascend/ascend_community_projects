@@ -22,16 +22,16 @@
 
 int main(int argc, char *argv[])
 {
-	short resive_data[6];  // 保存收到的 mpu6050转换结果数据，依次为 AX(x轴角度), AY, AZ 。GX(x轴加速度), GY ,GZ
+	short resive_data[6]; // 保存收到的 mpu6050转换结果数据，依次为 AX(x轴角度), AY, AZ 。GX(x轴加速度), GY ,GZ
 	int error;
-	int AX, AY, AZ, GX, GY, GZ;	// 原始数据
-	float AX_zeroset=-0.05, AY_zeroset=0.00, AZ_zeroset=0.19, GX_zeroset=75.93, GY_zeroset=19.12, GZ_zeroset=21.35;	// 调零参数
-	int acc_trans=16384, gyro_trans=16.4;
+	int AX, AY, AZ, GX, GY, GZ; // 原始数据
+	float AX_zeroset=-0.05, AY_zeroset=0.00, AZ_zeroset=0.19, GX_zeroset=75.93, GY_zeroset=19.12, GZ_zeroset=21.35; // 调零参数
+	float acc_trans=16384, gyro_trans=16.4;
 	float AX_act, AY_act, AZ_act, GX_act, GY_act, GZ_act;
 	char *buf;
 	int sleep_time = 100000;
 
-	/*打开文件*/
+	/* 打开文件 */
 	int fd = open("/dev/I2C1_mpu6050", O_RDWR);
 	if(fd < 0)
 	{
@@ -40,13 +40,13 @@ int main(int argc, char *argv[])
 	}
 
 	while(1) {
-	/*读取数据*/
-	error = read(fd,resive_data,12);
+	/* 读取数据 */
+	error = read(fd, resive_data, 12);
 	if(error < 0)
 	{
 		printf("write file error! \n");
 		close(fd);
-		/*判断是否关闭成功*/
+		/* 判断是否关闭成功 */
 	}
 
 	AX = (int)resive_data[0];
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	GY = (int)resive_data[4];
 	GZ = (int)resive_data[5];
 
-	/*调零 单位转换*/
+	/* 调零 单位转换 */
 	AX_act = (float)(AX)/acc_trans+AX_zeroset;
 	AY_act = (float)(AY)/acc_trans+AY_zeroset;
 	AZ_act = (float)(AZ)/acc_trans+AZ_zeroset;
@@ -64,16 +64,16 @@ int main(int argc, char *argv[])
 	GY_act = ((float)(GY)+GY_zeroset)/gyro_trans;
 	GZ_act = ((float)(GZ)+GZ_zeroset)/gyro_trans;
 
-	/*将解算后的数据显示在LCD上*/
+	/* 将解算后的数据显示在LCD上 */
 	sprintf(buf, "bash display_mpu6050.sh %.2f %.2f %.2f %.2f %.2f %.2f", AX_act, AY_act, AZ_act, GX_act, GY_act, GZ_act);
 	system(buf);
 
 	usleep(sleep_time);
 	}
 
-	/*关闭文件*/
+	/* 关闭文件 */
 	error = close(fd);
-	if(error < 0)
+	if(error<0)
 	{
 		printf("close file error! \n");
 	}
