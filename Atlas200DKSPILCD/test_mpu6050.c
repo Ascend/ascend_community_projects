@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
 	/* 打开文件 */
 	int fd = open("/dev/I2C1_mpu6050", O_RDWR);
-	if(fd < 0)
+	if(fd<0)
 	{
 		printf("open file : %s failed !\n", argv[0]);
 		return -1;
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	while(1) {
 	/* 读取数据 */
 	error = read(fd, resive_data, 12);
-	if(error < 0)
+	if(error<0)
 	{
 		printf("write file error! \n");
 		close(fd);
