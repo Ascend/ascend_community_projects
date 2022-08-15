@@ -33,14 +33,13 @@ unsigned int bytes_per_pixel; // 每像素占用字节数
 void set_pixel_color(int x, int y, unsigned int color) // 将坐标为(x,y)的像素设为指定颜色
 {
 	int index = y * line_length + x * bytes_per_pixel;
- 
 	*(unsigned int *)(fb_base + index) = color;
 }
  
 int main(void)
 {
 	int i;
-	int x=120, y=160, r=50;
+	int x = 120, y = 160, r = 50;
 	int bits_per_byte = 8;
 	int fd_fb;
 	int frame_buffer_size; // 显存大小
