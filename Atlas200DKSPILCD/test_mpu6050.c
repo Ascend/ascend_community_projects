@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	int sleep_time = 100000;
 
 	/* 打开文件 */
-	int fd = open("/dev/I2C1_mpu6050", O_RDWR);
+	int fd = open("/dev/mpu6050", O_RDWR);
 	if (fd<0)
 	{
 		printf("open file : %s failed !\n", argv[0]);
