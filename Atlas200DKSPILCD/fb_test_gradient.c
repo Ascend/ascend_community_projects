@@ -31,7 +31,7 @@ unsigned int bytes_per_pixel; // 每像素占用字节数
 
 void set_pixel_color(int x, int y, unsigned int color) // 将坐标为(x,y)的像素设为指定颜色
 {
-	int index = y * line_length + x * bytes_per_pixel; 
+	int index = y * line_length + x * bytes_per_pixel;
 	*(unsigned int *)(fb_base + index) = color;
 }
  
@@ -69,11 +69,11 @@ int main(void)
 		return -1;
 	}
 
-	for(j = 0 ; j < height ; j++)
+	for (j = 0; j<height; j++)
 	{
-		for (i = 0 ; i < width ; i++)
+		for (i = 0; i<width; i++)
 		{
-			set_pixel_color(i, j, color_num*(j/pixels_per_color));
+			set_pixel_color(i, j, color_num * (j / pixels_per_color));
 		}
 	}
 
