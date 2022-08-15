@@ -23,7 +23,8 @@
 int main(int argc, char *argv[])
 {
 	short resive_data[6]; // 保存收到的 mpu6050转换结果数据，依次为 AX(x轴角度), AY, AZ 。GX(x轴加速度), GY ,GZ
-    int index_0 = 0, index_1 = 1, index_2 = 2, index_3 = 3, index_4 = 4, index_5 = 5;
+    int data_size = 12;
+	int index_0 = 0, index_1 = 1, index_2 = 2, index_3 = 3, index_4 = 4, index_5 = 5;
 	int error;
 	int AX, AY, AZ, GX, GY, GZ; // 原始数据
 	float AX_zeroset = -0.05, AY_zeroset = 0.00, AZ_zeroset = 0.19, GX_zeroset = 75.93, GY_zeroset = 19.12, GZ_zeroset = 21.35; // 调零参数
@@ -34,16 +35,16 @@ int main(int argc, char *argv[])
 
 	/* 打开文件 */
 	int fd = open("/dev/I2C1_mpu6050", O_RDWR);
-	if(fd<0)
+	if (fd<0)
 	{
 		printf("open file : %s failed !\n", argv[0]);
 		return -1;
 	}
 
-	while(1) {
+	while (1) {
 	/* 读取数据 */
-	error = read(fd, resive_data, 12);
-	if(error<0)
+	error = read(fd, resive_data, data_size);
+	if (error<0)
 	{
 		printf("write file error! \n");
 		close(fd);
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
 
 	/* 关闭文件 */
 	error = close(fd);
-	if(error<0)
+	if (error<0)
 	{
 		printf("close file error! \n");
 	}
