@@ -22,63 +22,51 @@
 
 int main(int argc, char *argv[])
 {
-	short resive_data[6]; // 保存收到的 mpu6050转换结果数据，依次为 AX(x轴角度), AY, AZ 。GX(x轴加速度), GY ,GZ
-    int data_size = 12;
+	int fd;
+	short buffer[6];
 	int index_0 = 0, index_1 = 1, index_2 = 2, index_3 = 3, index_4 = 4, index_5 = 5;
-	int error;
-	int AX, AY, AZ, GX, GY, GZ; // 原始数据
-	float AX_zeroset = -0.05, AY_zeroset = 0.00, AZ_zeroset = 0.19, GX_zeroset = 75.93, GY_zeroset = 19.12, GZ_zeroset = 21.35; // 调零参数
-	float acc_trans = 16384, gyro_trans = 16.4;
-	float AX_act, AY_act, AZ_act, GX_act, GY_act, GZ_act;
-	char *buf;
+	char *display_cmd;
 	int sleep_time = 100000;
 
-	/* 打开文件 */
-	int fd = open("/dev/mpu6050", O_RDWR);
-	if (fd<0)
-	{
-		printf("open file : %s failed !\n", argv[0]);
+	int accel_x_adc, accel_y_adc, accel_z_adc, gyro_x_adc, gyro_y_adc, gyro_z_adc;
+	float accel_x_act, accel_y_act, accel_z_act, gyro_x_act, gyro_y_act, gyro_z_act;
+	float accel_x_zeroset = -0.05, accel_y_zeroset = 0.01, accel_z_zeroset = 0.19, gyro_x_zeroset = 75.93, gyro_y_zeroset = 19.12, gyro_z_zeroset = 21.35; // 调零参数,根据设备调整
+	float accel_trans = 16384, gyro_trans = 16.4; // 转换系数
+
+	int ret = 0;
+	char* filename = "/dev/mpu6050";
+	fd = open(filename, O_RDWR);
+	if(fd < 0) {
+		printf("can't open file %s\r\n", filename);
 		return -1;
 	}
 
-	while (1) {
-	/* 读取数据 */
-	error = read(fd, resive_data, data_size);
-	if (error<0)
-	{
-		printf("write file error! \n");
-		close(fd);
-		/* 判断是否关闭成功 */
+	while(1) {
+		ret = read(fd, buffer, sizeof(buffer));
+		if(ret == 0) {
+			/* 原始数据 */
+			accel_x_adc = (int)buffer[index_3];
+			accel_y_adc = (int)buffer[index_4];
+			accel_z_adc = (int)buffer[index_5];
+			gyro_x_adc = (int)buffer[index_0];
+			gyro_y_adc = (int)buffer[index_1];
+			gyro_z_adc = (int)buffer[index_2];
+
+			/* 数据转换 */
+			accel_x_act = (float)(accel_x_adc) / accel_trans + accel_x_zeroset;
+			accel_y_act = (float)(accel_y_adc) / accel_trans + accel_y_zeroset;
+			accel_z_act = (float)(accel_z_adc) / accel_trans + accel_z_zeroset;
+			gyro_x_act = ((float)(gyro_x_adc) + gyro_x_zeroset) / gyro_trans;
+			gyro_y_act = ((float)(gyro_y_adc) + gyro_y_zeroset) / gyro_trans;
+			gyro_z_act = ((float)(gyro_z_adc) + gyro_z_zeroset) / gyro_trans;
+
+			/* 将数据显示在LCD上 */
+			sprintf(display_cmd, "bash display_mpu6050.sh %.2f %.2f %.2f %.2f %.2f %.2f", \
+					accel_x_act, accel_y_act, accel_z_act, gyro_x_act, gyro_y_act, gyro_z_act);
+			system(display_cmd);
+		}
+		usleep(sleep_time); 
 	}
-
-	AX = (int)resive_data[index_0];
-	AY = (int)resive_data[index_1];
-	AZ = (int)resive_data[index_2];
-	GX = (int)resive_data[index_3];
-	GY = (int)resive_data[index_4];
-	GZ = (int)resive_data[index_5];
-
-	/* 调零 单位转换 */
-	AX_act = (float)(AX) / acc_trans + AX_zeroset;
-	AY_act = (float)(AY) / acc_trans + AY_zeroset;
-	AZ_act = (float)(AZ) / acc_trans + AZ_zeroset;
-	GX_act = ((float)(GX) + GX_zeroset) / gyro_trans;
-	GY_act = ((float)(GY) + GY_zeroset) / gyro_trans;
-	GZ_act = ((float)(GZ) + GZ_zeroset) / gyro_trans;
-
-	/* 将解算后的数据显示在LCD上 */
-	sprintf(buf, "bash display_mpu6050.sh %.2f %.2f %.2f %.2f %.2f %.2f", AX_act, AY_act, AZ_act, GX_act, GY_act, GZ_act);
-	system(buf);
-
-	usleep(sleep_time);
-	}
-
-	/* 关闭文件 */
-	error = close(fd);
-	if (error<0)
-	{
-		printf("close file error! \n");
-	}
-
+	close(fd);
 	return 0;
 }
