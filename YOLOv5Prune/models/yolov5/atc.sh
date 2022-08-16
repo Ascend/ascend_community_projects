@@ -14,12 +14,13 @@
 
 cd ./models/yolov5/
 atc \
---model=prune55_t.onnx \
+--model=prune60_t.onnx \
 --framework=5 \
---output=./prune55_t \
+--output=./prune60_t \
 --input_format=NCHW \
 --input_shape="images:1,3,512,512" \
 --enable_small_channel=1 \
+--insert_op_conf=./aipp_yolov5.cfg \
 --soc_version=Ascend310 \
---out_nodes="Transpose_260:0;Transpose_308:0;Transpose_356:0" \
+--out_nodes="Transpose_260:0;Transpose_520:0;Transpose_780:0" \
 cd - 

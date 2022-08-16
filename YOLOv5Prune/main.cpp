@@ -23,7 +23,7 @@
 #include "opencv4/opencv2/opencv.hpp"
 const int color_list[20][3] = { {216, 82, 24}, {236, 176, 31}, {125, 46, 141}, {118, 171, 47}, {76, 189, 237}, {238, 19, 46},
                             {76, 76, 76}, {153, 153, 153}, {255, 0, 0}, {255, 127, 0}, {190, 190, 0}, {0, 255, 0}, {0, 0, 255},
-                            {170, 0, 255}, {84, 84, 0}, {84, 170, 0}, {84, 255, 0}, {170, 84, 0}, {170, 170, 0}, {170, 255, 0}}
+                            {170, 0, 255}, {84, 84, 0}, {84, 170, 0}, {84, 255, 0}, {170, 84, 0}, {170, 170, 0}, {170, 255, 0}};
 
 float pad_w = 0.0, pad_h = 0.0;
 float ratio = 1.0;
@@ -207,7 +207,7 @@ void SaveImage(const std::string& result, const cv::Mat src, const std::string& 
         cv::Rect rect(it.x0, it.y0, it.x1 - it.x0, it.y1 - it.y0);
         cv::rectangle(src, rect, color);
         char text[256];
-        sprintf(text, "%s %.1f%", it.className.c_str(), it.conf);
+        sprintf(text, "%s %.2f", it.className.c_str(), it.conf);
         int baseLine = 0;
         double fontScale = 0.4;
         cv::Scalar fontColor = cv::Scalar(255, 255, 255);
@@ -219,7 +219,6 @@ void SaveImage(const std::string& result, const cv::Mat src, const std::string& 
 }
 void SaveTxt(const std::string& result, const std::string& line)
 {
-    // web::json::value jsonText = web::json::value::parse(result);
     auto res = ParseResult(result);
     for (auto it : res) {
         std::ofstream outfile("./txt_result/det_test_" + it.className + ".txt", std::ios::app);
@@ -247,6 +246,7 @@ int work(const std::string& id, MxStream::MxStreamManager& mxStreamManager)
     std::string img_path = imageSetPath+'/'+id+".jpg";
     MxStream::MxstDataInput dataBuffer;
     cv::Mat src;
+    int ret;
     if (task == "eval") {
         src = cv::imread(img_path);
         cv::Mat img = letterBox(src);
@@ -278,10 +278,6 @@ int work(const std::string& id, MxStream::MxStreamManager& mxStreamManager)
         dataBuffer.dataPtr = nullptr;
         return ret;
     }
-    double time =  (double)(clock() - start) / CLOCKS_PER_SEC;
-    time_min = (std::min)(time_min, time);
-    time_max = (std::max)(time_max, time);
-    time_avg += time;
     std::string result = std::string((char *)output->dataPtr, output->dataSize);
     if (saveImage == true) { SaveImage(result, src, id); }
     if (saveTxt == true) { SaveTxt(result, id); }
@@ -317,7 +313,12 @@ int run()
     if (in) {
         while (getline(in, line)) {
             loop_num++;
+            auto start = clock();
             work(line, mxStreamManager);
+            double time =  (double)(clock() - start) / CLOCKS_PER_SEC;
+            time_min = (std::min)(time_min, time);
+            time_max = (std::max)(time_max, time);
+            time_avg += time;
         }
         time_avg /= loop_num;
     }

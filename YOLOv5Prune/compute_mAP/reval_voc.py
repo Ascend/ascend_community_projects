@@ -66,23 +66,22 @@ def do_eval(devkit_path, image_set, classes, output_dir):
         rec, prec, ap = evaluate(
             filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.55)
         aps += [ap]
-        print('AP for {} = {:.4f}'.format(cls, ap))
+        
         os.system('touch '+os.path.join(output_dir, cls + '_pr.pkl'))
         with open(os.path.join(output_dir, cls + '_pr.pkl'), 'rb+') as f:
             pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
+    print('Results:')
+    print('~~~~~~~~')
     print('Mean AP = {:.4f}'.format(np.mean(aps)))
     print('~~~~~~~~')
-    print('Results:')
-    for ap in aps:
-        print('{:.3f}'.format(ap))
-    print('{:.3f}'.format(np.mean(aps)))
+    for ap, cls in zip(aps, classes):
+        print('AP for {} = {:.4f}'.format(cls, ap))
 
 
 if __name__ == '__main__':
     args = parse_args()
 
     res_dir = os.path.abspath(args.output_dir[0])
-    print(output_dir)
     with open(args.class_file, 'r') as file:
         lines = file.readlines()
     class_name = [t.strip('\n') for t in lines]

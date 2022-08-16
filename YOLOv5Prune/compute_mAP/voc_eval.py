@@ -69,7 +69,6 @@ def evaluate(detpath,
     imagenames = [x.strip() for x in lines]
 
     if os.path.isfile(cachefile):
-        print('cachefile = ', cachefile)
         with open(cachefile, 'rb') as f:
             recs = pickel.load(f)
     else:

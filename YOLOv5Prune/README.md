@@ -16,7 +16,7 @@ yolov5s是非常优秀的轻量级检测网络，但是有时候模型依然比�
 
 ### 1.2 支持的版本
 
-本样例配套的CANN版本为[5.0.5](https://www.hiascend.com/software/cann/commercial)。支持的SDK版本为[2.0.4](https://www.hiascend.com/software/Mindx-sdk)。
+本样例配套的CANN版本为[5.0.4](https://www.hiascend.com/software/cann/commercial)。支持的SDK版本为[2.0.4](https://www.hiascend.com/software/Mindx-sdk)。
 
 MindX SDK安装前准备可参考《用户指南》，[安装教程](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/quickStart/1-1安装SDK开发套件.md)
 
@@ -176,7 +176,7 @@ $$
 
 ## 4 模型转换
 
-ONNX模型可通过[地址]()获取，下载后使用模型转换工具 ATC 将 pb 模型转换为 om 模型，模型转换工具相关介绍参考链接：[https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html](https://gitee.com/link?target=https%3A%2F%2Fsupport.huaweicloud.com%2Ftg-cannApplicationDev330%2Fatlasatc_16_0005.html) 。
+ONNX模型可通过[地址](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/yolov5prune/prune_onnx.rar)获取，下载后使用模型转换工具 ATC 将 pb 模型转换为 om 模型，模型转换工具相关介绍参考链接：[https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html](https://gitee.com/link?target=https%3A%2F%2Fsupport.huaweicloud.com%2Ftg-cannApplicationDev330%2Fatlasatc_16_0005.html) 。
 
 模型转换，步骤如下：
 
