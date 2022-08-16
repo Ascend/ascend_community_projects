@@ -36,14 +36,14 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	char* filename = "/dev/mpu6050";
 	fd = open(filename, O_RDWR);
-	if(fd < 0) {
+	if (fd < 0) {
 		printf("can't open file %s\r\n", filename);
 		return -1;
 	}
 
-	while(1) {
+	while (1) {
 		ret = read(fd, buffer, sizeof(buffer));
-		if(ret == 0) {
+		if (ret == 0) {
 			/* 原始数据 */
 			accel_x_adc = (int)buffer[index_3];
 			accel_y_adc = (int)buffer[index_4];
@@ -61,11 +61,10 @@ int main(int argc, char *argv[])
 			gyro_z_act = ((float)(gyro_z_adc) + gyro_z_zeroset) / gyro_trans;
 
 			/* 将数据显示在LCD上 */
-			sprintf(display_cmd, "bash display_mpu6050.sh %.2f %.2f %.2f %.2f %.2f %.2f", \
-					accel_x_act, accel_y_act, accel_z_act, gyro_x_act, gyro_y_act, gyro_z_act);
+			sprintf(display_cmd, "bash display_mpu6050.sh %.2f %.2f %.2f %.2f %.2f %.2f", accel_x_act, accel_y_act, accel_z_act, gyro_x_act, gyro_y_act, gyro_z_act);
 			system(display_cmd);
 		}
-		usleep(sleep_time); 
+		usleep(sleep_time);
 	}
 	close(fd);
 	return 0;
