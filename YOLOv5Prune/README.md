@@ -128,7 +128,7 @@ L=\sum_{(x,y)}\ l(f(x,W),y)+\lambda \sum_{\gamma \in \Gamma}g(\gamma)
 $$
 上面第一项是正常训练的loss函数，第二项是约束，其中$g(s)=|s|$，λ是正则系数。反向传播时:
 $$
-L'=\sum l'+\lambda\sum g'(\gamma)=\sum l'+\lambda\sum |\gamma|'=\sum l'+\lambda \sum\gamma sign(\gamma)
+L'=\sum l'+\lambda\sum g'(\gamma)=\sum l'+\lambda\sum |\gamma|'=\sum l'+\lambda \sum sign(\gamma)
 $$
 
 ```python
