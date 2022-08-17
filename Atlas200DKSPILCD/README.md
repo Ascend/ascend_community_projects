@@ -315,7 +315,7 @@ https://www.hiascend.com/hardware/firmware-drivers?tag=community
 
 **步骤5** 执行如下命令，用重新编译后的内核替换驱动包的内核。
 
-    cp opt/source/output/out_header/Image driver
+    cp /opt/source/output/out_header/Image driver
 
 **步骤6** 执行如下命令，压缩新的驱动包。
 
