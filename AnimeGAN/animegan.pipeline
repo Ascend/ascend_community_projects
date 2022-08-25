@@ -40,7 +40,7 @@
     "animeganpostprocessor0": {
       "props": {
         "dataSource": "mxpi_tensorinfer0",
-        "outputPath": "results/npu_test"
+        "outputPath": "results/npu"
       },
       "factory": "animeganpostprocessor",
       "next": "appsink0"
