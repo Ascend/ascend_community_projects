@@ -1,0 +1,55 @@
+{
+  "animegan": {
+    "stream_config": {
+      "deviceId": "3"
+    },
+    "appsrc0": {
+      "props": {
+        "blocksize": "409600"
+      },
+      "factory": "appsrc",
+      "next": "mxpi_imagedecoder0"
+    },
+    "mxpi_imagedecoder0": {
+      "props": {
+        "cvProcessor": "opencv",
+        "dataType": "float32",
+        "outputDataFormat": "RGB"
+      },
+      "factory": "mxpi_imagedecoder",
+      "next": "mxpi_imagenormalize0"
+    },
+    "mxpi_imagenormalize0": {
+      "props": {
+        "alpha": "127.5,127.5,127.5",
+        "beta": "127.5,127.5,127.5",
+        "dataType": "FLOAT32"
+      },
+      "factory": "mxpi_imagenormalize",
+      "next": "mxpi_tensorinfer0"
+    },
+    "mxpi_tensorinfer0": {
+      "props": {
+        "dataSource": "mxpi_imagenormalize0",
+        "modelPath": "models/AnimeGAN_FD.om",
+        "waitingTime": "8000"
+      },
+      "factory": "mxpi_tensorinfer",
+      "next": "animeganpostprocessor0"
+    },
+    "animeganpostprocessor0": {
+      "props": {
+        "dataSource": "mxpi_tensorinfer0",
+        "outputPath": "results/npu_test"
+      },
+      "factory": "animeganpostprocessor",
+      "next": "appsink0"
+    },
+    "appsink0": {
+      "props": {
+        "blocksize": "409600"
+      },
+      "factory": "appsink"
+    }
+  }
+}
