@@ -13,20 +13,20 @@
 # limitations under the License.
 
 import os
-import cv2
 import glob
 import time
 import math
+import cv2
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
 # set some parameters
 STREAM_NAME = b'animegan'
-DATA_PATH = "dataset/eval"
+DATA_PATH = "HR_photo"
 PIPELINE = "animegan.pipeline"
 
 
-def preprocess(img_path):
-    img = cv2.imread(img_path)
+def preprocess(path):
+    img = cv2.imread(path)
     h, w = img.shape[:2]
 
     # Due to the limit of memory,the model doesn't support resolutions larger.

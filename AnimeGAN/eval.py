@@ -14,8 +14,8 @@
 
 import glob
 import os
-import cv2
 import argparse
+import cv2
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
 
@@ -27,7 +27,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def eval(gpu_path, npu_path):
+def eval_metrics(gpu_path, npu_path):
     total_ssim_score = 0
     total_psnr_socre = 0
     pairs = 0
@@ -38,8 +38,8 @@ def eval(gpu_path, npu_path):
     npu_imgs = sorted(glob.glob(os.path.join(npu_path, '*.jpg')))
     assert len(gpu_imgs) == len(npu_imgs)
 
-    for index in range(len(gpu_imgs)):
-        img1 = cv2.imread(gpu_imgs[index])
+    for index,img1_path in enumerate(gpu_imgs):
+        img1 = cv2.imread(img1_path)
         img2 = cv2.imread(npu_imgs[index])
 
         img1_h, img1_w = img1.shape[:2]
@@ -66,4 +66,4 @@ def eval(gpu_path, npu_path):
 
 if __name__ == "__main__":
     args = parse_args()
-    eval(args.gpu_results_dir, args.npu_results_dir)
+    eval_metrics(args.gpu_results_dir, args.npu_results_dir)

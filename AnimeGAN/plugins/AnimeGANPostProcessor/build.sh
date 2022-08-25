@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e 
+set -e
 
-current_folder="$( cd "$(dirname "$0")" ;pwd -P )"
+current_folder="$(
+    cd "$(dirname "$0")"
+    pwd -P
+)"
 
 function build_plugin() {
     build_path=$current_folder/build

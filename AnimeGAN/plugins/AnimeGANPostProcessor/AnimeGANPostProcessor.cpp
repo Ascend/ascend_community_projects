@@ -91,7 +91,6 @@ APP_ERROR AnimeGANPostProcessor::Process(std::vector<MxpiBuffer *> &mxpiBuffer)
         for (int j = 0; j < tensorPackage.tensorvec_size(); j++)
         {
             MxpiTensor tensor = tensorPackage.tensorvec(j);
-            assert(tensor.tensorshape_size() == 4); // the tensor's shape should be BHWC
             vector<int> shape;
 
             for (int k = 0; k < tensor.tensorshape_size(); k++)
@@ -110,7 +109,9 @@ APP_ERROR AnimeGANPostProcessor::Process(std::vector<MxpiBuffer *> &mxpiBuffer)
             cv::Mat temp, output;
 
             // convert data from [-1,1] to [0,255] and dtype from float32 to uint8
-            img.convertTo(temp, CV_8UC3, 127.5, 127.5);
+            int alpha = 127.5;
+            int beta = 127.5;
+            img.convertTo(temp, CV_8UC3, alpha, beta);
 
             // convert color from BGR to RGB
             cv::cvtColor(temp, output, cv::COLOR_BGR2RGB);
@@ -134,8 +135,8 @@ std::vector<std::shared_ptr<void>> AnimeGANPostProcessor::DefineProperties()
     std::vector<std::shared_ptr<void>> properties;
 
     // register new property `outputPath`
-    auto outputPathProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string>{
-        STRING, "outputPath", "path", "Where the output image should be saved", "./output.jpg", "NULL", "NULL"});
+    auto outputPathProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string>
+    {STRING, "outputPath", "path", "Where the output image should be saved", "./output.jpg", "NULL", "NULL"});
     properties.push_back(outputPathProSptr);
 
     return properties;
