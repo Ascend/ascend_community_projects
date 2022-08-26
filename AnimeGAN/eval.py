@@ -38,7 +38,7 @@ def eval_metrics(gpu_path, npu_path):
     npu_imgs = sorted(glob.glob(os.path.join(npu_path, '*.jpg')))
     assert len(gpu_imgs) == len(npu_imgs)
 
-    for index,img1_path in enumerate(gpu_imgs):
+    for index, img1_path in enumerate(gpu_imgs):
         img1 = cv2.imread(img1_path)
         img2 = cv2.imread(npu_imgs[index])
 
