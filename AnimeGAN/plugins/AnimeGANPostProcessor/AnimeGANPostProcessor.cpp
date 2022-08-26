@@ -30,7 +30,7 @@ APP_ERROR AnimeGANPostProcessor::Init(std::map<std::string, std::shared_ptr<void
     // get `outputPath` parameter from configParamMap
     std::shared_ptr<string> outputPathProSptr =
         std::static_pointer_cast<string>(configParamMap["outputPath"]);
-    std::string path = *outputPathProSptr.get();
+    auto path = *outputPathProSptr.get();
     outputPath_ = path.back() == '/' ? path : path + "/";
 
     // create directory if it doesn't exist
