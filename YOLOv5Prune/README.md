@@ -87,9 +87,8 @@ https://github.com/midasklr/yolov5prune
 
 ### 3.2 数据集准备
 
-VOC2007数据集，训练集为VOC07 trainval， 验证集为VOC07 test。需将voc数据集转换为yolov5可用的格式。
-
-​						可参考[yolov5prune](https://github.com/midasklr/yolov5prune)/[data](https://github.com/midasklr/yolov5prune/tree/v5.0/data)/[scripts](https://github.com/midasklr/yolov5prune/tree/v5.0/data/scripts)/**get_voc.sh**获取并转换数据集。
+VOC2007数据集，训练集为VOC07 trainval， 验证集为VOC07 test。
+数据集地址：http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar 或者 http://pjreddie.com/media/files/VOCtest_06-Nov-2007.tar
 
 ### 3.3 训练命令示例
 
