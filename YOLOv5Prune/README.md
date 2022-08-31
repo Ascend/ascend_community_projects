@@ -199,8 +199,10 @@ atc \
 --enable_small_channel=1 \
 --insert_op_conf=./aipp_yolov5.cfg \
 --soc_version=Ascend310 \
---out_nodes="Transpose_260:0;Transpose_520:0;Transpose_780:0" \
-#--out_nodes="Transpose_260:0;Transpose_556:0;Transpose_825:0" \
+--out_nodes="Transpose_260:0;Transpose_520:0;Transpose_780:0"  #a  
+#--out_nodes="Transpose_260:0;Transpose_556:0;Transpose_825:0" #b 
+#可通过netron工具查看out_nodes,不同权重可能会存在差异。  
+#如果使用本仓提供的权重，a对应prune55和prune60，b对应prune50。
 ```
 
 执行该命令后会在当前文件夹下生成项目需要的模型文件 `prune60_t.om`。执行后终端输出为：
