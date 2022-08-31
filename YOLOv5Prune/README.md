@@ -75,7 +75,7 @@ letterbox操作：在对图片进行resize时，保持原图的长宽比进行�
 本案例可以满足对图片的目标检测，但有以下限制：  
 1、图片格式应为JPEG编码格式，后缀为(.jpg)。  
 2、当前模型目标类别为VOC数据集的20个类别，包括：aeroplane、bicycle、bird、boat、bottle、bus、car、cat、chair、cow、diningtable、dog、horse、motorbike、person、pottedplant、sheep、sofa、train、tvmonitor。  
-3、可参考模型训练部分，使用自己的数据集训练模型，以获得更好的检测结果
+3、可参考模型训练部分，使用自己的数据集训练模型，以获得更好的检测结果。
 ##  2 环境依赖
 
 部署环境搭建可参考[200dk开发板环境搭建](https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_projects/tutorials/200dk开发板环境搭建.md)
