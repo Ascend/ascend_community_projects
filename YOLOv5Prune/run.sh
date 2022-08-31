@@ -33,6 +33,11 @@ then
     dataset_path=$(get_real_path $2)
     image_set=$(get_real_path $2)"/VOC2007/ImageSets/Main/test.txt"
     image_dir=$(get_real_path $2)"/VOC2007/JPEGImages"
+    if [[ ! -d $dataset_path ]]
+    then 
+        echo "error : $dataset_path is not a dir"
+        exit 1
+    fi
 elif [[ "${1}"x = "detect"x || "${1}"x = "speed"x ]]
 then
     task_type=$1
@@ -53,25 +58,12 @@ then
     echo "error : $image_dir is not a dir"
     exit 1
 fi
-if [[ ! -d $dataset_path ]]
-then 
-    echo "error : $dataset_path is not a dir"
-    exit 1
+
+file=main
+if [[ ! -f $file ]]
+then
+    bash build.sh
 fi
-set -e
-CUR_PATH=$(cd "$(dirname "$0")" || { warn "Failed to check path/to/run.sh" ; exit ; } ; pwd)
-
-# Simple log helper functions
-info() { echo -e "\033[1;34m[INFO ][MxStream] $1\033[1;37m" ; }
-warn() { echo >&2 -e "\033[1;31m[WARN ][MxStream] $1\033[1;37m" ; }
-
-rm -rf ./build
-# complie
-cmake -S . -Bbuild
-make -C ./build  -j
-echo "build done"
-
-export LD_LIBRARY_PATH="${MX_SDK_HOME}/lib":"${MX_SDK_HOME}/opensource/lib":"${MX_SDK_HOME}/opensource/lib64":${LD_LIBRARY_PATH}
 
 # run
 echo "start" $task_type "task"
