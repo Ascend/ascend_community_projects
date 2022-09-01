@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
         # get inference result
         key_vec = StringVector()
-        key_vec.push_back(b'appsink0')
+        key_vec.push_back(b'mxpi_tensorinfer0')
         infer_result = streamManagerApi.GetProtobuf(STREAM_NAME, 0, key_vec)
 
         # the output's filename is decided by timestamp,so better not let them overlap
