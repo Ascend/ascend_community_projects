@@ -190,7 +190,7 @@ ONNX模型可通过[地址](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/a
 2. 执行命令：
 
 ```
-atc --model=prune55_t.onnx --framework=5 --output=./prune60_t --input_format=NCHW --input_shape="images:1,3,512,512"  --enable_small_channel=1 --insert_op_conf=./aipp_yolov5.cfg --soc_version=Ascend310 --out_nodes="Transpose_260:0;Transpose_520:0;Transpose_780:0"  #a  
+atc --model=prune55_t.onnx --framework=5 --output=./prune55_t --input_format=NCHW --input_shape="images:1,3,512,512"  --enable_small_channel=1 --insert_op_conf=./aipp_yolov5.cfg --soc_version=Ascend310 --out_nodes="Transpose_260:0;Transpose_520:0;Transpose_780:0"  #a  
 #--out_nodes="Transpose_260:0;Transpose_556:0;Transpose_825:0" #b 
 #可通过netron工具查看out_nodes,不同权重可能会存在差异。  
 #如果使用本仓提供的权重，a对应prune55和prune60，b对应prune50。
