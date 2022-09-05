@@ -78,7 +78,7 @@ if __name__ == '__main__':
     for img_path in paths:
         ret, img_data = preprocess(img_path)
 
-        if ret == False:
+        if ret is False:
             print("Preprocess failed!Skip this image.")
             continue
         else:
