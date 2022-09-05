@@ -46,8 +46,6 @@ def eval_metrics(gpu_path, npu_path):
         img2_h, img2_w = img2.shape[:2]
         h = min(img1_h, img2_h)
         w = min(img1_w, img2_w)
-        h = h - h % 32
-        w = w - w % 32
 
         img1 = cv2.resize(img1, (w, h))
         img2 = cv2.resize(img2, (w, h))

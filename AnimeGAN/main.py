@@ -23,6 +23,9 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 STREAM_NAME = b'animegan'
 DATA_PATH = "dataset/HR_photo"
 PIPELINE = "animegan.pipeline"
+MAX_IMAGE_SIZE = 1536
+MIN_IMAGE_SIZE = 384
+ROUNDED_MULTIPLES = 128
 
 
 def preprocess(path):
@@ -33,13 +36,13 @@ def preprocess(path):
     else:
         h, w = img.shape[:2]
 
-        # Due to the limit of memory,the model doesn't support resolutions larger.
-        h = min(max(384, h), 1536)
-        w = min(max(384, w), 1536)
+        # Due to the limit of memory,the model doesn't support resolutions larger or samller.
+        h = min(max(MIN_IMAGE_SIZE, h), MAX_IMAGE_SIZE)
+        w = min(max(MIN_IMAGE_SIZE, w), MAX_IMAGE_SIZE)
 
-        # resize to align size to n*128,round up
-        h = math.ceil(h / 128) * 128
-        w = math.ceil(w / 128) * 128
+        # resize to align size to n*ROUNDED_MULTIPLES,round up.
+        h = math.ceil(h / ROUNDED_MULTIPLES) * ROUNDED_MULTIPLES
+        w = math.ceil(w / ROUNDED_MULTIPLES) * ROUNDED_MULTIPLES
         img = cv2.resize(img, (w, h))
 
         return True, cv2.imencode(".jpg", img)[1].tobytes()
