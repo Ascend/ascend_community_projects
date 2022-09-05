@@ -190,22 +190,13 @@ ONNX模型可通过[地址](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/a
 2. 执行命令：
 
 ```
-atc \
---model=prune60_t.onnx \
---framework=5 \
---output=./prune60_t \
---input_format=NCHW \
---input_shape="images:1,3,512,512" \
---enable_small_channel=1 \
---insert_op_conf=./aipp_yolov5.cfg \
---soc_version=Ascend310 \
---out_nodes="Transpose_260:0;Transpose_520:0;Transpose_780:0"  #a  
+atc --model=prune55_t.onnx --framework=5 --output=./prune60_t --input_format=NCHW --input_shape="images:1,3,512,512"  --enable_small_channel=1 --insert_op_conf=./aipp_yolov5.cfg --soc_version=Ascend310 --out_nodes="Transpose_260:0;Transpose_520:0;Transpose_780:0"  #a  
 #--out_nodes="Transpose_260:0;Transpose_556:0;Transpose_825:0" #b 
 #可通过netron工具查看out_nodes,不同权重可能会存在差异。  
 #如果使用本仓提供的权重，a对应prune55和prune60，b对应prune50。
 ```
 
-执行该命令后会在当前文件夹下生成项目需要的模型文件 `prune60_t.om`。执行后终端输出为：
+执行该命令后会在当前文件夹下生成项目需要的模型文件 `prune55_t.om`。执行后终端输出为：
 
 ```
 ATC run success, welcome to the next use.
@@ -234,4 +225,10 @@ bash run.sh eval [dataset_path]
 1、执行detect任务，会在当前目录下生成image_result目录，其中存放推理生成的图片结果。  
 2、执行speed任务，不会保存图片结果，会在终端打印推理性能信息。  
 3、执行eval任务，会将目标检测的结果保存到txt_result目录下，然后根据保存的检测结果计算精度，并将结果打印到当前终端。
+## 6 测试结果
+精度测试：  
+模型在VOC07test数据集上的精度指标达标，在阈值为0.5:0.05:0.95 时 mAP 值是 0.71~0.73，满足精度指标要求。
+
+性能测试：  
+获得的推理性能大约在170~210 帧（剪枝程度不同），可到达推理时间小于10ms。
 
