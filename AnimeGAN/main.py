@@ -1,4 +1,4 @@
-# Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
+# Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,24 +21,28 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
 # set some parameters
 STREAM_NAME = b'animegan'
-DATA_PATH = "HR_photo"
+DATA_PATH = "dataset/HR_photo"
 PIPELINE = "animegan.pipeline"
 
 
 def preprocess(path):
     img = cv2.imread(path)
-    h, w = img.shape[:2]
+    if img is None:
+        print("Error!The image is empty or the path is wrong.")
+        return False, None
+    else:
+        h, w = img.shape[:2]
 
-    # Due to the limit of memory,the model doesn't support resolutions larger.
-    h = min(max(384, h), 1536)
-    w = min(max(384, w), 1536)
+        # Due to the limit of memory,the model doesn't support resolutions larger.
+        h = min(max(384, h), 1536)
+        w = min(max(384, w), 1536)
 
-    # resize to align size to n*128,round up
-    h = math.ceil(h / 128) * 128
-    w = math.ceil(w / 128) * 128
-    img = cv2.resize(img, (w, h))
+        # resize to align size to n*128,round up
+        h = math.ceil(h / 128) * 128
+        w = math.ceil(w / 128) * 128
+        img = cv2.resize(img, (w, h))
 
-    return cv2.imencode(".jpg", img)[1].tobytes()
+        return True, cv2.imencode(".jpg", img)[1].tobytes()
 
 
 if __name__ == '__main__':
@@ -72,20 +76,26 @@ if __name__ == '__main__':
         exit()
 
     for img_path in paths:
-        # send data to stream
-        dataInput = MxDataInput()
-        dataInput.data = preprocess(img_path)
-        ret = streamManagerApi.SendData(STREAM_NAME, b'appsrc0', dataInput)
-        if ret < 0:
-            print("Failed to send data to stream")
-            exit()
+        ret, img_data = preprocess(img_path)
 
-        # get inference result
-        key_vec = StringVector()
-        key_vec.push_back(b'mxpi_tensorinfer0')
-        infer_result = streamManagerApi.GetProtobuf(STREAM_NAME, 0, key_vec)
+        if ret == False:
+            print("Preprocess failed!Skip this image.")
+            continue
+        else:
+            # send data to stream
+            dataInput = MxDataInput()
+            dataInput.data = img_data
+            ret = streamManagerApi.SendData(STREAM_NAME, b'appsrc0', dataInput)
+            if ret < 0:
+                print("Failed to send data to stream")
+                exit()
 
-        # the output's filename is decided by timestamp,so better not let them overlap
-        time.sleep(1)
+            # get inference result
+            key_vec = StringVector()
+            key_vec.push_back(b'mxpi_tensorinfer0')
+            infer_result = streamManagerApi.GetProtobuf(STREAM_NAME, 0, key_vec)
+
+            # the output's filename is decided by timestamp,so better not let them overlap
+            time.sleep(1)
 
     streamManagerApi.DestroyAllStreams()
