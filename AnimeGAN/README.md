@@ -11,7 +11,14 @@
 Github仓库：https://github.com/TachibanaYoshino/AnimeGAN
 
 预训练模型和数据集：https://github.com/TachibanaYoshino/AnimeGAN/releases 
-或者obs://animegan-mxsdk/models以及obs://animegan-mxsdk/dataset
+
+OBS地址：
+
+    PB模型：https://animegan-mxsdk.obs.cn-north-4.myhuaweicloud.com/models/AnimeGAN.pb
+
+    OM模型：https://animegan-mxsdk.obs.cn-north-4.myhuaweicloud.com/models/AnimeGAN_FD.om
+
+    数据集：https://animegan-mxsdk.obs.cn-north-4.myhuaweicloud.com/dataset/dataset.zip
 
 ### 1.2 软件方案介绍
 
@@ -92,7 +99,7 @@ bash ${CANN安装路径}/../set_env.sh
 
 本项目推理模型权重采用官方发布的预训练模型：[Tensorflow模型下载链接](https://github.com/TachibanaYoshino/AnimeGAN/releases)。
 
-使用之前须将Tensorflow的ckpt模型文件转换成pb文件，再使用转化工具ATC将模型转化为om模型。ckpt模型文件转换成pb文件的相关介绍参考[此处](https://gitee.com/ascend/ModelZoo-TensorFlow/blob/master/TensorFlow/contrib/cv/BicycleGAN_ID1287_for_TensorFlow/bicyclegan_pb_frozen.py)。已经转换好的pb模型和支持动态分辨率的om模型可通过华为OBS工具在obs://animegan-mxsdk/models/获得。
+使用之前须将Tensorflow的ckpt模型文件转换成pb文件，再使用转化工具ATC将模型转化为om模型。ckpt模型文件转换成pb文件的相关介绍参考[此处](https://gitee.com/ascend/ModelZoo-TensorFlow/blob/master/TensorFlow/contrib/cv/BicycleGAN_ID1287_for_TensorFlow/bicyclegan_pb_frozen.py)。已经转换好的pb模型和支持动态分辨率的om模型可通过**1.1 概要描述**提供的链接获取。
 
 模型转换工具相关介绍参考[CANN文档](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/60RC1alpha02/infacldevg/atctool/atlasatc_16_0005.html)。
 
