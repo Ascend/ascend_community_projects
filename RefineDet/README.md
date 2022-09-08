@@ -110,7 +110,7 @@ CANN 环境变量：
 - 环境变量介绍
 
 ```
-SDK-path: mxVision SDK 安装路径
+SDK-path: SDK mxVision 安装路径
 ascend-toolkit-path: CANN 安装路径
 ```
 
@@ -184,7 +184,7 @@ aipp_op {
 
 ## 5 编译运行
 
-**步骤1** 修改`CMakeLists.txt`文件 将`set(MX_SDK_HOME ${SDK安装路径}$)` 中的`${SDK安装路径}$`替换为实际的SDK安装路径
+**步骤1** 修改`CMakeLists.txt`文件 将`set(MX_SDK_HOME ${SDK安装路径})` 中的`${SDK安装路径}`替换为实际的SDK安装路径
 
 **步骤2** 按照**2环境依赖**设置环境变量。
 
