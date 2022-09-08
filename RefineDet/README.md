@@ -40,6 +40,9 @@
 ````
 .
 ├── build.sh
+├── config
+│   ├── RefineDet.aippconfig
+│   └── refine_det.cfg
 ├── CMakeLists.txt
 ├── main.cpp
 ├── models
@@ -108,7 +111,7 @@ CANN 环境变量：
 
 ```
 SDK-path: mxVision SDK 安装路径
-ascend-toolkit-path: CANN 安装路径。
+ascend-toolkit-path: CANN 安装路径
 ```
 
 
@@ -122,7 +125,7 @@ ascend-toolkit-path: CANN 安装路径。
 
 ## 4 模型转化
 
-本项目中使用的模型是RefineDet模型，onnx模型可以直接[下载](https://www.hiascend.com/zh/software/modelzoo/models/detail/1/47d31ca99aa641b2b220cabc9233cdb7)。下载后解包，得到`RefineDet320_VOC_final_no_nms.onnx`，使用模型转换工具ATC将onnx模型转换为om模型，模型转换工具相关介绍参考[链接](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)
+本项目中使用的模型是RefineDet模型，onnx模型可以直接[下载](https://www.hiascend.com/zh/software/modelzoo/models/detail/1/47d31ca99aa641b2b220cabc9233cdb7)。下载后解包，得到`RefineDet320_VOC_final_no_nms.onnx`，使用模型转换工具ATC将onnx模型转换为om模型，模型转换工具相关介绍参考[链接](https://support.huawei.com/enterprise/zh/doc/EDOC1100234054?idPath=23710424|251366513|22892968|251168373)
 
 模型转换步骤如下：
 
@@ -134,7 +137,7 @@ ascend-toolkit-path: CANN 安装路径。
 atc --framework=5 --model=RefineDet320_VOC_final_no_nms.onnx --output=RefineDet --input_format=NCHW --input_shape="image:1,3,320,320" --log=debug --soc_version=Ascend310 --insert_op_conf=../config/RefineDet.aippconfig --precision_mode=force_fp32
 ````
 
-3、执行该命令后会在指定输出.om模型路径生成项目指定模型文件RefineDet.om`。若模型转换成功则输出：
+3、执行该命令后会在指定输出.om模型路径生成项目指定模型文件`RefineDet.om`。若模型转换成功则输出：
 
 ```
 ATC start working now, please wait for a moment.
@@ -197,3 +200,4 @@ bash build.sh
 ./refinedet ./test.jpg
 ```
 
+得到`result.jpg`即为输出结果。
