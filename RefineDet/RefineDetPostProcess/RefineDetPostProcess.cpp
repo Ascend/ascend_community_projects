@@ -103,37 +103,6 @@ APP_ERROR RefineDetPostProcess::DeInit() {
     return APP_ERR_OK;
 }
 
-// 判断Tensor是否合法
-bool RefineDetPostProcess::IsValidTensors(const std::vector<TensorBase> &tensors) const {
-    if (tensors.size() != (size_t) yoloType_) {
-        LogError << "number of tensors (" << tensors.size() << ") " << "is unequal to yoloType_("
-                 << yoloType_ << ")";
-        return false;
-    }
-    if (yoloVersion_ == RefineDet_VERSION) {
-        for (size_t i = 0; i < tensors.size(); i++) {
-            auto shape = tensors[i].GetShape();
-            if (shape.size() < VECTOR_FIFTH_INDEX) {
-                LogError << "dimensions of tensor [" << i << "] is less than " << VECTOR_FIFTH_INDEX << ".";
-                return false;
-            }
-            uint32_t channelNumber = 1;
-            int startIndex = modelType_ ? VECTOR_SECOND_INDEX : VECTOR_FOURTH_INDEX;
-            int endIndex = modelType_ ? (shape.size() - VECTOR_THIRD_INDEX) : shape.size();
-            for (int i = startIndex; i < endIndex; i++) {
-                channelNumber *= shape[i];
-            }
-            if (channelNumber != anchorDim_ * (classNum_ + YOLO_INFO_DIM)) {
-                LogError << "channelNumber(" << channelNumber << ") != anchorDim_ * (classNum_ + 5).";
-                return false;
-            }
-        }
-        return true;
-    } else {
-        return true;
-    }
-}
-
 void RefineDetPostProcess::generate_objectInfos(const std::vector <TensorBase>& tensors,
                                                 std::vector <std::vector<ObjectInfo>>& objectInfos,
                                                 const std::vector <ResizedImageInfo>& resizedImageInfos,

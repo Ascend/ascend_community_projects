@@ -64,8 +64,7 @@ public:
                       const std::vector<MxBase::ResizedImageInfo> &resizedImageInfos = {},
                       const std::map<std::string, std::shared_ptr<void>> &paramMap = {}) override;
 protected:
-    bool IsValidTensors(const std::vector<MxBase::TensorBase> &tensors) const;
-
+    
     void ObjectDetectionOutput(const std::vector<MxBase::TensorBase> &tensors,
                                std::vector<std::vector<MxBase::ObjectInfo>> &objectInfos,
                                const std::vector<MxBase::ResizedImageInfo> &resizedImageInfos = {});
