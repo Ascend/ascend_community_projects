@@ -14,9 +14,7 @@ Github仓库：https://github.com/TachibanaYoshino/AnimeGAN
 
 OBS地址：
 
-    PB模型：https://animegan-mxsdk.obs.cn-north-4.myhuaweicloud.com/models/AnimeGAN.pb
-
-    OM模型：https://animegan-mxsdk.obs.cn-north-4.myhuaweicloud.com/models/AnimeGAN_FD.om
+    模型：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/AnimeGAN/AnimeGAN_model.zip
 
     数据集：https://animegan-mxsdk.obs.cn-north-4.myhuaweicloud.com/dataset/dataset.zip
 
