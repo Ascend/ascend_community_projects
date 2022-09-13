@@ -58,7 +58,7 @@ Atlas 200DK
 
 ### 1.5 技术实现流程图
 
-![pic](README_RESOURCES/main.png)
+![pic](./README_RESOURCES/main.png)
 
 ### 1.6 特性及适用场景
 
