@@ -11,7 +11,7 @@ set(TARGET refinedet)
 add_compile_options(-std=c++11 -fPIE -fstack-protector-all -fPIC -Wl,-z,relro,-z,now,-z,noexecstack -s -pie -Wall)
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0 -Dgoogle=mindxsdk_private)
 
-set(MX_SDK_HOME "$ENV{MX_SDK_HOME}")
+set(MX_SDK_HOME ${SDK安装路径})
 
 include_directories(
         ${MX_SDK_HOME}/include
