@@ -150,10 +150,9 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
   # 运行脚本后，会在plugins/AnimeGANPostProcessor/lib/plugins下生成so文件
   ```
   
-  修改插件文件权限为640，并将该文件拷贝至MindX SDK的plugins目录中
+  将该文件拷贝至MindX SDK的plugins目录中，注意插件文件权限应为640，否则运行时会报权限错误
 
   ```bash
-  chmod 640 plugins/AnimeGANPostProcessor/lib/plugins/libanimeganpostprocessor.so
   cp plugins/AnimeGANPostProcessor/lib/plugins/libanimeganpostprocessor.so ${MX_SDK_HOME}/lib/plugins
   ```
 
