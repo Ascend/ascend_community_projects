@@ -22,7 +22,7 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 # set some parameters
 STREAM_NAME = b'animegan'
 DATA_PATH = "dataset/HR_photo"
-FILE_EXTENSIONS= ['*.jpg','*.jpeg','*.JPG','*.JPEG']
+FILE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.JPG', '*.JPEG']
 PIPELINE = "animegan.pipeline"
 MAX_H = 1536
 MIN_H = 384
@@ -62,8 +62,8 @@ if __name__ == '__main__':
         exit()
 
     paths = []
-    for type in FILE_EXTENSIONS:
-        paths.extend(glob.glob(os.path.join(DATA_PATH,type)))
+    for extension in FILE_EXTENSIONS:
+        paths.extend(glob.glob(os.path.join(DATA_PATH, extension)))
     paths.sort()
     if len(paths) == 0:
         print("The dataset is empty!")
