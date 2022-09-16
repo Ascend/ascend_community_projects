@@ -1,0 +1,215 @@
+{
+    "queryVideoProcess": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "mxpi_rtspsrc0": {
+            "factory": "mxpi_rtspsrc",
+            "props": {
+                "rtspUrl":"rtsp://xxx.xxx.xxx.xxx:xxxx/xxx.264",
+                "channelId": "0",
+                "timeout": "30"
+            },
+            "next": "mxpi_videodecoder0"
+        },
+        "mxpi_videodecoder0": {
+            "factory": "mxpi_videodecoder",
+            "props": {
+                "inputVideoFormat": "H264",
+                "outputImageFormat": "YUV420SP_NV12"
+            },
+            "next": "tee0"
+        },
+        "tee0": {
+            "factory": "tee",
+            "next": [
+                "queue0",
+                "queue1"
+            ]
+        },
+        "queue0": {
+            "props": {
+                "max-size-buffers": "200"
+            },
+            "factory": "queue",
+            "next": "mxpi_imageresize0"
+        },
+        "mxpi_imageresize0": {
+            "props": {
+                "resizeHeight": "416",
+                "resizeWidth": "416"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "mxpi_tensorinfer0"
+        },
+        "queue1": {
+            "props": {
+                "max-size-buffers": "200"
+            },
+            "factory": "queue",
+            "next": "mxpi_opencvosd0:0"
+        },
+        "mxpi_tensorinfer0": {
+            "props": {
+                "dataSource": "mxpi_imageresize0",
+                "modelPath": "models/YOLOv3/yolov3.om",
+                "waitingTime": "50"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "mxpi_objectpostprocessor0"
+        },
+        "mxpi_objectpostprocessor0": {
+            "props": {
+                "dataSource": "mxpi_tensorinfer0",
+                "postProcessConfigPath": "config/yolov3_tf_bs1_fp16.cfg",
+                "labelPath": "config/coco.names",
+                "postProcessLibPath": "libyolov3postprocess.so"
+            },
+            "factory": "mxpi_objectpostprocessor",
+            "next": "mxpi_objectselector0"
+        },
+        "mxpi_objectselector0": {
+            "props": {
+                "dataSource": "mxpi_objectpostprocessor0",
+                "FirstDetectionFilter": {
+                    "Type": "Area",
+                    "TopN": 0,
+                    "BottomN": 0,
+                    "MinArea": 5120,
+                    "MaxArea": 173056,
+                    "ConfThresh": 0.3
+                }
+            },
+            "factory": "mxpi_objectselector",
+            "next": "mxpi_distributor0"
+        },
+        "mxpi_distributor0": {
+            "props": {
+                "dataSource": "mxpi_objectselector0",
+                "classIds": "0"
+            },
+            "factory": "mxpi_distributor",
+            "next": "tee1"
+        },
+        "tee1": {
+            "factory": "tee",
+            "next": [
+                "queue2",
+                "queue3"
+            ]
+        },
+        "queue2": {
+            "props": {
+                "max-size-buffers": "200"
+            },
+            "factory": "queue",
+            "next": "mxpi_imagecrop0"
+        },
+        "queue3": {
+            "props": {
+                "max-size-buffers": "200"
+            },
+            "factory": "queue",
+            "next": "mxpi_featurematch0:1"
+        },
+        "mxpi_imagecrop0":{
+            "props":{
+                "dataSource": "mxpi_distributor0_0",
+                "dataSourceImage": "mxpi_imageresize0",
+                "resizeHeight":"256",
+                "resizeWidth":"128"
+            },
+            "factory":"mxpi_imagecrop",
+            "next":"mxpi_imageresize1"
+        },
+        "mxpi_imageresize1": {
+            "props": {
+                "resizeHeight": "256",
+                "resizeWidth": "128"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "mxpi_tensorinfer1"
+        },
+        "mxpi_tensorinfer1": {
+            "props": {
+                "dataSource": "mxpi_imageresize1",
+                "dynamicStrategy": "Upper",
+                "modelPath": "models/OSNet/osnet.om",
+                "waitingTime": "60"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "mxpi_featurematch0"
+        },
+        "mxpi_featurematch0": {
+            "props": {
+                "status": "1",
+                "querySource": "mxpi_tensorinfer1",
+                "objectSource": "mxpi_distributor0_0",
+                "galleryFeaturesPath": "output/gallery/gallery_features.bin",
+                "galleryIdsPath": "output/gallery/persons.txt",
+                "metric": "euclidean",
+                "threshold": "-1"
+            },
+            "factory": "mxpi_featurematch",
+            "next": "mxpi_object2osdinstances0"
+        },
+        "mxpi_object2osdinstances0": {
+            "props": {
+                "dataSource": "mxpi_featurematch0",
+                "colorMap":"255,100,100|100,255,100",
+                "fontFace": "1",
+                "fontScale": "0.8",
+                "fontThickness": "1",
+                "fontLineType": "8",
+                "rectThickness": "1",
+                "rectLineType": "8"
+            },
+            "factory": "mxpi_object2osdinstances",
+            "next": "queue4"
+        },
+        "queue4": {
+            "props": {
+                "max-size-buffers": "200"
+            },
+            "factory": "queue",
+            "next": "mxpi_opencvosd0:1"
+        },        
+        "mxpi_opencvosd0":{
+            "factory":"mxpi_opencvosd",
+            "next":"queue6"
+        },
+        "queue6": {
+            "props": {
+                "max-size-buffers": "200"
+            },
+            "factory": "queue",
+            "next": "mxpi_imageresize2"
+        },
+        "mxpi_imageresize2": {
+            "props": {
+                "dataSource": "mxpi_opencvosd0",
+                "resizeHeight": "416",
+                "resizeWidth": "416"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "mxpi_videoencoder0"
+        },
+        "mxpi_videoencoder0":{
+            "props": {
+                "imageHeight": "416",
+                "imageWidth": "416",
+                "iFrameInterval": "200",
+                "fps": "1"
+            },
+            "factory":"mxpi_videoencoder",
+            "next":"filesink0"
+        },
+        "filesink0":{
+            "props":{
+                "blocksize":"40960000",
+                "location":"output/query/videos/reid.264"
+            },
+            "factory":"filesink"
+        }
+    }
+}

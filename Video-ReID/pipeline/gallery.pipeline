@@ -1,0 +1,109 @@
+{
+    "galleryProcess": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "appsrc0": {
+            "props": {
+                "blocksize": "409600"
+            },
+            "factory": "appsrc",
+            "next": "mxpi_imagedecoder0"
+        },
+        "mxpi_imagedecoder0": {
+            "factory": "mxpi_imagedecoder",
+            "next": "mxpi_imageresize0"
+        },
+        "mxpi_imageresize0": {
+            "props": {
+                "resizeHeight": "416",
+                "resizeWidth": "416"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "mxpi_tensorinfer0"
+        },
+        "mxpi_tensorinfer0": {
+            "props": {
+                "dataSource": "mxpi_imageresize0",
+                "modelPath": "models/YOLOv3/yolov3.om",
+                "waitingTime": "1"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "mxpi_objectpostprocessor0"
+        },
+        "mxpi_objectpostprocessor0": {
+            "props": {
+                "dataSource": "mxpi_tensorinfer0",
+                "postProcessConfigPath": "config/yolov3_tf_bs1_fp16.cfg",
+                "labelPath": "config/coco.names",
+                "postProcessLibPath": "libyolov3postprocess.so"
+            },
+            "factory": "mxpi_objectpostprocessor",
+            "next": "mxpi_objectselector0"
+        },
+        "mxpi_objectselector0": {
+            "props": {
+                "dataSource": "mxpi_objectpostprocessor0",
+                "FirstDetectionFilter": {
+                    "Type": "Area",
+                    "TopN": 1,
+                    "BottomN": 0,
+                    "MinArea": 0,
+                    "MaxArea": 0,
+                    "ConfThresh": 0.1
+                }
+            },
+            "factory": "mxpi_objectselector",
+             "next": "mxpi_distributor0"
+        },
+        "mxpi_distributor0": {
+            "props": {
+                "dataSource": "mxpi_objectselector0",
+                "classIds": "0"
+            },
+            "factory": "mxpi_distributor",
+            "next": "queue2"
+        },
+        "queue2": {
+            "props": {
+                "max-size-buffers": "200"
+            },
+            "factory": "queue",
+            "next": "mxpi_imagecrop0"
+        },
+        "mxpi_imagecrop0":{
+            "props":{
+                "dataSource": "mxpi_distributor0_0",
+                "dataSourceImage": "mxpi_imageresize0",
+                "resizeHeight":"256",
+                "resizeWidth":"128"
+            },
+            "factory":"mxpi_imagecrop",
+            "next":"mxpi_imageresize1"
+        },
+        "mxpi_imageresize1": {
+            "props": {
+                "resizeHeight": "256",
+                "resizeWidth": "128"
+            },
+            "factory": "mxpi_imageresize",
+            "next": "mxpi_tensorinfer1"
+        },
+        "mxpi_tensorinfer1": {
+            "props": {
+                "dataSource": "mxpi_imageresize1",
+                "dynamicStrategy": "Upper",
+                "modelPath": "models/OSNet/osnet.om",
+                "waitingTime": "1"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "appsink0"
+        },
+        "appsink0": {
+            "props": {
+                "blocksize": "4096000"
+            },
+            "factory": "appsink"
+        }
+    }
+}
