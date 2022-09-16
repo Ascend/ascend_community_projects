@@ -137,9 +137,15 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,-1,-1
 atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,864,3" --out_nodes="generator/G_MODEL/output:0"  --input_format=NHWC --output="models/AnimeGAN_864" --soc_version=Ascend310 --framework=3 --model="models/AnimeGAN.pb" --precision_mode=force_fp32
 ```
 
-> 如使用固定分辨率命令转化后的模型，在使用mxpi_imageresizer缩放插件下游紧接模型推理时，可以自动获取缩放宽高，在pipeline中mxpi_imageresizer插件无需再配置resizeHeight和resizerWidth属性。
+> 上述使用多档位动态分辨率模型转换命令的模型支持高从384以128为公差递增至1536，宽从384以128为公差递增至1536的分辨率组合。 使用单档位固定分辨率模型转换命令的模型支持(864,864)的分辨率。
 >
-> 而使用多档位命令转换的模型时，未配置宽高属性则会默认缩放到第一个档位，使用其它档位仍需配置缩放的宽高。 亦可不使用mxpi_imageresizer插件，而是使用预处理将图片缩放至模型包含的档位。
+> 如果在转换时使用的档位与上述命令不同，则需要对main.py的**MAX_H**,**MIN_H**,**MAX_W**,**MIN_W**,**H_MULTIPLES**,**W_MULTIPLES**参数进行修改。
+>
+> 对于单档位固定分辨率，可以给**MAX_H**和**MIN_H**赋于同样的固定的高，给**MAX_W**和**MIN_W**赋予同样的固定的宽，给**H_MULTIPLES**,**W_MULTIPLES**赋予1。
+>
+> 对于多档位动态分辨率，比如使用高从256以64为公差递增至512，宽从512以128为公差递增至1024的分辨率组合，可以分别给上述参数赋512,256,1024,512,64,128。
+>
+> 但是如果是不能用等差公式枚举的多档位分辨率组合，就需要用户自行重写main.py中的preprocess函数。
 
 ## 6 编译与运行
 

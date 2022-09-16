@@ -22,10 +22,14 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 # set some parameters
 STREAM_NAME = b'animegan'
 DATA_PATH = "dataset/HR_photo"
+FILE_EXTENSIONS= ['*.jpg','*.jpeg','*.JPG','*.JPEG']
 PIPELINE = "animegan.pipeline"
-MAX_IMAGE_SIZE = 1536
-MIN_IMAGE_SIZE = 384
-ROUNDED_MULTIPLES = 128
+MAX_H = 1536
+MIN_H = 384
+MAX_W = 1536
+MIN_W = 384
+H_MULTIPLES = 128
+W_MULTIPLES = 128
 
 
 def preprocess(path):
@@ -37,12 +41,12 @@ def preprocess(path):
         h, w = img.shape[:2]
 
         # Due to the limit of memory,the model doesn't support resolutions larger or samller.
-        h = min(max(MIN_IMAGE_SIZE, h), MAX_IMAGE_SIZE)
-        w = min(max(MIN_IMAGE_SIZE, w), MAX_IMAGE_SIZE)
+        h = min(max(MIN_H, h), MAX_H)
+        w = min(max(MIN_W, w), MAX_W)
 
-        # resize to align size to n*ROUNDED_MULTIPLES,round up.
-        h = math.ceil(h / ROUNDED_MULTIPLES) * ROUNDED_MULTIPLES
-        w = math.ceil(w / ROUNDED_MULTIPLES) * ROUNDED_MULTIPLES
+        # resize to align size to n*MULTIPLES,round up.
+        h = math.ceil(h / H_MULTIPLES) * H_MULTIPLES
+        w = math.ceil(w / W_MULTIPLES) * W_MULTIPLES
         img = cv2.resize(img, (w, h))
 
         return True, cv2.imencode(".jpg", img)[1].tobytes()
@@ -57,8 +61,10 @@ if __name__ == '__main__':
         print("The test images don't exist.")
         exit()
 
-    paths = sorted(glob.glob(os.path.join(DATA_PATH, "*.jpeg")) +
-                   glob.glob(os.path.join(DATA_PATH, "*.jpg")))
+    paths = []
+    for type in FILE_EXTENSIONS:
+        paths.extend(glob.glob(os.path.join(DATA_PATH,type)))
+    paths.sort()
     if len(paths) == 0:
         print("The dataset is empty!")
         exit()
