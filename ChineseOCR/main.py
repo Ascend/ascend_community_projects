@@ -77,13 +77,13 @@ if __name__ == '__main__':
             for i in f.readlines():
                 CONTENT += i.strip()
 
-            wd = os.open(os.path.join(output_exer, f'{index}.txt'), os.O_RDWR | os.O_CREAT)
-            wf = os.fdopen(wd, 'w')
+            wd = os.open(os.path.join(output_exer, f'{index}.txt'), os.O_RDWR | os.O_CREAT, 0o660)
+            wf = os.fdopen(wd, 'w', 0o660)
             wf.write(CONTENT)
             wf.close()
 
-            wd = os.open(os.path.join(output_exer, f'{index}_pic.txt'), os.O_RDWR | os.O_CREAT)
-            wf = os.fdopen(wd, 'w')
+            wd = os.open(os.path.join(output_exer, f'{index}_pic.txt'), os.O_RDWR | os.O_CREAT, 0o660)
+            wf = os.fdopen(wd, 'w', 0o660)
             wf.write(CONTENT_PIC[2:-2])
             wf.close()
 
