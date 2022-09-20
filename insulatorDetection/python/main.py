@@ -17,6 +17,7 @@
 
 import os
 import stat
+import time
 import cv2
 from cv2 import getTickCount, getTickFrequency
 import MxpiDataType_pb2 as MxpiDataType
@@ -52,6 +53,7 @@ if __name__ == '__main__':
         dataInput.data = f.read()
     STEAMNAME = b'detection'
     INPLUGINID = 0
+    t1 = time.time()
     uniqueId = steammanager_api.SendData(STEAMNAME, INPLUGINID, dataInput)
     if uniqueId < 0:
         print("Failed to send data to stream.")
@@ -98,7 +100,7 @@ if __name__ == '__main__':
                      cls_id=class_id,
                      label=class_name,
                      box_score=score)
-      
+    print("fps:",time.time()-t1)
     cv2.imwrite(RESULTFILE, img)
     # destroy streams
     steammanager_api.DestroyAllStreams()
