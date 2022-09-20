@@ -43,8 +43,8 @@ if __name__ == '__main__':
         exit()
     dataInput = MxDataInput()
     # It is best to use absolute path
-    FILENAME = "../image/0051.jpg"
-    RESULTFILE = "../image/pre_post_bgr.jpg"
+    FILENAME = "../image/test.jpg"
+    RESULTFILE = "../image/output.jpg"
     if os.path.exists(FILENAME) != 1:
         print("The test image does not exist. Exit.")
         exit()
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                      cls_id=class_id,
                      label=class_name,
                      box_score=score)
-    print(time.time()-t1)       
+      
     cv2.imwrite(RESULTFILE, img)
     # destroy streams
     steammanager_api.DestroyAllStreams()

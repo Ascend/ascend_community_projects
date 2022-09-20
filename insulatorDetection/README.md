@@ -33,7 +33,6 @@
 │      colorlist.txt
 │      visualize.py
 │      main.py
-│      test.py
 │
 ├─image
 │      test.jpg
