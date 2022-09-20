@@ -126,7 +126,8 @@ if __name__ == '__main__':
             xywh = (xyxy2xywh(xyxy.reshape(1, 4)) / gn).reshape(-1).tolist()  # normalized xywh
             try:
                 line = (
-                    int(dict_classes[classVec[0]["className"]]), *xywh, round(classVec[0]["confidence"], 6))  # label format
+                    int(dict_classes[classVec[0]["className"]]), *xywh,
+                    round(classVec[0]["confidence"], 6))  # label format
             except KeyError:
                 print("No sunch key")
 

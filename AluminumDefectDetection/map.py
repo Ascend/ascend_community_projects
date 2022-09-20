@@ -119,22 +119,9 @@ dict_classes = {
 }
 
 
+
+
 def load_pred(path):
-    class_list = file_lines_to_list(path)
-    if len(class_list):
-        pred = np.zeros((len(class_list), 6))
-    else:
-        return np.zeros(0, 6)
-    for index, line in enumerate(class_list):
-        sl = line.split()
-        tmp_class_name, confidence, x, y, w, h = sl
-        pred[index, 0:4] = float(x), float(y), float(w), float(h)
-        pred[index, 4] = float(confidence)
-        pred[index, 5] = int(dict_classes[tmp_class_name])
-    return pred
-
-
-def load_pred_2(path):
     class_list = file_lines_to_list(path)
     if len(class_list):
         pred = np.zeros((len(class_list), 6))
@@ -238,7 +225,7 @@ def map_cac(opt):
         boxes = parse_line(txt_file, lines_list, bounding_boxes,
                            already_seen_classes)
 
-        predn = load_pred_2(pre_file_path + file_id + ".txt")
+        predn = load_pred(pre_file_path + file_id + ".txt")
 
         predn[:, 0:4] = xywh2xyxy(predn[:, 0:4])
         predn[:, [0, 2]] *= 2560
