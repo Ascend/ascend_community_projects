@@ -14,14 +14,15 @@
 
 import os
 import json
-import stat
-import glob
 import cv2
-from StreamManagerApi import StreamManagerApi, MxDataInput
+import stat
+from StreamManagerApi import *
+import time
 import numpy as np
-from utils import xyxy2xywh
+from utils import *
+import glob
 
-from plots import box_label, colors
+from plots import Annotator, colors
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',
          'motley', 'dirty_spot']
@@ -39,6 +40,7 @@ if __name__ == '__main__':
     if ret != 0:
         print("Failed to init Stream manager, ret=%s" % str(ret))
         exit()
+    start = time.time()
     # create streams by pipeline config file
     with open("./pipeline/AlDefectDetection.pipeline", 'rb') as f:
         pipelineStr = f.read()
@@ -93,6 +95,8 @@ if __name__ == '__main__':
         with open(ori_img_path, 'rb') as f:
             dataInput.data = f.read()
 
+        annotator = Annotator(ori_img, line_width=3, example=str(names))
+
         # Inputs data to a specified stream based on streamName.
         streamName = b'classification+detection'
         inPluginId = 0
@@ -112,6 +116,7 @@ if __name__ == '__main__':
         if not results:
             print("No object detected")
             with os.fdopen(os.open(img_txt, os.O_RDWR | os.O_CREAT, MODES), 'a+') as f:
+                # f.write("")
                 pass
             continue
         img = cv2.imread(ori_img_path, cv2.IMREAD_COLOR)
@@ -123,7 +128,9 @@ if __name__ == '__main__':
             bboxes.append([float(info['x0']), float(info['y0']), float(info['x1']), float(info['y1'])])
             classVecs.append(info["classVec"])
         for (xyxy, classVec) in zip(bboxes, classVecs):
+            # xyxy = scale_coords(pre_img.shape[:2], np.array(xyxy), ori_img.shape[:2])
             xyxy = np.array(xyxy)
+            # xyxy[1:5:2] -= 320
             xywh = (xyxy2xywh(xyxy.reshape(1, 4)) / gn).reshape(-1).tolist()  # normalized xywh
             line = (
                 int(dict_classes[classVec[0]["className"]]), *xywh, round(classVec[0]["confidence"], 6))  # label format
@@ -131,8 +138,9 @@ if __name__ == '__main__':
                 f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
             label = f'{classVec[0]["className"]} {classVec[0]["confidence"]:.4f}'
-            save_img = box_label(ori_img, xyxy, label, color=colors[names.index(classVec[0]["className"])])
+            annotator.box_label(xyxy, label, color=colors(names.index(classVec[0]["className"]), False))
 
+        save_img = annotator.result()
         cv2.imwrite(DETECT_IMG_PATH + 'result' + item, save_img)
         TESTIMGS += 1
         ######################################################################################

@@ -27,12 +27,26 @@ def error(msg):
 
 
 def box_iou(box1, box2):
+    # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
+    """
+    Return intersection-over-union (Jaccard index) of boxes.
+    Both sets of boxes are expected to be in (x1, y1, x2, y2) format.
+    Arguments:
+        box1 (Tensor[N, 4])
+        box2 (Tensor[M, 4])
+    Returns:
+        iou (Tensor[N, M]): the NxM matrix containing the pairwise
+            IoU values for every element in boxes1 and boxes2
+    """
+
     def box_area(box):
+        # box = 4xn
         return (box[2] - box[0]) * (box[3] - box[1])
 
     area1 = box_area(box1.T)
     area2 = box_area(box2.T)
 
+    # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
     a = box1[:, None, 2:]
     b = box1[:, None, :2]
     inter = (np.minimum(a, box2[:, 2:]) - np.maximum(b, box2[:, :2]))
@@ -57,7 +71,9 @@ def process_batch(detections, labels, iouv):
         if x[0].shape[0] > 1:
             matches = matches[matches[:, 2].argsort()[::-1]]
             matches = matches[np.unique(matches[:, 1], return_index=True)[1]]
+            # matches = matches[matches[:, 2].argsort()[::-1]]
             matches = matches[np.unique(matches[:, 0], return_index=True)[1]]
+        # matches = torch.Tensor(matches).to(iouv.device)
         correct[matches[:, 1].astype(np.int)] = matches[:, 2:3] >= iouv
     return correct
 
@@ -159,6 +175,7 @@ def compute_ap(recall, precision):
     # Returns
         Average precision, precision curve, recall curve
     """
+
     # Append sentinel values to beginning and end
     mrec = np.concatenate(([0.0], recall, [1.0]))
     mpre = np.concatenate(([1.0], precision, [0.0]))
@@ -166,13 +183,33 @@ def compute_ap(recall, precision):
     # Compute the precision envelope
     mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
 
-    x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
-    ap = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
+    # Integrate area under curve
+    method = 'interp'  # methods: 'continuous', 'interp'
+    if method == 'interp':
+        x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
+        ap = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
+    else:  # 'continuous'
+        i = np.where(mrec[1:] != mrec[:-1])[0]  # points where x axis (recall) changes
+        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])  # area under curve
 
-    return ap
+    return ap, mpre, mrec
 
 
-def map_for_all_classes(tp, conf, pred_cls, target_cls, eps=1e-16):
+def ap_per_class(tp, conf, pred_cls, target_cls, plot=False, save_dir='.', names=(), eps=1e-16):
+    """ Compute the average precision, given the recall and precision curves.
+    Source: https://github.com/rafaelpadilla/Object-Detection-Metrics.
+    # Arguments
+        tp:  True positives (nparray, nx1 or nx10).
+        conf:  Objectness value from 0-1 (nparray).
+        pred_cls:  Predicted object classes (nparray).
+        target_cls:  True object classes (nparray).
+        plot:  Plot precision-recall curve at mAP@0.5
+        save_dir:  Plot save directory
+    # Returns
+        The average precision as computed in py-faster-rcnn.
+    """
+
+    # Sort by objectness
     i = np.argsort(-conf)
     tp, conf, pred_cls = tp[i], conf[i], pred_cls[i]
 
@@ -181,7 +218,8 @@ def map_for_all_classes(tp, conf, pred_cls, target_cls, eps=1e-16):
     nc = unique_classes.shape[0]  # number of classes, number of detections
 
     # Create Precision-Recall curve and compute AP for each class
-    ap = np.zeros((nc, tp.shape[1]))
+    px, py = np.linspace(0, 1, 1000), []  # for plotting
+    ap, p, r = np.zeros((nc, tp.shape[1])), np.zeros((nc, 1000)), np.zeros((nc, 1000))
     for ci, c in enumerate(unique_classes):
         i = pred_cls == c
         n_l = nt[ci]  # number of labels
@@ -196,14 +234,28 @@ def map_for_all_classes(tp, conf, pred_cls, target_cls, eps=1e-16):
 
             # Recall
             recall = tpc / (n_l + eps)  # recall curve
+            r[ci] = np.interp(-px, -conf[i], recall[:, 0], left=0)  # negative x, xp because xp decreases
 
             # Precision
             precision = tpc / (tpc + fpc)  # precision curve
+            p[ci] = np.interp(-px, -conf[i], precision[:, 0], left=1)  # p at pr_score
 
             # AP from recall-precision curve
             for j in range(tp.shape[1]):
-                ap[ci, j] = compute_ap(recall[:, j], precision[:, j])
-    return ap
+                ap[ci, j], mpre, mrec = compute_ap(recall[:, j], precision[:, j])
+                if plot and j == 0:
+                    py.append(np.interp(px, mrec, mpre))  # precision at mAP@0.5
+
+    # Compute F1 (harmonic mean of precision and recall)
+    f1 = 2 * p * r / (p + r + eps)
+    names = [v for k, v in names.items() if k in unique_classes]  # list: only classes that have data
+    names = {i: v for i, v in enumerate(names)}  # to dict
+
+    i = f1.mean(0).argmax()  # max F1 index
+    p, r, f1 = p[:, i], r[:, i], f1[:, i]
+    tp = (r * nt).round()  # true positives
+    fp = (tp / (p + eps) - tp).round()  # false positives
+    return tp, fp, p, r, f1, ap, unique_classes.astype('int32')
 
 
 names = {
@@ -240,14 +292,17 @@ def map_cac(opt):
         boxes = parse_line(txt_file, lines_list, bounding_boxes,
                            already_seen_classes)
 
+        # predn = load_pred(pre_file_path + file_id + ".txt")
         predn = load_pred_2(pre_file_path + file_id + ".txt")
 
         predn[:, 0:4] = xywh2xyxy(predn[:, 0:4])
         predn[:, [0, 2]] *= 2560
         predn[:, [1, 3]] *= 1920
+        # predn = torch.tensor(predn)
         if len(boxes):
             labelsn = np.zeros((len(boxes), 5))
             for index, item in enumerate(boxes):
+                xywh = item['bbox']
                 labelsn[index, 1:] = item['bbox']
                 labelsn[index, 0:1] = item['class_name']
 
@@ -256,17 +311,24 @@ def map_cac(opt):
             labelsn[:, [2, 4]] *= 1920
             tcls = labelsn[:, 0]
 
+            # labelsn = torch.tensor(labelsn)
             correct = process_batch(predn, labelsn, iouv)
         else:
             correct = np.zeros(predn.shape[0], niou, dtype=bool)
         stats.append((correct, predn[:, 4], predn[:, 5], tcls))
+
         print(boxes)
 
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
-    ap = map_for_all_classes(*stats)
-    ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
-    print(f"mAP0.5:  {ap50.mean()}")
-    print(f"mAP0.5:0.95:  {ap.mean()}")
+    if len(stats) and stats[0].any():
+        tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=True, save_dir="runs/map/", names=names)
+        ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+        mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
+        print(f"mAP0.5:  {map50}")
+        print(f"mAP0.5:0.95:  {map}")
+        nt = np.bincount(stats[3].astype(np.int64), minlength=10)  # number of targets per class
+    else:
+        nt = np.zeros(1)
 
 
 def parse_opt():
@@ -278,4 +340,5 @@ def parse_opt():
 
 
 if __name__ == '__main__':
-    map_cac(parse_opt())
+    opt = parse_opt()
+    map_cac(opt)

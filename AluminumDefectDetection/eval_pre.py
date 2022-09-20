@@ -14,16 +14,17 @@
 
 import os
 import json
-import stat
-import glob
 import cv2
-from StreamManagerApi import StreamManagerApi, MxDataInput
+import stat
+from StreamManagerApi import *
+import time
 import numpy as np
-from utils import preprocess, scale_coords, xyxy2xywh
-from plots import box_label, colors
+from utils import *
+from plots import Annotator, colors
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',
          'motley', 'dirty_spot']
+import glob
 
 if __name__ == '__main__':
     MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -80,7 +81,7 @@ if __name__ == '__main__':
         r = img_size / max(h0, w0)  # ratio
 
         input_shape = (640, 640)
-        pre_img = preprocess(ori_img, input_shape)[0]
+        pre_img = letterbox(ori_img, input_shape)[0]
 
         pre_img = np.ascontiguousarray(pre_img)
         pre_img_path = PRE_IMG_PATH + item
@@ -96,6 +97,8 @@ if __name__ == '__main__':
         dataInput = MxDataInput()
         with open(pre_img_path, 'rb') as f:
             dataInput.data = f.read()
+        # dataInput.data = pre_img.tobytes()
+        annotator = Annotator(ori_img, line_width=3, example=str(names))
 
         # Inputs data to a specified stream based on streamName.
         streamName = b'classification+detection'
@@ -116,6 +119,7 @@ if __name__ == '__main__':
         if not results:
             print("No object detected")
             with os.fdopen(os.open(img_txt, os.O_RDWR | os.O_CREAT, MODES), 'a+') as f:
+                # f.write("")
                 pass
             continue
         img = cv2.imread(ori_img_path, cv2.IMREAD_COLOR)
@@ -135,8 +139,9 @@ if __name__ == '__main__':
                 f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
             label = f'{classVec[0]["className"]} {classVec[0]["confidence"]:.4f}'
-            save_img = box_label(ori_img_path, xyxy, label, color=colors[names.index(classVec[0]["className"])])
+            annotator.box_label(xyxy, label, color=colors(names.index(classVec[0]["className"]), False))
 
+        save_img = annotator.result()
         cv2.imwrite(DETECT_IMG_PATH + 'result' + item, save_img)
         TESTIMGS += 1
         ######################################################################################
