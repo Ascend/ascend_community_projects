@@ -14,17 +14,16 @@
 
 import os
 import json
-import cv2
 import stat
-from StreamManagerApi import *
-import time
+import glob
+import cv2
+from StreamManagerApi import StreamManagerApi, MxDataInput
 import numpy as np
-from utils import *
-from plots import Annotator, colors
+from utils import preprocess, scale_coords, xyxy2xywh
+from plots import box_label, colors
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',
          'motley', 'dirty_spot']
-import glob
 
 if __name__ == '__main__':
     MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -77,11 +76,10 @@ if __name__ == '__main__':
 
         ori_img = cv2.imread(ori_img_path)  # 读取图片
         h0, w0 = ori_img.shape[:2]
-        img_size = 640
-        r = img_size / max(h0, w0)  # ratio
+        r = 640 / max(h0, w0)  # ratio
 
         input_shape = (640, 640)
-        pre_img = letterbox(ori_img, input_shape)[0]
+        pre_img = preprocess(ori_img, input_shape)[0]
 
         pre_img = np.ascontiguousarray(pre_img)
         pre_img_path = PRE_IMG_PATH + item
@@ -97,19 +95,17 @@ if __name__ == '__main__':
         dataInput = MxDataInput()
         with open(pre_img_path, 'rb') as f:
             dataInput.data = f.read()
-        # dataInput.data = pre_img.tobytes()
-        annotator = Annotator(ori_img, line_width=3, example=str(names))
 
         # Inputs data to a specified stream based on streamName.
-        streamName = b'classification+detection'
-        inPluginId = 0
-        uniqueId = streamManagerApi.SendDataWithUniqueId(streamName, inPluginId, dataInput)
+        STREAMNAME = b'classification+detection'
+        INPLUGINID = 0
+        uniqueId = streamManagerApi.SendDataWithUniqueId(STREAMNAME, INPLUGINID, dataInput)
         if uniqueId < 0:
             print("Failed to send data to stream.")
             exit()
 
         # Obtain the inference result by specifying streamName and uniqueId.
-        inferResult = streamManagerApi.GetResultWithUniqueId(streamName, uniqueId, 5000)
+        inferResult = streamManagerApi.GetResultWithUniqueId(STREAMNAME, INPLUGINID, 5000)
         if inferResult.errorCode != 0:
             print("GetResultWithUniqueId error. errorCode=%d, errorMsg=%s" % (
                 inferResult.errorCode, inferResult.data.decode()))
@@ -119,7 +115,6 @@ if __name__ == '__main__':
         if not results:
             print("No object detected")
             with os.fdopen(os.open(img_txt, os.O_RDWR | os.O_CREAT, MODES), 'a+') as f:
-                # f.write("")
                 pass
             continue
         img = cv2.imread(ori_img_path, cv2.IMREAD_COLOR)
@@ -133,15 +128,18 @@ if __name__ == '__main__':
         for (xyxy, classVec) in zip(bboxes, classVecs):
             xyxy = scale_coords(pre_img.shape[:2], np.array(xyxy), ori_img.shape[:2])
             xywh = (xyxy2xywh(xyxy.reshape(1, 4)) / gn).reshape(-1).tolist()  # normalized xywh
-            line = (
-                int(dict_classes[classVec[0]["className"]]), *xywh, round(classVec[0]["confidence"], 6))  # label format
+            try:
+                line = (
+                    int(dict_classes[classVec[0]["className"]]), *xywh,
+                    round(classVec[0]["confidence"], 6))  # label format
+            except KeyError:
+                print("No sunch key")
             with os.fdopen(os.open(img_txt, os.O_RDWR | os.O_CREAT, MODES), 'a+') as f:
                 f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
             label = f'{classVec[0]["className"]} {classVec[0]["confidence"]:.4f}'
-            annotator.box_label(xyxy, label, color=colors(names.index(classVec[0]["className"]), False))
+            save_img = box_label(ori_img_path, xyxy, label, color=colors[names.index(classVec[0]["className"])])
 
-        save_img = annotator.result()
         cv2.imwrite(DETECT_IMG_PATH + 'result' + item, save_img)
         TESTIMGS += 1
         ######################################################################################
