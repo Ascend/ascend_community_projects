@@ -1,0 +1,252 @@
+# X-Ray安检
+## 1 介绍
+
+本项目利用 YOLOX 目标检测框架，对安检X光图象中的不同类目标进行检测，将检测得到的不同类的目标用不同颜色的矩形框标记。输入一幅图像，可以检测得到图像中大部分类别目标的位置。本方案使用在 SDANet and PIDray dataset 数据集上训练得到的 YOLOX-m 模型进行目标检测，数据集中共包含 12 个目标类，可以对警棍、老虎钳、榔头、充电宝、剪刀、扳手、枪支、子弹、喷罐、手铐、小刀、打火机以上目标进行检测。
+
+### 1.1 支持的产品
+
+本项目以昇腾Atlas310卡为主要的硬件平台。
+
+### 1.2 支持的版本
+
+支持的SDK版本为 2.0.4, CANN 版本为 5.0.4。
+
+
+### 1.3 软件方案介绍
+
+整体业务流程为：待检测图片通过 appsrc 插件输入，然后使用图像解码插件 mxpi_imagedecoder 对图片进行解码，再通过图像缩放插件 mxpi_imageresize 将图像缩放至满足检测模型要求的输入图像大小要求，缩放后的图像输入模型推理插件 mxpi_tensorinfer 得到推理结果，推理结果输入 mxpi_objectpostprocessor 插件进行后处理，得到输入图片中所有的目标框位置和对应的置信度。最后通过输出插件 appsink 获取检测结果，并在外部进行可视化，将检测结果标记到原图上，本系统的各模块及功能描述如表1所示：
+
+表1 系统方案各模块功能描述：
+
+| 序号 | 子系统 | 功能描述     |
+| ---- | ------ | ------------ |
+| 1    | 图片输入    | 获取 jpg 格式输入图片 |
+| 2    | 图片解码    | 解码图片 |
+| 3    | 图片缩放    | 将输入图片放缩到模型指定输入的尺寸大小 |
+| 4    | 模型推理    | 对输入张量进行推理 |
+| 5    | 目标检测后处理    | 从模型推理结果计算检测框的位置和置信度，并保留置信度大于指定阈值的检测框作为检测结果 |
+| 6    | 结果输出    | 获取检测结果|
+| 7    | 结果可视化    | 将检测结果标注在输入图片上|
+
+
+### 1.4 代码目录结构与说明
+
+本工程名称为 xray，工程目录如下所示：
+```
+.
+├── build.sh
+├── images
+│   ├── DetectionPipeline.png
+│   ├── EvaluateInfo.png
+│   ├── EvaluateInfoPrevious.png
+│   ├── warning.png
+│   └── VersionError.png
+├── postprocess
+│   ├── build.sh
+│   ├── CMakeLists.txt
+│   ├── YoloxPostProcess.cpp
+│   └── YoloxPostProcess.h
+├── python
+│   ├── Main
+│   │   ├── eval_pre_post.py
+│   │   ├── pre_post.py
+│   │   ├── visualize.py
+│   │   └── preprocess.py
+│   ├── models
+│   │   ├── aipp-configs
+│   │   │   └── yolox_bgr.cfg
+│   │   ├── conversion-scripts              # 下载的onnx模型存放在该文件夹下
+│   │   ├── yolox_eval.cfg
+│   │   └── coco.names                    
+│   ├── test    
+│   │   ├── data                         
+│   │   └── map_calculate.py                  
+│   ├── test_img
+│   │   └── test.jpg                        # 需要用户自行添加测试数据
+│   └── pipeline
+│       └── pre_post.pipeline
+└── README.md
+
+```
+
+### 1.5 技术实现流程图
+
+YOLOX 的后处理插件接收模型推理插件输出的特征图，该特征图为三张不同分辨率的特征图拼接而成，形状大小为1 x n x 17,其中 n 为三张网络模型输出特征图的像素点数总和，17 为 12 （数据集分类数）+ 4 （目标框回归坐标点）+ 1 （正类置信度）。
+
+<center>
+    <img src="./images /pipeline_pre.png">
+    <br>
+</center>
+
+### 1.6 特性及适用场景
+
+该项目适用于x光安检图象的监测，对单个清晰目标图像、高分辨率图像、大量目标图像、存在部分遮挡图象有较好的检测效果，对于存在大量遮挡的图象有轻微漏检现象，只支持jpg格式图象。
+
+
+## 2 环境依赖
+
+推荐系统为ubuntu 18.04，环境依赖软件和版本如下表：
+
+| 软件名称 | 版本   |
+| -------- | ------ |
+| cmake    | 3.5+   |
+| mxVision | 2.0.4  |
+| python   | 3.9.2  |
+
+确保环境中正确安装mxVision SDK。
+
+在编译运行项目前，需要设置环境变量：
+
+MindSDK 环境变量:
+
+```
+. ${SDK-path}/set_env.sh
+```
+
+CANN 环境变量：
+
+```
+. ${ascend-toolkit-path}/set_env.sh
+```
+
+- 环境变量介绍
+
+```
+SDK-path: mxVision SDK 安装路径
+ascend-toolkit-path: CANN 安装路径。
+```  
+## 3. 模型转换
+
+本项目中采用的模型是 YOLOX-m 模型，参考实现代码：https://github.com/Megvii-BaseDetection/YOLOX ，通过对训练数据集（数据集源参考链接：https://github.com/bywang2018/security-dataset）中29458张图片数据训练得到模型，通过export_onnx.py文件得到onnx模型。使用模型转换工具 ATC 将 onnx 模型转换为 om 模型，模型转换工具相关介绍参考链接：https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html
+
+1. 从链接中下载 onnx 模型 yolox_nano.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
+
+
+2. 将该模型转换为om模型，具体操作为： ``python/models/conversion-scripts`` 文件夹下,执行atc指令：
+
+```
+atc --model=best.onnx --framework=5 --output=./yolox_pre_post --output_type=FP32 --soc_version=Ascend310  --input_shape="images:1, 3, 640, 640" --insert_op_conf=./python/models/aipp-configs/yolox_bgr.cfg
+```
+
+若终端输出：
+```
+ATC start working now, please wait for a moment.
+ATC run success, welcome to the next use.
+W11001: Op [Slice_30] does not hit the high-priority operator information library, which might result in compromised performance.
+W11001: Op [Slice_10] does not hit the high-priority operator information library, which might result in compromised performance.
+W11001: Op [Slice_40] does not hit the high-priority operator information library, which might result in compromised performance.
+W11001: Op [Slice_20] does not hit the high-priority operator information library, which might result in compromised performance.
+
+```
+
+表示命令执行成功。
+
+## 4. 编译与运行
+**步骤1** 在项目根目录执行命令：
+ 
+```
+bash build.sh  
+chmod 640 postprocess/build/libYoloxPostProcess.so
+cp postprocess/build/libYoloxPostProcess.so ${MX_SDK_HOME}/lib/modelpostprocessors/
+```   
+
+**步骤2** 放入待测图片。将一张图片放在路径``python/test_img``下，命名为 test.jpg。
+
+**步骤3** 图片检测。在项目路径``python/Main``下运行命令：
+
+```
+python3 pre_post.py
+```     
+
+命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg，查看结果文件验证检测结果。
+
+<center>
+    <img src="./python/test_img/pre_post_bgr.jpg">
+    <br>
+</center>
+
+**步骤4** 精度测试 
+
+下载COCO VAL 2017[验证数据集]和[标注文件]( https://github.com/bywang2018/security-dataset )，并保存在项目目录``python/test/data``下，此文件夹下的组织形式应如下图所示：                                                                   
+```                                                                                                                         ├── annotations                                                    
+│    └── instances_val2017.json                                                                             
+└──val2017                                                                                                                  
+
+其中val2017文件夹下应存放jpg格式的待检测图片。
+
+2. 修改``python/models``下的文件 yolox_eval.cfg 的参数 OBJECTNESS_THRESH=0.01 IOU_THRESH=0.65
+                                                                                                                                                                            
+3. 使用以下指令运行路径``python/test``下的文件 parse_coco.py                         
+```
+python3 parse_coco.py --json_file=data/annotations/instances_val2017.json --img_path=data/val2017
+```              
+若运行成功，会在该目录下生成文件夹ground_truth，其中包含每张图像上提取的目标框真实位置与类别的txt文件。                         
+                                              
+接下来将每张图的预测结果转为txt文件，并保存在同一文件夹下，其步骤如下：
+
+4. 进入``python/Main``路径，运行命令：
+```
+python3 eval_pre_post.py
+```                      
+若运行成功，会在``python/test`` 路径下生成 test_nopre_post 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
+5. 在``python/test``路径下，运行命令: 
+```                                                        
+python3 map_calculate.py  --npu_txt_path="./test_pre_post" 
+``` 
+若运行成功则得到最终检测精度，结果如下：
+
+<center>
+    <img src="./images /result_map.png">
+    <br>
+</center>
+
+注：在pipeline中加图像预处理后验证结果与原框不同的原因为：YOLOX的图像预处理中，Resize方式为按长边缩放，而Mindx SDK默认使用dvpp的图像解码方式，没有按长边缩放的方法，因此本项目将"resizeType"属性设置为 "Resizer_KeepAspectRatio_Fit"，这样会导致精度下降。
+
+## 5 常见问题
+
+### 5.1 未修改 pipeline 文件中的 ${MX_SDK_HOME} 值为具体值
+运行demo前需要正确导入环境变量，否则会报错，如下图所示：
+<center>
+    <img src="./images /MindXSDKValueError.png">
+    <br>
+</center>
+
+### 5.2 后处理插件权限问题
+
+运行检测 demo 时需要将生成的YOLOX后处理动态链接库、以及config文件的权限修改，否则将会报权限错误，如下图所示：
+
+<center>
+    <img src="./images /permissionerror.png">
+    <br>
+</center>
+
+**解决方案：**
+
+在YOLOX对应文件的路径下运行命令：
+
+```
+chmod 640 libYoloxPostProcess.so
+chmod 640 yolox_eval.cfg
+chmod 640 coco.names
+```
+
+### 5.3 模型转换时会警告缺slice算子
+
+YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样的算子，因此会报出如图所示的警告：
+
+<center>
+    <img src="./images /warning.png">
+    <br>
+</center>
+
+**解决方案：**
+
+常规的做法是修改slice算子，具体操作可参考[安全帽检测](https://gitee.com/booyan/mindxsdk-referenceapps/tree/master/contrib/HelmetIdentification)的开源项目。
+
+由于在本项目下是否修改算子并不影响检测结果，因此默认不做处理。
+
+### 5.4 图片无法识别
+
+**解决方案：**
+
+png格式图片需要转换成jpg格式图片再进行检测。
