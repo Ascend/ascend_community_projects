@@ -19,7 +19,6 @@ import os
 import stat
 import cv2
 from cv2 import getTickCount, getTickFrequency
-import time
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
@@ -54,11 +53,10 @@ if __name__ == '__main__':
     STEAMNAME = b'detection'
     INPLUGINID = 0
     uniqueId = steammanager_api.SendData(STEAMNAME, INPLUGINID, dataInput)
-    t1 = time.time()
     if uniqueId < 0:
         print("Failed to send data to stream.")
         exit()
-    keys = [b"mxpi_tensorinfer0",b"mxpi_objectpostprocessor0"]
+    keys = [b"mxpi_tensorinfer0", b"mxpi_objectpostprocessor0"]
     keyVec = StringVector()
     for key in keys:
         keyVec.push_back(key)

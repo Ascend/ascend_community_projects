@@ -4,7 +4,7 @@
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-
+ 
         http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
@@ -18,6 +18,7 @@
 import glob
 import os
 import sys
+import stat
 import argparse
 import collections
 """
@@ -34,9 +35,6 @@ import collections
 
 
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
-top_margin = 0.15  # in percentage of the figure height
-bottom_margin = 0.05  # in percentage of the figure height
-
 
 def file_lines_to_list(path):
     """
@@ -378,9 +376,9 @@ if __name__ == '__main__':
     arg = check_args(arg)
 
     label_list = get_label_list(arg.label_path)
-    gt_file_bbox = label_list['file_bbox']
-    get_classes = label_list['classes']
-    gt_n_classes = label_list['n_classes']
-    count_per_class = label_list['counter_per_class']
+    gt_file_bbox = label_list.get('file_bbox')
+    get_classes = label_list.get('classes')
+    gt_n_classes = label_list.get('n_classes')
+    count_per_class = label_list.get('counter_per_class')
     predict_bbox = get_predict_list(arg.npu_txt_path, get_classes)
     calculate_AP(arg.output_file, get_classes, gt_file_bbox, predict_bbox, count_per_class)

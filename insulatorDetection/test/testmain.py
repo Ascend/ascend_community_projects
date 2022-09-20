@@ -46,8 +46,7 @@ result_path = "./test_result/"
 if os.path.exists(result_path) != 1:
     os.makedirs("./test_result/")
 for item in os.listdir(PATH):
-    img_path = os.path.join(PATH,item)
-    print("file_path:",img_path)
+    img_path = os.path.join(PATH, item)
     img_name = item.split(".")[0]
     img_txt = "./test_result/" + img_name + ".txt"
     if os.path.exists(img_txt):
@@ -59,10 +58,10 @@ for item in os.listdir(PATH):
     with open(img_path, 'rb') as f:
         dataInput.data = f.read()
 
-    streamName = b'detection'
-    inPluginId = 0
+    STEAMNAME = b'detection'
+    INPLUGINID = 0
     # Send data to streams by SendDataWithUniqueId()
-    uniqueId = streamManagerApi.SendData(streamName, inPluginId, dataInput)
+    uniqueId = streamManagerApi.SendData(STEAMNAME, INPLUGINID, dataInput)
 
     if uniqueId < 0:
         print("Failed to send data to stream.")
@@ -73,7 +72,7 @@ for item in os.listdir(PATH):
     keyVec = StringVector()
     for key in keys:
         keyVec.push_back(key)    
-    inferResult = streamManagerApi.GetProtobuf(streamName, 0, keyVec)
+    inferResult = streamManagerApi.GetProtobuf(STEAMNAME, 0, keyVec)
     if inferResult[0].errorCode != 0:
         print("GetProtobuf error. errorCode=%d, errorMsg=%s" % (
             inferResult[0].errorCode, inferResult[0].data.decode()))
@@ -96,12 +95,12 @@ for item in os.listdir(PATH):
                'class_name': objInfo.classVec[0].className,
                'confidence': round(objInfo.classVec[0].confidence, 4)}
         L1 = []
-        L1.append(int(bboxes['x0']))
-        L1.append(int(bboxes['x1']))
-        L1.append(int(bboxes['y0']))
-        L1.append(int(bboxes['y1']))
-        L1.append(bboxes['confidence'])
-        L1.append(bboxes['class_name'])        
+        L1.append(int(bboxes.get('x0')))
+        L1.append(int(bboxes.get('x1')))
+        L1.append(int(bboxes.get('y0')))
+        L1.append(int(bboxes.get('y1')))
+        L1.append(bboxes.get('confidence'))
+        L1.append(bboxes.get('class_name'))        
 
         # save txt for results
         with open(img_txt,"a+") as f:
