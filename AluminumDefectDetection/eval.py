@@ -14,8 +14,8 @@
 
 import os
 import json
-import cv2
 import stat
+import cv2
 from StreamManagerApi import *
 import time
 import numpy as np
@@ -116,7 +116,6 @@ if __name__ == '__main__':
         if not results:
             print("No object detected")
             with os.fdopen(os.open(img_txt, os.O_RDWR | os.O_CREAT, MODES), 'a+') as f:
-                # f.write("")
                 pass
             continue
         img = cv2.imread(ori_img_path, cv2.IMREAD_COLOR)
@@ -128,9 +127,7 @@ if __name__ == '__main__':
             bboxes.append([float(info['x0']), float(info['y0']), float(info['x1']), float(info['y1'])])
             classVecs.append(info["classVec"])
         for (xyxy, classVec) in zip(bboxes, classVecs):
-            # xyxy = scale_coords(pre_img.shape[:2], np.array(xyxy), ori_img.shape[:2])
             xyxy = np.array(xyxy)
-            # xyxy[1:5:2] -= 320
             xywh = (xyxy2xywh(xyxy.reshape(1, 4)) / gn).reshape(-1).tolist()  # normalized xywh
             line = (
                 int(dict_classes[classVec[0]["className"]]), *xywh, round(classVec[0]["confidence"], 6))  # label format

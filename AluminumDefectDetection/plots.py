@@ -13,47 +13,16 @@
 # limitations under the License.
 
 import platform
-from PIL import Image, ImageDraw, ImageFont
-import numpy as np
 import os
 from pathlib import Path
+from PIL import Image, ImageDraw, ImageFont
+import numpy as np
 import cv2
 
 # Settings
 RANK = int(os.getenv('RANK', -1))
-FONT = 'Arial.ttf'  
+FONT = 'Arial.ttf'
 import re
-
-
-def is_writeable(dir, test=False):
-    # Return True if directory has write permissions, test opening a file with write permissions if test=True
-    if test:  # method 1
-        file = Path(dir) / 'tmp.txt'
-        try:
-            with open(file, 'w'):  # open file with write permissions
-                pass
-            file.unlink()  # remove file
-            return True
-        except OSError:
-            return False
-    else:  # method 2
-        return os.access(dir, os.R_OK)  # possible issues on Windows
-
-
-def user_config_dir(dir='Ultralytics', env_var='YOLOV5_CONFIG_DIR'):
-    # Return path of user configuration directory. Prefer environment variable if exists. Make dir if required.
-    env = os.getenv(env_var)
-    if env:
-        path = Path(env)  # use environment variable
-    else:
-        cfg = {'Windows': 'AppData/Roaming', 'Linux': '.config', 'Darwin': 'Library/Application Support'}  # 3 OS dirs
-        path = Path.home() / cfg.get(platform.system(), '')  # OS-specific config dir
-        path = (path if is_writeable(path) else Path('/tmp')) / dir  # GCP and AWS lambda fix, only /tmp is writeable
-    path.mkdir(exist_ok=True)  # make if required
-    return path
-
-
-CONFIG_DIR = user_config_dir()  # Ultralytics settings dir
 
 
 def is_ascii(s=''):
@@ -70,13 +39,12 @@ def is_chinese(s='人工智能'):
 def check_pil_font(font=FONT, size=10):
     # Return a PIL TrueType Font, downloading to CONFIG_DIR if necessary
     font = Path(font)
-    font = font if font.exists() else (CONFIG_DIR / font.name)
+    font = font
 
 
 class Colors:
     # Ultralytics color palette https://ultralytics.com/
     def __init__(self):
-        # hex = matplotlib.colors.TABLEAU_COLORS.values()
         hex = ('FF3838', 'FF9D97', 'FF701F', 'FFB21D', 'CFD231', '48F90A', '92CC17', '3DDB86', '1A9334', '00D4BB',
                '2C99A8', '00C2FF', '344593', '6473FF', '0018EC', '8438FF', '520085', 'CB38FF', 'FF95C8', 'FF37C7')
         self.palette = [self.hex2rgb('#' + c) for c in hex]
@@ -122,7 +90,6 @@ class Annotator:
                                      box[1] - h if outside else box[1],
                                      box[0] + w + 1,
                                      box[1] + 1 if outside else box[1] + h + 1), fill=color)
-                # self.draw.text((box[0], box[1]), label, fill=txt_color, font=self.font, anchor='ls')  # for PIL>8.0
                 self.draw.text((box[0], box[1] - h if outside else box[1]), label, fill=txt_color, font=self.font)
         else:  # cv2
             p1, p2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))

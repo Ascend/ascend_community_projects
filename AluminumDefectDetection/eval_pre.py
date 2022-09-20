@@ -14,8 +14,8 @@
 
 import os
 import json
-import cv2
 import stat
+import cv2
 from StreamManagerApi import *
 import time
 import numpy as np
@@ -97,7 +97,6 @@ if __name__ == '__main__':
         dataInput = MxDataInput()
         with open(pre_img_path, 'rb') as f:
             dataInput.data = f.read()
-        # dataInput.data = pre_img.tobytes()
         annotator = Annotator(ori_img, line_width=3, example=str(names))
 
         # Inputs data to a specified stream based on streamName.
@@ -119,7 +118,6 @@ if __name__ == '__main__':
         if not results:
             print("No object detected")
             with os.fdopen(os.open(img_txt, os.O_RDWR | os.O_CREAT, MODES), 'a+') as f:
-                # f.write("")
                 pass
             continue
         img = cv2.imread(ori_img_path, cv2.IMREAD_COLOR)
