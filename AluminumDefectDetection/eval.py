@@ -15,14 +15,13 @@
 import os
 import json
 import stat
-import cv2
-from StreamManagerApi import *
-import time
-import numpy as np
-from utils import *
 import glob
+import cv2
+from StreamManagerApi import StreamManagerApi, MxDataInput
+import numpy as np
+from utils import xyxy2xywh
 
-from plots import Annotator, colors
+from plots import box_label, colors
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',
          'motley', 'dirty_spot']
@@ -40,7 +39,6 @@ if __name__ == '__main__':
     if ret != 0:
         print("Failed to init Stream manager, ret=%s" % str(ret))
         exit()
-    start = time.time()
     # create streams by pipeline config file
     with open("./pipeline/AlDefectDetection.pipeline", 'rb') as f:
         pipelineStr = f.read()
@@ -95,8 +93,6 @@ if __name__ == '__main__':
         with open(ori_img_path, 'rb') as f:
             dataInput.data = f.read()
 
-        annotator = Annotator(ori_img, line_width=3, example=str(names))
-
         # Inputs data to a specified stream based on streamName.
         streamName = b'classification+detection'
         inPluginId = 0
@@ -135,9 +131,8 @@ if __name__ == '__main__':
                 f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
             label = f'{classVec[0]["className"]} {classVec[0]["confidence"]:.4f}'
-            annotator.box_label(xyxy, label, color=colors(names.index(classVec[0]["className"]), False))
+            save_img = box_label(ori_img, xyxy, label, color=colors[names.index(classVec[0]["className"])])
 
-        save_img = annotator.result()
         cv2.imwrite(DETECT_IMG_PATH + 'result' + item, save_img)
         TESTIMGS += 1
         ######################################################################################

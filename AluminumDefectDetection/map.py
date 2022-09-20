@@ -169,7 +169,6 @@ def compute_ap(recall, precision):
     x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
     ap = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
 
-
     return ap
 
 
@@ -266,10 +265,8 @@ def map_cac(opt):
     stats = [np.concatenate(x, 0) for x in zip(*stats)]  # to numpy
     ap = map_for_all_classes(*stats)
     ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
-    map50, map = ap50.mean(), ap.mean()
-    print(f"mAP0.5:  {map50}")
-    print(f"mAP0.5:0.95:  {map}")
-
+    print(f"mAP0.5:  {ap50.mean()}")
+    print(f"mAP0.5:0.95:  {ap.mean()}")
 
 
 def parse_opt():
