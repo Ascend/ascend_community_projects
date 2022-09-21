@@ -139,7 +139,7 @@ APP_ERROR RefineDetDetection::ReadImage(const std::string &imgPath, MxBase::Tens
     MxBase::DvppDataInfo output = {};
     std::ifstream file(imgPath, std::ios::binary);
     if (!file) {
-    LogError <<"Invalid file.";
+        LogError <<"Invalid file.";
     }
     long fileSize = fs::file_size(imgPath);
     std::vector<char> buffer;
