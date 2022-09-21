@@ -100,7 +100,7 @@ if __name__ == '__main__':
                      cls_id=class_id,
                      label=class_name,
                      box_score=score)
-    print("fps:",time.time()-t1)
+    print("fps:", time.time()-t1)
     cv2.imwrite(RESULTFILE, img)
     # destroy streams
     steammanager_api.DestroyAllStreams()

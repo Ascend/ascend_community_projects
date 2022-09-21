@@ -35,6 +35,9 @@ import collections
 
 
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
+top_margin = 0.15  # in percentage of the figure height
+bottom_margin = 0.05  # in percentage of the figure height
+
 
 def file_lines_to_list(path):
     """
@@ -244,7 +247,7 @@ def get_predict_list(file_path, gt_classes):
     return class_bbox
 
 
-def calculate_PR(sum_AP, fp, tp, counter_per_class, class_name):
+def calculate_pr(sum_AP, fp, tp, counter_per_class, class_name):
     """
        @description: calculate PR
        @param sum_AP
@@ -281,7 +284,7 @@ def calculate_PR(sum_AP, fp, tp, counter_per_class, class_name):
     return ret
 
 
-def calculate_AP(output_file, gt_classes, labels, class_bbox, counter_per_class):
+def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class):
     """
     Calculate the AP for each class
     :param output_file:
@@ -348,11 +351,11 @@ def calculate_AP(output_file, gt_classes, labels, class_bbox, counter_per_class)
                 # false positive
                 fp[idx] = 1
         # compute precision / recall
-        ret = calculate_PR(sum_AP, fp, tp, counter_per_class, class_name)
-        sum_AP = ret['sum_AP']
-        text = ret['text']
-        prec = ret['prec']
-        rec = ret['rec']
+        ret = calculate_pr(sum_AP, fp, tp, counter_per_class, class_name)
+        sum_AP = ret.get('sum_AP')
+        text = ret.get('text')
+        prec = ret.get('prec')
+        rec = ret.get('rec')
         rounded_prec = ['%.2f' % elem for elem in prec]
         rounded_rec = ['%.2f' % elem for elem in rec]
         writer.write(text + "\n Precision: " + str(rounded_prec) +
@@ -381,4 +384,4 @@ if __name__ == '__main__':
     gt_n_classes = label_list.get('n_classes')
     count_per_class = label_list.get('counter_per_class')
     predict_bbox = get_predict_list(arg.npu_txt_path, get_classes)
-    calculate_AP(arg.output_file, get_classes, gt_file_bbox, predict_bbox, count_per_class)
+    calculate_ap(arg.output_file, get_classes, gt_file_bbox, predict_bbox, count_per_class)
