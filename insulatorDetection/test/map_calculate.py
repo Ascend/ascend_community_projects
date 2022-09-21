@@ -295,8 +295,7 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
     :return:
     """
     sum_ap = 0.0
-    open(output_file, 'w')
-    writer = os.fdopen(os.open(output_file, os.O_RDWR, MODES), 'w') 
+    writer = os.fdopen(os.open(output_file, os.O_RDWR|os.O_CREAT, MODES), 'w') 
     writer.write("# AP and precision/recall per class\n")
     count_true_positives = {}
     n_classes = len(gt_classes)
