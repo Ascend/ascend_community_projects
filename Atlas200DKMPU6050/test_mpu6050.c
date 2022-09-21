@@ -34,18 +34,18 @@ int main(int argc, char *argv[])
 	float accel_x_zeroset = -0.05, accel_y_zeroset = 0.01, accel_z_zeroset = 0.19, gyro_x_zeroset = 75.93, gyro_y_zeroset = 19.12, gyro_z_zeroset = 21.35; // 调零参数,根据设备调整
 	float accel_trans = 16384, gyro_trans = 16.4; // 转换系数
 
-	/*打开文件*/
+	/* 打开文件 */
 	fd = open("/dev/I2C1_mpu6050", O_RDWR);
-	if(fd < 0)
+	if (fd < 0)
 	{
 		printf("open file : %s failed !\n", argv[0]);
 		return -1;
 	}
-	while(1)
+	while (1)
 	{
 		/* 读取数据 */
 		error = read(fd, resive_data, resive_size);
-		if(error < 0)
+		if (error < 0)
 		{
 			printf("write file error! \n");
 			close(fd);
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
 		usleep(sleep_time);
 	}
- 	/*关闭文件*/
+ 	/* 关闭文件 */
 	error = close(fd);
 	if(error < 0)
 	{
