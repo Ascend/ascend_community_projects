@@ -70,6 +70,8 @@ def main(args):
         @param args input arguments
         @return none
     """
+    flags = os.O_WRONLY
+    modes = stat.S_IWUSR
     with open(args.json_file, 'r') as file:
         content = file.read()
     content = json.loads(content)
@@ -77,7 +79,7 @@ def main(args):
     annotations = content.get('annotations')
     categroies = content.get('categories')
 
-    with open(args.classes, 'w') as f:
+    with os.fdopen(os.open(args.classes,flags, modes), 'w') as f:
         for categroie in categroies:
             cls = categroie.get('name')
             cls = change_class(cls)
@@ -95,7 +97,7 @@ def main(args):
     category_ids = [annotation.get('category_id') for annotation in annotations]
     assert len(annotation_ids) == len(bboxs) == len(category_ids)
     
-    with open(args.info, 'w') as f:
+    with os.fdopen(os.open(args.info, flags, modes),'w') as f:
         for index, file_name in enumerate(file_names):
             file_name = args.img_path + '/' + file_name
             line = "{} {} {} {}".format(index, file_name, widths[index], heights[index])
@@ -104,7 +106,7 @@ def main(args):
     
     for index, image_id in enumerate(image_ids):
         indexs = get_all_index(annotation_ids, image_id)
-        with open('{}/{}.txt'.format(args.gtp, file_names[index].split('.')[0]), 'w') as f:
+        with os.fdopen(os.open('{}/{}.txt'.format(args.gtp, file_names[index].split('.')[0]), flags, modes), 'w') as f:
             for idx in indexs:
                 f.write(get_categroie_name(categroies, category_ids[idx]))
                 f.write(' ')

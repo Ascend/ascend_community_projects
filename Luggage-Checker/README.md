@@ -155,9 +155,9 @@ W11001: Op [Slice_20] does not hit the high-priority operator information librar
  
 ```
 bash build.sh  
-chmod 640 postprocess/build/libYoloxPostProcess.so
 cp postprocess/build/libYoloxPostProcess.so ${MX_SDK_HOME}/lib/modelpostprocessors/
 ```   
+修改文件权限为640
 
 **步骤2** 放入待测图片。将一张图片放在路径``python/test_img``下，命名为 test.jpg。
 
@@ -234,12 +234,13 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
 
 **解决方案：**
 
-在YOLOX对应文件的路径下运行命令：
+在YOLOX对应文件的路径下修改如下文件权限为640：
 
 ```
-chmod 640 libYoloxPostProcess.so
-chmod 640 yolox_eval.cfg
-chmod 640 coco.names
+libYoloxPostProcess.so
+yolox_eval.cfg
+coco.names
+
 ```
 
 ### 5.3 模型转换时会警告缺slice算子
