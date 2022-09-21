@@ -5,7 +5,7 @@
 
 ### 1.1 支持的产品
 
-本项目以昇腾Atlas310卡为主要的硬件平台。
+本项目以昇腾Atlas310卡、Atlas 200DK为主要的硬件平台。
 
 ### 1.2 支持的版本
 
@@ -49,7 +49,9 @@
 ├── python
 │   ├── Main
 │   │   ├── eval_pre_post.py
+│   │   ├── eval_nopre_post.py
 │   │   ├── pre_post.py
+│   │   ├── nopre_post.py
 │   │   ├── visualize.py
 │   │   └── preprocess.py
 │   ├── models
@@ -59,7 +61,8 @@
 │   │   ├── yolox_eval.cfg
 │   │   └── coco.names                    
 │   ├── test    
-│   │   ├── data                         
+│   │   ├── data   
+│   │   ├── parse_coco.py                      
 │   │   └── map_calculate.py                  
 │   ├── test_img
 │   │   └── test.jpg                        # 需要用户自行添加测试数据
@@ -124,9 +127,15 @@ ascend-toolkit-path: CANN 安装路径。
 
 2. 将该模型转换为om模型，具体操作为： ``python/models/conversion-scripts`` 文件夹下,执行atc指令：
 
+1)加预处理
 ```
 atc --model=best.onnx --framework=5 --output=./yolox_pre_post --output_type=FP32 --soc_version=Ascend310  --input_shape="images:1, 3, 640, 640" --insert_op_conf=./python/models/aipp-configs/yolox_bgr.cfg
 ```
+2)不加预处理
+```
+atc --model=best.onnx --framework=5 --output=./yolox_pre_post --output_type=FP32 --soc_version=Ascend310  --input_shape="images:1, 3, 640, 640" 
+```
+注：两种方法区在于对之后的图片是否进行缩放，会导致验证精度不同。
 
 若终端输出：
 ```
@@ -156,6 +165,7 @@ cp postprocess/build/libYoloxPostProcess.so ${MX_SDK_HOME}/lib/modelpostprocesso
 
 ```
 python3 pre_post.py
+python3 nopre_post.py
 ```     
 
 命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg，查看结果文件验证检测结果。
@@ -187,11 +197,13 @@ python3 parse_coco.py --json_file=data/annotations/instances_val2017.json --img_
 4. 进入``python/Main``路径，运行命令：
 ```
 python3 eval_pre_post.py
+python3 noeval_pre_post.py
 ```                      
 若运行成功，会在``python/test`` 路径下生成 test_nopre_post 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
 5. 在``python/test``路径下，运行命令: 
 ```                                                        
 python3 map_calculate.py  --npu_txt_path="./test_pre_post" 
+python3 map_calculate.py  --npu_txt_path="./test_nopre_post" 
 ``` 
 若运行成功则得到最终检测精度，结果如下：
 
