@@ -172,7 +172,7 @@ python3 nopre_post.py
 命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg(nopre_post.py)，查看结果文件验证检测结果。
 
 <center>
-    <img src="./images/pre_post_bgr.jpg">
+    <img src="./python/test_img/pre_post_bgr.jpg">
     <br>
 </center>
 
