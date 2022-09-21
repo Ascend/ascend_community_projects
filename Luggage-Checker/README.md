@@ -194,6 +194,7 @@ python3 parse_coco.py --json_file=data/annotations/instances_val2017.json --img_
 python3 eval_pre_post.py
 ```                      
 若运行成功，会在``python/test`` 路径下生成 test_nopre_post 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
+
 5. 在``python/test``路径下，运行命令: 
 ```                                                        
 python3 map_calculate.py  --npu_txt_path="./test_pre_post" 
