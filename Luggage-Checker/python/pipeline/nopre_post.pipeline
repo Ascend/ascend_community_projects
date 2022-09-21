@@ -14,7 +14,7 @@
         "mxpi_tensorinfer0": {
             "props": {
                 "dataSource": "appsrc0",
-                "modelPath": "/home/weixing2/jhc/YOLOX/yolox_nopre_nopost.om"
+                "modelPath": "./yolox_nopre_nopost.om"
             },
             "factory": "mxpi_tensorinfer",
             "next": "mxpi_objectpostprocessor0"
@@ -22,9 +22,9 @@
         "mxpi_objectpostprocessor0": {
             "props": {
                 "dataSource": "mxpi_tensorinfer0",
-                "postProcessConfigPath":"/home/weixing2/jhc/YOLOX/python/models/yolox_eval.cfg",
-                "labelPath": "/home/weixing2/jhc/YOLOX/python/models/coco.names",
-                "postProcessLibPath": "/home/weixing2/jhc/YOLOX/postprocess/build/libYoloxPostProcess.so"
+                "postProcessConfigPath":"./python/models/yolox_eval.cfg",
+                "labelPath": "./python/models/coco.names",
+                "postProcessLibPath": "./postprocess/build/libYoloxPostProcess.so"
             },
             "factory": "mxpi_objectpostprocessor",
             "next": "appsink0"
@@ -37,3 +37,4 @@
         }
     }
 }
+

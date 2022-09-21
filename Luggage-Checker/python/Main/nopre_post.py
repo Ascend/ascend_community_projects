@@ -129,4 +129,5 @@ if __name__ == '__main__':
     cv2.imwrite(RESULTFILE, img)
     # destroy streams
     steam_manager_api.DestroyAllStreams()
+    
 

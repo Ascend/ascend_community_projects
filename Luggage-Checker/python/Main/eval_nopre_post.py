@@ -23,6 +23,7 @@ from StreamManagerApi import StreamManagerApi, MxProtobufIn, InProtobufVector, S
 from preprocess import preproc as preprocess
 
 
+
 # The following belongs to the SDK Process
 steam_manager_api = StreamManagerApi()
 # init stream manager
