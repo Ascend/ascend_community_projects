@@ -35,7 +35,7 @@ W_MULTIPLES = 128
 def preprocess(path):
     img = cv2.imread(path)
     if img is None:
-        print("Error!The image is empty or the path is wrong.")
+        print("Error!Only JPEG format support.Please check the file.")
         return False, None
     else:
         h, w = img.shape[:2]
