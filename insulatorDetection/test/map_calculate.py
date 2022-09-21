@@ -245,16 +245,16 @@ def get_predict_list(file_path, gt_classes):
     return class_bbox
 
 
-def calculate_pr(SUMAP, fp, tp, counter_per_class, class_name):
+def calculate_pr(sum_ap, fp, tp, counter_per_class, class_name):
     """
        @description: calculate PR
-       @param SUMAP
+       @param sum_ap
        @param fp
        @param tp
        @param counter_per_class
        @param class_name
        @return ret
-                map, include SUMAP, text, prec, rec
+                map, include sum_ap, text, prec, rec
     """
     cumsum = 0
     for idx, val in enumerate(fp):
@@ -272,10 +272,10 @@ def calculate_pr(SUMAP, fp, tp, counter_per_class, class_name):
         prec[idx] = float(tp[idx]) / (fp[idx] + tp[idx])
     
     ap, mrec, mprec = voc_ap(rec[:], prec[:])
-    SUMAP += ap
+    sum_ap += ap
     text = "{0:.2f}%".format(ap * 100) + " = " + class_name + " AP "
     ret = dict()
-    ret['SUMAP'] = SUMAP
+    ret['sum_ap'] = sum_ap
     ret['text'] = text
     ret['prec'] = prec
     ret['rec'] = rec
@@ -292,7 +292,7 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
                         "file_id": file_id, "bbox": bbox}]}
     :return:
     """
-    SUMAP = 0.0
+    sum_ap = 0.0
     writer = open(output_file, 'w')
     writer.write("# AP and precision/recall per class\n")
     count_true_positives = {}
@@ -349,8 +349,8 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
                 # false positive
                 fp[idx] = 1
         # compute precision / recall
-        ret = calculate_pr(SUMAP, fp, tp, counter_per_class, class_name)
-        SUMAP = ret.get('SUMAP')
+        ret = calculate_pr(sum_ap, fp, tp, counter_per_class, class_name)
+        sum_ap = ret.get('sum_ap')
         text = ret.get('text')
         prec = ret.get('prec')
         rec = ret.get('rec')
@@ -359,7 +359,7 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
         writer.write(text + "\n Precision: " + str(rounded_prec) +
                      "\n Recall :" + str(rounded_rec) + "\n\n")
     writer.write("\n# mAP of all classes\n")
-    MAP = SUMAP / n_classes
+    MAP = sum_ap / n_classes
     text = "mAP = {0:.2f}%".format(MAP * 100)
     writer.write(text + "\n")
 
