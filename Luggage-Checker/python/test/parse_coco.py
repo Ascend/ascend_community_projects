@@ -79,7 +79,7 @@ def main(args):
     annotations = content.get('annotations')
     categroies = content.get('categories')
 
-    with os.fdopen(os.open(args.classes,flags, modes), 'w') as f:
+    with os.fdopen(os.open(args.classes, flags, modes), 'w') as f:
         for categroie in categroies:
             cls = categroie.get('name')
             cls = change_class(cls)
@@ -97,7 +97,7 @@ def main(args):
     category_ids = [annotation.get('category_id') for annotation in annotations]
     assert len(annotation_ids) == len(bboxs) == len(category_ids)
     
-    with os.fdopen(os.open(args.info, flags, modes),'w') as f:
+    with os.fdopen(os.open(args.info, flags, modes), 'w') as f:
         for index, file_name in enumerate(file_names):
             file_name = args.img_path + '/' + file_name
             line = "{} {} {} {}".format(index, file_name, widths[index], heights[index])
