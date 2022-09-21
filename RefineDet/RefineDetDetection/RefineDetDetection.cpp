@@ -19,6 +19,10 @@
 #include "MxBase/Log/Log.h"
 #include <unistd.h>
 #include <sys/stat.h>
+#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+using namespace MxBase;
 
 namespace {
     const uint32_t YUV_BYTE_NU = 3;
@@ -131,16 +135,32 @@ APP_ERROR RefineDetDetection::DeInit() {
 
 // 获取图像数据，将数据存入TensorBase中
 APP_ERROR RefineDetDetection::ReadImage(const std::string &imgPath, MxBase::TensorBase &tensor) {
+    MxBase::DvppDataInfo inputDataInfo = {};
     MxBase::DvppDataInfo output = {};
-    // 图像解码
-    APP_ERROR ret = dvppWrapper_->DvppJpegDecode(imgPath, output);
-    if (ret != APP_ERR_OK) {
-        LogError << "DvppWrapper DvppJpegDecode failed, ret=" << ret << ".";
-        return ret;
+    std::ifstream file(imgPath, std::ios::binary);
+    if (!file) {
+    LogError <<"Invalid file.";
     }
+    long fileSize = fs::file_size(imgPath);
+    std::vector<char> buffer;
+    buffer.resize(fileSize);
+    file.read(buffer.data(), fileSize);
+    file.close();
+    std::string fileStr(buffer.data(), fileSize);
+    
+    MxBase::MemoryData hostMemory((void*)fileStr.c_str(), (size_t)fileStr.size(), MemoryData::MEMORY_HOST, 0);
+    MxBase::MemoryData dvppMemory(nullptr, (size_t)fileStr.size(), MemoryData::MEMORY_DVPP, 0);
+    APP_ERROR ret = MemoryHelper::MxbsMallocAndCopy(dvppMemory, hostMemory);
     // 将数据转为到DEVICE侧，以便后续处理
+    ret = dvppWrapper_->DvppJpegPredictDecSize(hostMemory.ptrData, hostMemory.size, inputDataInfo.format, output.dataSize);
+    
+    inputDataInfo.dataSize = dvppMemory.size;
+    inputDataInfo.data=(uint8_t *)dvppMemory.ptrData;
+    ret = dvppWrapper_->DvppJpegDecode(inputDataInfo, output);
+    ret = MemoryHelper::Free(dvppMemory);
+
     MxBase::MemoryData memoryData((void*)output.data, output.dataSize,
-	                            MxBase::MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
+                                MxBase::MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
     // 对解码后图像对齐尺寸进行判定
     if (output.heightStride % VPC_H_ALIGN != 0) {
         LogError << "Output data height(" << output.heightStride << ") can't be divided by " << VPC_H_ALIGN << ".";
@@ -151,6 +171,7 @@ APP_ERROR RefineDetDetection::ReadImage(const std::string &imgPath, MxBase::Tens
     tensor = MxBase::TensorBase(memoryData, false, shape, MxBase::TENSOR_DTYPE_UINT8);
     return APP_ERR_OK;
 }
+
 
 APP_ERROR RefineDetDetection::Resize(const MxBase::TensorBase &inputTensor, MxBase::TensorBase &outputTensor) {
     auto shape = inputTensor.GetShape();

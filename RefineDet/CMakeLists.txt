@@ -35,4 +35,5 @@ target_link_libraries(refinedet
         mxbase
         cpprest
         opencv_world
+        boost_filesystem
         )
