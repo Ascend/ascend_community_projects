@@ -167,10 +167,13 @@ python3 pre_post.py
 
 **步骤4** 精度测试 
 
-下载COCO VAL 2017[验证数据集]和[标注文件]( https://github.com/bywang2018/security-dataset )，并保存在项目目录``python/test/data``下，此文件夹下的组织形式应如下图所示：                                                                   
-```                                                                                                                         ├── annotations                                                    
+下载COCO VAL 2017[验证数据集]和[标注文件]( https://github.com/bywang2018/security-dataset )，并保存在项目目录``python/test/data``下，此文件夹下的组织形式应如下图所示：
+                                                                   
+```
+├── annotations                                                                                                                                                                             
 │    └── instances_val2017.json                                                                             
 └──val2017                                                                                                                  
+```
 
 其中val2017文件夹下应存放jpg格式的待检测图片。
 
@@ -196,7 +199,7 @@ python3 map_calculate.py  --npu_txt_path="./test_pre_post"
 若运行成功则得到最终检测精度，结果如下：
 
 <center>
-    <img src="./images /result_map.png">
+    <img src="./images/result_map.png">
     <br>
 </center>
 
@@ -207,7 +210,7 @@ python3 map_calculate.py  --npu_txt_path="./test_pre_post"
 ### 5.1 未修改 pipeline 文件中的 ${MX_SDK_HOME} 值为具体值
 运行demo前需要正确导入环境变量，否则会报错，如下图所示：
 <center>
-    <img src="./images /MindXSDKValueError.png">
+    <img src="./images/MindXSDKValueError.png">
     <br>
 </center>
 
@@ -216,7 +219,7 @@ python3 map_calculate.py  --npu_txt_path="./test_pre_post"
 运行检测 demo 时需要将生成的YOLOX后处理动态链接库、以及config文件的权限修改，否则将会报权限错误，如下图所示：
 
 <center>
-    <img src="./images /permissionerror.png">
+    <img src="./images/permissionerror.png">
     <br>
 </center>
 
@@ -235,7 +238,7 @@ chmod 640 coco.names
 YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样的算子，因此会报出如图所示的警告：
 
 <center>
-    <img src="./images /warning.png">
+    <img src="./images/warning.png">
     <br>
 </center>
 
