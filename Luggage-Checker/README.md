@@ -74,7 +74,7 @@
 YOLOX 的后处理插件接收模型推理插件输出的特征图，该特征图为三张不同分辨率的特征图拼接而成，形状大小为1 x n x 17,其中 n 为三张网络模型输出特征图的像素点数总和，17 为 12 （数据集分类数）+ 4 （目标框回归坐标点）+ 1 （正类置信度）。
 
 <center>
-    <img src="./images /pipeline_pre.png">
+    <img src="./images/pipeline_pre.png">
     <br>
 </center>
 
