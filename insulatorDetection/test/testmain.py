@@ -104,8 +104,8 @@ for item in os.listdir(PATH):
 
         # save txt for results
         with open(img_txt, "a+") as f:
-            content = '{} {} {} {} {} {}'.format(L1[5], L1[4], L1[0], L1[2], L1[1], L1[3])
-            f.write(content)
+            CONTENT = '{} {} {} {} {} {}'.format(L1[5], L1[4], L1[0], L1[2], L1[1], L1[3])
+            f.write(CONTENT)
             f.write('\n')
 
 end = time.time()

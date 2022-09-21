@@ -36,13 +36,15 @@ import collections
 
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
 MODES = stat.S_IWUSR | stat.S_IRUSR
+
+
 def file_lines_to_list(path):
     
     """
     Convert the lines of a file to a list
     """
     # open txt file lines to a list
-     with os.fdopen(os.open(path, os.O_RDONLY, MODES), 'rb') as f:
+    with os.fdopen(os.open(path, os.O_RDONLY, MODES), 'rb') as f:
         content = f.readlines()
     # remove whitespace characters like `\n` at the end of each line
     content = [x.strip() for x in content]
