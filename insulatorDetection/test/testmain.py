@@ -39,11 +39,11 @@ if ret != 0:
     print("Failed to create Stream, ret=%s" % str(ret))
     exit()
 
-testImgCount = 0
+TestImgCount = 0
 # Input object of streams -- detection target
 PATH = "./dataset/JPEGImages/"
-result_path = "./test_result/"
-if os.path.exists(result_path) != 1:
+RESULTPATH = "./test_result/"
+if os.path.exists(RESULTPATH) != 1:
     os.makedirs("./test_result/")
 for item in os.listdir(PATH):
     img_path = os.path.join(PATH, item)
@@ -77,7 +77,7 @@ for item in os.listdir(PATH):
         print("GetProtobuf error. errorCode=%d, errorMsg=%s" % (
             inferResult[0].errorCode, inferResult[0].data.decode()))
         exit()
-    testImgCount = testImgCount + 1
+    TestImgCount = TestImgCount + 1
     # get ObjectList
     if inferResult.size() == 0:
         continue
@@ -103,7 +103,7 @@ for item in os.listdir(PATH):
         L1.append(bboxes.get('class_name'))        
 
         # save txt for results
-        with open(img_txt,"a+") as f:
+        with open(img_txt, "a+") as f:
             content = '{} {} {} {} {} {}'.format(L1[5], L1[4], L1[0], L1[2], L1[1], L1[3])
             f.write(content)
             f.write('\n')
@@ -111,8 +111,8 @@ for item in os.listdir(PATH):
 end = time.time()
 cost_time = end - start
 # Mark spend time
-print("Image count:%d" % testImgCount)
+print("Image count:%d" % TestImgCount)
 print("Spend time:%10.3f" % cost_time)
-print("fps:%10.3f" % (testImgCount/cost_time))
+print("fps:%10.3f" % (TestImgCount/cost_time))
 # Destroy All Streams
 streamManagerApi.DestroyAllStreams()

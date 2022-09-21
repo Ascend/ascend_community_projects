@@ -35,9 +35,6 @@ import collections
 
 
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
-top_margin = 0.15  # in percentage of the figure height
-bottom_margin = 0.05  # in percentage of the figure height
-
 
 def file_lines_to_list(path):
     """
@@ -361,8 +358,8 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
         writer.write(text + "\n Precision: " + str(rounded_prec) +
                      "\n Recall :" + str(rounded_rec) + "\n\n")
     writer.write("\n# mAP of all classes\n")
-    map = sum_AP / n_classes
-    text = "mAP = {0:.2f}%".format(map * 100)
+    MAP = sum_AP / n_classes
+    text = "mAP = {0:.2f}%".format(MAP * 100)
     writer.write(text + "\n")
 
 
