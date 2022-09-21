@@ -117,7 +117,6 @@ int main(int argc, char *argv[])
 		/* 利用串口传输数据 */
 		sprintf(data, "%.2f,%.2f,%.2f\n", pitch, yaw, roll);
 		error = write(fd_uart, data, uart_size);
-		
 		if (error < 0)
 		{
 			printf("write file error! \n");
@@ -130,7 +129,7 @@ int main(int argc, char *argv[])
  	/* 关闭文件 */
 	error = close(fd);
 	error += close(fd_uart);
-	if(error < 0)
+	if (error < 0)
 	{
  		printf("close file error! \n");
 	}
