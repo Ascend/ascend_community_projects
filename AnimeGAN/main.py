@@ -35,7 +35,7 @@ W_MULTIPLES = 128
 def preprocess(path):
     img = cv2.imread(path)
     if img is None:
-        print("Error!Only JPEG format support.Please check the file.")
+        print("Error!The image is empty or the path is wrong.")
         return False, None
     else:
         h, w = img.shape[:2]
@@ -60,13 +60,14 @@ if __name__ == '__main__':
     elif not os.path.exists(DATA_PATH):
         print("The test images don't exist.")
         exit()
-
+    
+    # collecting JPEG format files
     paths = []
     for extension in FILE_EXTENSIONS:
         paths.extend(glob.glob(os.path.join(DATA_PATH, extension)))
     paths.sort()
     if len(paths) == 0:
-        print("The dataset is empty!")
+        print("The dataset is empty!Only JPEG format support.Please check the dataset and files.")
         exit()
 
     # initialize the stream manager
