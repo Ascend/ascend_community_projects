@@ -35,14 +35,14 @@ import collections
 
 
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
-
+MODES = stat.S_IWUSR | stat.S_IRUSR
 def file_lines_to_list(path):
     
     """
     Convert the lines of a file to a list
     """
     # open txt file lines to a list
-    with open(path) as f:
+     with os.fdopen(os.open(path, os.O_RDONLY, MODES), 'rb') as f:
         content = f.readlines()
     # remove whitespace characters like `\n` at the end of each line
     content = [x.strip() for x in content]
@@ -359,8 +359,8 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
         writer.write(text + "\n Precision: " + str(rounded_prec) +
                      "\n Recall :" + str(rounded_rec) + "\n\n")
     writer.write("\n# mAP of all classes\n")
-    MAP = sum_ap / n_classes
-    text = "mAP = {0:.2f}%".format(MAP * 100)
+    m_ap = sum_ap / n_classes
+    text = "mAP = {0:.2f}%".format(m_ap * 100)
     writer.write(text + "\n")
 
 
