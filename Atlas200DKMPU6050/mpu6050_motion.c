@@ -49,9 +49,9 @@ int main(int argc, char *argv[])
 	float rateGA = 0.5;
 	int uart_size = 30;
 
-	/*打开文件*/
+	/* 打开文件 */
 	fd = open(filename, O_RDWR);
-	if(fd < 0)
+	if (fd < 0)
 	{
 		printf("open file : %s failed !\n", argv[0]);
 		return -1;
@@ -65,11 +65,11 @@ int main(int argc, char *argv[])
 	}
 
 	now = clock();
-	while(1)
+	while (1)
 	{
 		/* 读取数据 */
 		error = read(fd, resive_data, resive_size);
-		if(error < 0)
+		if (error < 0)
 		{
 			printf("write file error! \n");
 			close(fd);
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 		sprintf(data, "%.2f,%.2f,%.2f\n", pitch, yaw, roll);
 		error = write(fd_uart, data, uart_size);
 		
-		if(error < 0)
+		if (error < 0)
 		{
 			printf("write file error! \n");
 			close(fd);
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
 		usleep(sleep_time);
 	}
- 	/*关闭文件*/
+ 	/* 关闭文件 */
 	error = close(fd);
 	error += close(fd_uart);
 	if(error < 0)
