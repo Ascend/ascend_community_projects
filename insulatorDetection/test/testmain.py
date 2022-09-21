@@ -39,7 +39,7 @@ if ret != 0:
     print("Failed to create Stream, ret=%s" % str(ret))
     exit()
 
-TestImgCount = 0
+count = 0
 # Input object of streams -- detection target
 PATH = "./dataset/JPEGImages/"
 RESULTPATH = "./test_result/"
@@ -77,7 +77,7 @@ for item in os.listdir(PATH):
         print("GetProtobuf error. errorCode=%d, errorMsg=%s" % (
             inferResult[0].errorCode, inferResult[0].data.decode()))
         exit()
-    TestImgCount = TestImgCount + 1
+    count = count + 1
     # get ObjectList
     if inferResult.size() == 0:
         continue
@@ -111,8 +111,8 @@ for item in os.listdir(PATH):
 end = time.time()
 cost_time = end - start
 # Mark spend time
-print("Image count:%d" % TestImgCount)
+print("Image count:%d" % count)
 print("Spend time:%10.3f" % cost_time)
-print("fps:%10.3f" % (TestImgCount/cost_time))
+print("fps:%10.3f" % (count/cost_time))
 # Destroy All Streams
 streamManagerApi.DestroyAllStreams()

@@ -37,6 +37,7 @@ import collections
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
 
 def file_lines_to_list(path):
+    
     """
     Convert the lines of a file to a list
     """
@@ -244,16 +245,16 @@ def get_predict_list(file_path, gt_classes):
     return class_bbox
 
 
-def calculate_pr(sum_AP, fp, tp, counter_per_class, class_name):
+def calculate_pr(SUMAP, fp, tp, counter_per_class, class_name):
     """
        @description: calculate PR
-       @param sum_AP
+       @param SUMAP
        @param fp
        @param tp
        @param counter_per_class
        @param class_name
        @return ret
-                map, include sum_AP, text, prec, rec
+                map, include SUMAP, text, prec, rec
     """
     cumsum = 0
     for idx, val in enumerate(fp):
@@ -271,10 +272,10 @@ def calculate_pr(sum_AP, fp, tp, counter_per_class, class_name):
         prec[idx] = float(tp[idx]) / (fp[idx] + tp[idx])
     
     ap, mrec, mprec = voc_ap(rec[:], prec[:])
-    sum_AP += ap
+    SUMAP += ap
     text = "{0:.2f}%".format(ap * 100) + " = " + class_name + " AP "
     ret = dict()
-    ret['sum_AP'] = sum_AP
+    ret['SUMAP'] = SUMAP
     ret['text'] = text
     ret['prec'] = prec
     ret['rec'] = rec
@@ -291,7 +292,7 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
                         "file_id": file_id, "bbox": bbox}]}
     :return:
     """
-    sum_AP = 0.0
+    SUMAP = 0.0
     writer = open(output_file, 'w')
     writer.write("# AP and precision/recall per class\n")
     count_true_positives = {}
@@ -348,8 +349,8 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
                 # false positive
                 fp[idx] = 1
         # compute precision / recall
-        ret = calculate_pr(sum_AP, fp, tp, counter_per_class, class_name)
-        sum_AP = ret.get('sum_AP')
+        ret = calculate_pr(SUMAP, fp, tp, counter_per_class, class_name)
+        SUMAP = ret.get('SUMAP')
         text = ret.get('text')
         prec = ret.get('prec')
         rec = ret.get('rec')
@@ -358,7 +359,7 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
         writer.write(text + "\n Precision: " + str(rounded_prec) +
                      "\n Recall :" + str(rounded_rec) + "\n\n")
     writer.write("\n# mAP of all classes\n")
-    MAP = sum_AP / n_classes
+    MAP = SUMAP / n_classes
     text = "mAP = {0:.2f}%".format(MAP * 100)
     writer.write(text + "\n")
 
