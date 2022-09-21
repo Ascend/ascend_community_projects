@@ -361,8 +361,8 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
         writer.write(text + "\n Precision: " + str(rounded_prec) +
                      "\n Recall :" + str(rounded_rec) + "\n\n")
     writer.write("\n# mAP of all classes\n")
-    mAP = sum_AP / n_classes
-    text = "mAP = {0:.2f}%".format(mAP * 100)
+    map = sum_AP / n_classes
+    text = "mAP = {0:.2f}%".format(map * 100)
     writer.write(text + "\n")
 
 
