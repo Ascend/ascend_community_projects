@@ -5,7 +5,7 @@
 
 ### 1.1 支持的产品
 
-本项目以昇腾Atlas310卡为主要的硬件平台。
+本项目以昇腾Atlas310卡、Atlas 200DK为主要的硬件平台。
 
 ### 1.2 支持的版本
 
@@ -67,7 +67,9 @@
 │       └── pre_post.pipeline
 └── README.md
 
+
 ```
+onnx模型下载地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx
 
 ### 1.5 技术实现流程图
 
@@ -117,7 +119,7 @@ ascend-toolkit-path: CANN 安装路径。
 ```  
 ## 3. 模型转换
 
-本项目中采用的模型是 YOLOX-m 模型，参考实现代码：https://github.com/Megvii-BaseDetection/YOLOX ，通过对训练数据集（数据集源参考链接：https://github.com/bywang2018/security-dataset）中29458张图片数据训练得到模型，通过export_onnx.py文件得到onnx模型。使用模型转换工具 ATC 将 onnx 模型转换为 om 模型，模型转换工具相关介绍参考链接：https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html
+本项目中采用的模型是 YOLOX-m 模型，参考实现代码：https://github.com/Megvii-BaseDetection/YOLOX ，通过对训练数据集（数据集源参考链接：https://github.com/bywang2018/security-dataset）中29458张图片数据训练得到模型，通过export_onnx.py文件得到onnx模型（模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx）。使用模型转换工具 ATC 将 onnx 模型转换为 om 模型，模型转换工具相关介绍参考链接：https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html
 
 1. 从链接中下载 onnx 模型 yolox_nano.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
 
