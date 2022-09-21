@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 	}
  	/* 关闭文件 */
 	error = close(fd);
-	if(error < 0)
+	if (error < 0)
 	{
  		printf("close file error! \n");
 	}
