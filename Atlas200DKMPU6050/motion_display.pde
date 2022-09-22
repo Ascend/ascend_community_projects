@@ -19,10 +19,13 @@ import processing.serial.*;
 Serial myPort;
 String data = "";
 float pitch, yaw, roll;
+int height = 800, width = 480;
+int baudrate = 9600;
+int box_length = 200, box_height = 50, box_width = 150;
 
 void setup(){
-  size(800, 480, P3D);
-  myPort = new Serial(this, "COM3", 9600);
+  size(height, width, P3D);
+  myPort = new Serial(this, "COM3", baudrate);
 }
 
 void draw(){
@@ -35,7 +38,7 @@ void draw(){
   rotateY(radians(yaw));
   rotateZ(radians(-pitch));
   
-  box(200,50,150);
+  box(box_length, box_height, box_width);
   popMatrix();
 }
 
