@@ -158,7 +158,7 @@ mpu6050@68 {
 
 ![](./figures/updatebuild.png)
 
-**步骤11** 在目录source/kernel/linux-4.19/arch中，将文件夹arm/mach及其中文件复制到arm64。
+**步骤11** 在source目录下执行如下命令，将arm中的mach复制到arm64中。
 
     cp -R kernel/linux-4.19/arch/arm/include/asm/mach kernel/linux-4.19/arch/arm64/include/asm/
 
