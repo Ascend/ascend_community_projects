@@ -72,7 +72,9 @@ numpy|1.21.2
 <br>
 
 ## 3.模型转换
-本工程原型是pytorch模型，需要使用atc工具转换为om模型，模型权重文件已上传至(https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Insulator_detection/insulator.onnx)，请点击下载,将下载好的模型放到model文件夹下,随后执行脚本
+本工程原型是pytorch模型，需要使用atc工具转换为om模型，模型权重文件已上传至
+https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Insulator_detection/insulator.onnx
+请点击下载,将下载好的模型放到model文件夹下,随后执行脚本
 ```
 bash run.sh
 ```
