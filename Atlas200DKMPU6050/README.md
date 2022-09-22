@@ -158,7 +158,7 @@ mpu6050@68 {
 
 ![](./figures/updatebuild.png)
 
-**步骤11** 在source目录下执行如下命令，将arm中的mach复制到arm64中，否则编译时会提示缺少头文件。
+**步骤11** 在source目录下执行如下命令，将arm中的inculde/asm/mach复制到arm64中，否则编译时会提示缺少头文件。
 
     cp -R kernel/linux-4.19/arch/arm/include/asm/mach kernel/linux-4.19/arch/arm64/include/asm/
 
