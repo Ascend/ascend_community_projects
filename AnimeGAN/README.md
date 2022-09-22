@@ -167,7 +167,7 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
   更改main.py中的DATA_PATH为测试图片所在的文件夹
   
   ``` python
-  DATA_PATH = "dataset/test/HR_photo"
+  DATA_PATH = "dataset/HR_photo"
   ```
 
   更改animegan.pipeline中tensorinfer插件的modelPath为模型所在路径
