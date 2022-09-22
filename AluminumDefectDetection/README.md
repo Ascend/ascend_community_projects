@@ -7,7 +7,7 @@
 
 ### 1.1 支持的产品
 
-支持昇腾310芯片
+支持昇腾310芯片,昇腾200dk
 
 ### 1.2 支持的版本
 
@@ -18,6 +18,9 @@ eg：版本号查询方法，在Atlas产品环境下，运行命令：
 ```
 npu-smi info
 ```
+本样例配套的CANN版本为[5.0.4](https://www.hiascend.com/software/cann/commercial)。支持的SDK版本为[2.0.4](https://www.hiascend.com/software/Mindx-sdk)。
+
+MindX SDK安装前准备可参考《用户指南》，[安装教程](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/quickStart/1-1安装SDK开发套件.md)
 
 ### 1.3 软件方案介绍
 
@@ -47,7 +50,7 @@ npu-smi info
 │   └── AlDefectDetection.pipeline      # pipeline文件
 ├── main.py	
 ├── eval.py	
-├── eval_pre.py
+├── eval_pre.py							# letterbox预处理	
 ├── plots.py							# 绘图工具类
 ├── utils.py							# 工具类
 └── test.jpg
@@ -88,15 +91,8 @@ eg：推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如�
 # 执行如下命令，打开.bashrc文件
 vim ~/.bashrc
 # 在.bashrc文件中添加以下环境变量
-export MX_SDK_HOME=${SDK安装路径}
-
-export LD_LIBRARY_PATH=${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:${MX_SDK_HOME}/opensource/lib64:/usr/local/Ascend/ascend-toolkit/latest/acllib/lib64:/usr/local/Ascend/driver/lib64/
-
-export GST_PLUGIN_SCANNER=${MX_SDK_HOME}/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
-
-export GST_PLUGIN_PATH=${MX_SDK_HOME}/opensource/lib/gstreamer-1.0:${MX_SDK_HOME}/lib/plugins
-
-export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
+. ${MindX_SDK_HOME}/set_env.sh
+. ${HOME}/Ascend/ascend-toolkit/set_env.sh
 
 # 保存退出.bashrc文件
 # 执行如下命令使环境变量生效
@@ -106,15 +102,82 @@ source ~/.bashrc
 env
 ```
 
-## 3 编译与运行
+## 3 模型转换
+
+**步骤1** 下载onnx模型文件。
+
+> onnx模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/best.onnx
+
+**步骤2** 将转化后的YOLOv5模型onnx文件存放至`./models/yolov5/`。
+
+**步骤3** AIPP配置
+
+由于yolov5模型的输入为rgb格式，pipeline中的图像解码为yuv格式，且数据类型不同，需要在atc转换模型时使用aipp预处理，aipp配置内容如下：
+
+```json
+aipp_op { 
+aipp_mode : static
+related_input_rank : 0
+input_format : YUV420SP_U8
+src_image_size_w : 640
+src_image_size_h : 640
+crop : false
+csc_switch : true
+rbuv_swap_switch : false
+matrix_r0c0 : 256
+matrix_r0c1 : 0
+matrix_r0c2 : 359
+matrix_r1c0 : 256
+matrix_r1c1 : -88
+matrix_r1c2 : -183
+matrix_r2c0 : 256
+matrix_r2c1 : 454
+matrix_r2c2 : 0
+input_bias_0 : 0
+input_bias_1 : 128
+input_bias_2 : 128
+var_reci_chn_0 : 0.0039216
+var_reci_chn_1 : 0.0039216
+var_reci_chn_2 : 0.0039216
+}
+```
+
+**步骤4** 模型转换
+
+在`./models/yolov5`目录下执行一下命令
+
+```bash
+# 设置环境变量（请确认install_path路径是否正确）
+# Set environment PATH (Please confirm that the install_path is correct).
+
+export install_path=/usr/local/Ascend/ascend-toolkit/latest
+export PATH=/usr/local/python3.9.2/bin:${install_path}/atc/ccec_compiler/bin:${install_path}/atc/bin:$PATH
+export PYTHONPATH=${install_path}/atc/python/site-packages:${install_path}/atc/python/site-packages/auto_tune.egg/auto_tune:${install_path}/atc/python/site-packages/schedule_search.egg
+export LD_LIBRARY_PATH=${install_path}/atc/lib64:$LD_LIBRARY_PATH
+export ASCEND_OPP_PATH=${install_path}/opp
+
+# 执行，转换YOLOv5模型
+# Execute, transform YOLOv5 model.
+
+atc  --input_shape="images:1,3,640,640" --out_nodes="Transpose_286:0;Transpose_336:0;Transpose_386:0" --output_type=FP32 --input_format=NCHW --output="./models/yolov5/yolov5_add_bs1_fp16" --soc_version=Ascend310 --framework=5 --model="./models/yolov5/best.onnx" --insert_op_conf=./models/yolov5/insert_op.cfg
+"
+# 说明：out_nodes制定了输出节点的顺序，需要与模型后处理适配。
+```
+
+执行完模型转换脚本后，会生成相应的yolov5_add_bs1_fp16.om模型文件。 
+
+> 模型转换使用了ATC工具，如需更多信息请参考: https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html
+
+## 4 编译与运行
 
 **步骤1** 
 
 修改`pipeline/AlDefectDetection.pipeline`文件中: **mxpi_objectpostprocessor0**插件的`postProcessLibPath`属性，修改为
 
-```
+```bash
 {SDK安装路径}/lib/modelpostprocessors/libyolov3postprocess.so
 ```
+修改yolov5_add_bs1_fp16.cfg中的SCORE_THRESH=0.25
 
 **步骤2**
 
@@ -131,39 +194,6 @@ python main.py
 
 
 ![result_test](./images/result_test.jpg)
-
-### 性能测试
-
-**步骤1 **:安装性能测试工具msame。
-
-命令行方式下载: git clone <https://gitee.com/ascend/tools.git>
-
-**步骤2**: 设置环境变量
-
-```bash
-export DDK_PATH=${HOME} /Ascend/ascend-toolkit/latest
- export NPU_HOST_LIB=${HOME}/Ascend/ascend-toolkit/latest/acllib/lib64/stub
-```
-
-**步骤3**: 将待测图片转换为.bin格式保存，放入待测目录
-
-**步骤4** 进入msame目录运行编译脚本生成可执行文件
-
-```bash
-./build.sh g++ $HOME/AscendProjects/tools/msame/out
-```
-
-**步骤5** 进入步骤四out目录下输入以下命令对bin文件进行测试
-
-```bash
-./main --model ${model_path}  --output ${txt_path} --outfmt TXT --loop 100
-```
-
-输出结果：
-
-![performance](./images/performance.png)
-
-
 
 ### 精度测试
 
@@ -183,31 +213,61 @@ python eval.py
 
 ![precision](./images/precision.png)
 
-**步骤3**：下载YOLOv5官方源码git clone <https://github.com/ultralytics/yolov5.git>
+**步骤3**：由于数据集为非公开的数据集，训练集测试集为自行划分，在满足mAP>80%的基础上进一步测试与GPU精度上的差距。首先，下载YOLOv5官方源码6.1版本https://github.com/ultralytics/yolov5/releases/tag/v6.1
 
-**步骤4**：修改数据集配置文件以及模型配置文件如下图所示：
+**步骤4**：在项目data目录下创建al.yaml数据配置文件，复制coco128.yaml的内容，并做如下修改
 
 ![yolov5_data_cfg](./images/yolov5_data_cfg.png)
 
+​	修改modes/yolov5m.yaml模型配置文件如下形式
+
 ![anchors](./images/anchors.png)
 
+​	上传onnx文件到项目目录，onnx模型连接为：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/best.onnx
 
+​	修改val.py第204行multi_label值为False；修改utils/datasets.py第643行为参数r<1以改变缩放插值方式；修改utils/augmentation.py为top, bottom =0,160，以对齐MindX SDK推理操作；将utils/general.py的648函数修改为如下
+
+```python
+def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None, pad_flag=True):
+    # Rescale coords (xyxy) from img1_shape to img0_shape
+    if ratio_pad is None:  # calculate from img0_shape
+        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
+        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
+    else:
+        gain = ratio_pad[0][0]
+        pad = ratio_pad[1]
+
+    coords[:, [0, 2]] -= pad[0]  # x padding
+    if pad_flag:
+        coords[:, [1, 3]] -= pad[1]  # y padding
+    coords[:, :4] /= gain
+    clip_coords(coords, img0_shape)
+    return coords
+```
+
+修改val.py的224行代码为：
+
+```python
+scale_coords(im[si].shape[1:], predn[:, :4], shape, shapes[si][1] ,pad_flag=False)
+```
+
+以上操作为yolov5对齐MindXSDK 推理过程;eval_pre.py使用了letterbox进行预处理，对齐了yolov5官方源码推理，具有更好的精度表现。
 
 **步骤5**：运行如下命令对测试集进行测试得到txt文件
 
 ```bash
-python val.py --data ${data.yaml}--weights best.onnx --save-txt --batch-size 1 --save-conf
+python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --save-conf --iou-thres 0.5 --conf-thres 0.001
 ```
 
-**步骤6**：将生成的txt文件复制到推理服务器上，按照步骤2方式进行精度测试,得到的结果如下图所示：
+**步骤6**：将生成的txt文件(在项目目录runs/val/expn/labels中)复制到推理服务器上，按照步骤2方式进行精度测试,得到的结果如下图所示：
 
 ![precision_yolo](./images/precision_yolo.png)
 
 其中mAP0.5误差为0.000770447，mAP0.5:0.95误差为0.00370027。
 
-## 4 常见问题
+## 5 常见问题
 
-### 4.1 尺寸不匹配
+### 5.1 尺寸不匹配
 
 **问题描述：**
 
@@ -219,7 +279,7 @@ python val.py --data ${data.yaml}--weights best.onnx --save-txt --batch-size 1 -
 
 模型经过插件处理后的图像与模型输入不匹配，检查模型经过pipeline之后的尺寸大小是否和模型输入匹配。
 
-### 4.2 模型路径未进行正确配置
+### 5.2 模型路径未进行正确配置
 
 **问题描述：**
 
@@ -233,7 +293,7 @@ python val.py --data ${data.yaml}--weights best.onnx --save-txt --batch-size 1 -
 
 检查模型存放路径，正确配置模型路径。
 
-### 4.3 未修改pipeline中后处理插件的postProcessLibPath属性
+### 5.3 未修改pipeline中后处理插件的postProcessLibPath属性
 
 **问题描述：**
 
