@@ -315,12 +315,11 @@ APP_ERROR RefineDetDetection::WriteResult(MxBase::TensorBase &tensor,
 
             // 在图像上绘制文字
             cv::putText(imgBgr, resultInfo[k].className, cv::Point(resultInfo[k].x0 - xOffset, resultInfo[k].y0 - yOffset),
-                    cv::FONT_HERSHEY_SIMPLEX, fontScale, green, thickness_font, lineType);
+                        cv::FONT_HERSHEY_SIMPLEX, fontScale, green, thickness_font, lineType);
             // 绘制矩形
             cv::rectangle(imgBgr, cv::Rect(resultInfo[k].x0, resultInfo[k].y0,
                                            resultInfo[k].x1 - resultInfo[k].x0, resultInfo[k].y1 - resultInfo[k].y0),
                           green, thickness);
-
         }
     }
     // 把Mat类型的图像矩阵保存为图像到指定位置。
