@@ -105,7 +105,7 @@ if __name__ == '__main__':
             exit()
 
         # Obtain the inference result by specifying streamName and uniqueId.
-        inferResult = streamManagerApi.GetResultWithUniqueId(STREAMNAME, INPLUGINID, 5000)
+        inferResult = streamManagerApi.GetResultWithUniqueId(STREAMNAME, uniqueId, 5000)
         if inferResult.errorCode != 0:
             print("GetResultWithUniqueId error. errorCode=%d, errorMsg=%s" % (
                 inferResult.errorCode, inferResult.data.decode()))
@@ -138,7 +138,7 @@ if __name__ == '__main__':
                 f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
             label = f'{classVec[0]["className"]} {classVec[0]["confidence"]:.4f}'
-            save_img = box_label(ori_img_path, xyxy, label, color=colors[names.index(classVec[0]["className"])])
+            save_img = box_label(ori_img, xyxy, label, color=colors[names.index(classVec[0]["className"])])
 
         cv2.imwrite(DETECT_IMG_PATH + 'result' + item, save_img)
         TESTIMGS += 1

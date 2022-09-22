@@ -119,8 +119,6 @@ dict_classes = {
 }
 
 
-
-
 def load_pred(path):
     class_list = file_lines_to_list(path)
     if len(class_list):
@@ -134,27 +132,6 @@ def load_pred(path):
         pred[index, 4] = float(confidence)
         pred[index, 5] = int(tmp_class_name)
     return pred
-
-
-def compute_ap(recall, precision):
-    """ Compute the average precision, given the recall and precision curves
-    # Arguments
-        recall:    The recall curve (list)
-        precision: The precision curve (list)
-    # Returns
-        Average precision, precision curve, recall curve
-    """
-    # Append sentinel values to beginning and end
-    mrec = np.concatenate(([0.0], recall, [1.0]))
-    mpre = np.concatenate(([1.0], precision, [0.0]))
-
-    # Compute the precision envelope
-    mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
-
-    x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
-    ap = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
-
-    return ap
 
 
 def map_for_all_classes(tp, conf, pred_cls, target_cls, eps=1e-16):
@@ -187,7 +164,14 @@ def map_for_all_classes(tp, conf, pred_cls, target_cls, eps=1e-16):
 
             # AP from recall-precision curve
             for j in range(tp.shape[1]):
-                ap[ci, j] = compute_ap(recall[:, j], precision[:, j])
+                mrec = np.concatenate(([0.0], recall[:, j], [1.0]))
+                mpre = np.concatenate(([1.0], precision[:, j], [0.0]))
+
+                # Compute the precision envelope
+                mpre = np.flip(np.maximum.accumulate(np.flip(mpre)))
+
+                x = np.linspace(0, 1, 101)  # 101-point interp (COCO)
+                ap[ci, j] = np.trapz(np.interp(x, mrec, mpre), x)  # integrate
     return ap
 
 

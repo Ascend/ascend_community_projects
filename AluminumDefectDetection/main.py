@@ -71,7 +71,7 @@ if __name__ == '__main__':
         exit()
 
     # Obtain the inference result by specifying streamName and uniqueId.
-    inferResult = streamManagerApi.GetResultWithUniqueId(STREAMNAME, INPLUGINID, 10000)
+    inferResult = streamManagerApi.GetResultWithUniqueId(STREAMNAME, uniqueId, 10000)
     if inferResult.errorCode != 0:
         print("GetResultWithUniqueId error. errorCode=%d, errorMsg=%s" % (
             inferResult.errorCode, inferResult.data.decode()))
