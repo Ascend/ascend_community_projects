@@ -90,7 +90,7 @@ Atlas 200DK
 
 ```bash
 bash ${SDK安装路径}/set_env.sh
-bash ${CANN安装路径}/../set_env.sh
+bash ${CANN安装路径}/set_env.sh
 ```
 
 ## 3 软件依赖
@@ -164,7 +164,7 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
 
 - 修改路径
   
-  更改main.py中的DATA_PATH为测试图片所在的文件夹
+  本应用使用的数据集是使用的是[原模型数据集](https://github.com/TachibanaYoshino/AnimeGAN/releases)提供的数据集中的dataset/test/HR_photo。HR_photo中的图片都是较大分辨率的图片，且分辨率不固定。将其拷贝进项目里的dataset/HR_photo，并更改main.py中的DATA_PATH为图片所在的文件夹，若要使用自定义数据集也可自行修改DATA_PATH。
   
   ``` python
   DATA_PATH = "dataset/HR_photo"
@@ -203,7 +203,50 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
   python main.py
   ```
 
-运行成功后，会在animegan.pipeline中animeganpostprocessor插件的outputPath指定的输出路径生成对应输入的经过风格迁移的图片。
+  运行成功后，会在animegan.pipeline中animeganpostprocessor插件的outputPath指定的输出路径生成对应输入的经过风格迁移的图片。
+
+- 测试
+  
+  此处提供GPU端Tensorflow版本模型生成的结果图片作为参考：[GPU推理结果下载](https://animegan-mxsdk.obs.cn-north-4.myhuaweicloud.com/GPU_references.zip)。
+
+  下载GPU端的图片后，将其中的HR_photo_eval放置于results下，运行eval.py代码，指定GPU端的图片路径和刚才运行成功得到的NPU端的图片路径，即可计算出GPU端和NPU端对于HR_photo数据集推理结果的平均PSNR和SSIM。
+
+  ```python
+  python eval.py --gpu_results_dir results/HR_photo_eval  --npu_results_dir results/npu
+  ```
+
+  提供的GPU端的推理结果还有另一个数据集的推理结果，其来自于提供的原模型数据集数据集中的dataset/test/real，与HR_photo不同的是，该数据集的图片分辨率较小且固定为255*255。若还要另外测试对于此数据集GPU端与NPU端的平均PSNR和SSIM，可按照上述步骤重复。
+
+  将原模型数据集中的dataset/test/real拷贝至项目中的dataset/test，并修改main.py中的DATA_PATH。
+
+  ``` python
+  DATA_PATH = "dataset/test"
+  ```
+
+  更改animegan.pipeline中animeganpostprocessor插件的outputPath，以防与HR_photo数据集的推理结果覆盖干扰。
+
+  ```python
+      "animeganpostprocessor0": {
+      "props": {
+        "dataSource": "mxpi_tensorinfer0",
+        "outputPath": "results/npu_real"
+      },
+      "factory": "animeganpostprocessor",
+      "next": "appsink0"
+    }
+  ```
+
+  运行主程序，生成关于real数据集的风格迁移图片。
+
+  ```bash
+  python main.py
+  ```
+  
+  将提供的GPU端图片中的real_eval放置于results下，并再次运行测试代码，注意指定的推理结果路径要根据上述的修改而变化。
+
+  ```python
+  python eval.py --gpu_results_dir results/real_eval  --npu_results_dir results/npu_real
+  ```
 
 - 注意事项
   
