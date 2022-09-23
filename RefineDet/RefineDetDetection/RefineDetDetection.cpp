@@ -306,19 +306,31 @@ APP_ERROR RefineDetDetection::WriteResult(MxBase::TensorBase &tensor,
                     << "(" << resultInfo[k].x1 << "," << resultInfo[k].y1 << ") ]" ;
 
             const cv::Scalar green = cv::Scalar(0, 255, 0);
-            const uint32_t thickness = 4;
-            const uint32_t thickness_font = 1;
-            const uint32_t xOffset = 5;
-            const uint32_t yOffset = 5;
+            const cv::Scalar black = cv::Scalar(0, 0, 0);
+            const uint32_t thickness = 1;
             const uint32_t lineType = 8;
-            const float fontScale = 0.6;
-
+            const float fontScale = 1.0;
+            int conf = int(resultInfo[k].confidence*100);
+            int baseline = 0;
+            const uint32_t fontFace = cv::FONT_HERSHEY_SCRIPT_COMPLEX;
+            cv::Point2i c1((int)resultInfo[k].x0, (int)resultInfo[k].y0);
+            cv::Point2i c2((int)resultInfo[k].x1, (int)resultInfo[k].y1);
+            cv::Size sSize = cv::getTextSize(std::to_string(conf) + "%", fontFace,
+                                             fontScale / 3, thickness, &baseline);
+            cv::Size textSize = cv::getTextSize(labelMap_[((int)resultInfo[k].classId)], fontFace,
+                                                fontScale / 3, thickness, &baseline);
+            cv::rectangle(imgBgr, c1, cv::Point(c1.x + textSize.width + 15 + sSize.width,
+                                                c1.y - textSize.height - 3),
+                          green, -1);
             // 在图像上绘制文字
-            cv::putText(imgBgr, resultInfo[k].className, cv::Point(resultInfo[k].x0 - xOffset, resultInfo[k].y0 - yOffset),
-                        cv::FONT_HERSHEY_SIMPLEX, fontScale, green, thickness_font, lineType);
+            cv::putText(imgBgr, labelMap_[((int)resultInfo[k].classId)] + ": " + std::to_string(conf) + "%",
+                        cv::Point(resultInfo[k].x0, resultInfo[k].y0 - 2),
+                        cv::FONT_HERSHEY_SIMPLEX, fontScale / 3, black, thickness,
+                        lineType);
             // 绘制矩形
             cv::rectangle(imgBgr, cv::Rect(resultInfo[k].x0, resultInfo[k].y0,
-                                           resultInfo[k].x1 - resultInfo[k].x0, resultInfo[k].y1 - resultInfo[k].y0),
+                                           resultInfo[k].x1 - resultInfo[k].x0,
+                                           resultInfo[k].y1 - resultInfo[k].y0),
                           green, thickness);
         }
     }
