@@ -288,7 +288,7 @@ roll = K * $roll_{accel}$ + (1 - K) * $roll_{gyro}$
 
 下载Processing：https://processing.org/download ，选择Windows(Intel 64-bit)版本下载。
 
-在Processing文件motion_display.pde中的void setup()中size(height, width, P3D)创建3D场景，此外创建串口对象myPort = new Serial(this, "COM3", baudrate)，其中COM3为端口名，baudrate为波特率，此处取9600。定义函数void serialEvent (Serial myPort)接收数据，其中使用readStringUntil('\n')读取每行数据，再用split(data, ',')分开三个角度的值。在函数draw()中box(box_length, box_height, box_width)创建一个长方体，使用rotateX(radians(roll))、rotateY(radians(yaw))、rotateZ(radians(pitch))来显示其当前姿态，radians()函数是将角度值转化为弧度制。
+在Processing文件motion_display.pde中的void setup()中size(800, 480, P3D)创建3D场景，此外创建串口对象myPort = new Serial(this, "COM3", baudrate)，其中COM3为端口名，baudrate为波特率，此处取9600。定义函数void serialEvent (Serial myPort)接收数据，其中使用readStringUntil('\n')读取每行数据，再用split(data, ',')分开三个角度的值。在函数draw()中box(box_length, box_height, box_width)创建一个长方体，使用rotateX(radians(roll))、rotateY(radians(yaw))、rotateZ(radians(pitch))来显示其当前姿态，radians()函数是将角度值转化为弧度制。
 
 **步骤4** 运行步骤
 
