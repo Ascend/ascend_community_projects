@@ -34,8 +34,11 @@
 │      visualize.py
 │      main.py
 │
-├─image
-│      test.jpg
+├─image    -- 自行创建，存放检测图片
+│     
+│
+├─plugins
+│      libyolov3postprocess.
 │
 ├─model
 │      label.names
@@ -57,7 +60,7 @@
 
 ### 2.1 环境变量
 <br>
-运行模型前要设置环境变量，需要运行的命令已经写进shell脚本。
+运行模型前要设置环境变量，需要运行的命令已经写进shell脚本,请自行修改bash脚本中的SDK_PATH和ascend_toolkit_path
 <br>
 
 ### 2.2 软件依赖
