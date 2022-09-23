@@ -213,14 +213,14 @@ https://www.hiascend.com/hardware/firmware-drivers?tag=community
 
 ### 3.5 安装驱动并运行
 
-**步骤1** 进入目录source/output，执行如下命令，安装驱动mpu6050.ko。
+**步骤1** 进入目录source/output，执行如下命令，安装驱动i2c_mpu6050.ko。
 
-    insmod mpu6050.ko
+    insmod i2c_mpu6050.ko
 
 **步骤2** 执行如下命令，安装LCD驱动，详见《基于ATLAS200DK SPI接口LCD的fbtft驱动适配》。
 
     insmod fbtft_device.ko name=atlas200dk txbuflen=128 fps=60
-    insmod fb_st7789v.c
+    insmod fb_st7789v.ko
 
 **步骤3** 执行如下命令，编译测试文件test_mpu6050.c。
 
@@ -262,7 +262,7 @@ yaw无法通过加速度计计算出。
 
 3.利用陀螺仪进行姿态解算
 
-陀螺仪可以测量mpu6050三个轴转动的角速度，从而对每个时刻dt内的角速度进行积分运算，累加得出当前的姿态。记当前时刻加速度为g，上一时刻加速度为$g_{last}$，计算方法如下：
+陀螺仪可以测量mpu6050三个轴转动的角速度，从而对每个时刻dt内的角速度进行积分运算，累加得出当前的姿态。记当前时刻角速度为g，上一时刻角速度为$g_{last}$，计算方法如下：
 
 pitch += ($g_y$ + $g_{y last}$) * dt / 2;
     
@@ -270,7 +270,7 @@ yaw += ($g_z$ + $g_{z last}$) * dt / 2;
     
 roll += ($g_x$ + $g_{x last}$) * dt / 2;
 
-利用上一时刻加速度计算dt时刻内梯形的面积累加比单独使用当前加速度a计算的长方形面积a * dt累加会更加准确。
+利用上一时刻角速度计算dt时刻内梯形的面积累加比单独使用当前角速度g计算的长方形面积g * dt累加会更加准确。
 
 4.数据融合
 
@@ -284,11 +284,11 @@ roll = K * $roll_{accel}$ + (1 - K) * $roll_{gyro}$
 
 **步骤3** 数据传输和姿态可视化
 
-在Atlas200dk中可以向字符设备dev/ttyAMA1写入数据，从而通过RXD1和RXD1与上位机进行数据传输。依次以字符串的形式传输pitch、yaw、roll的值，并用“,”隔开。
+在Atlas200dk中可以向字符设备dev/ttyAMA1写入数据，从而通过RXD1和TXD1与上位机进行数据传输。依次以字符串的形式传输pitch、yaw、roll的值，并用“,”隔开。
 
 下载Processing：https://processing.org/download ，选择Windows(Intel 64-bit)版本下载。
 
-在Processing文件motion_display.pde中的void setup()中size(800, 480, P3D)创建3D场景，此外创建串口对象myPort = new Serial(this, "COM3", 9600)，其中COM3为端口名，9600为波特率。定义函数void serialEvent (Serial myPort)接收数据，其中使用readStringUntil('\n')读取每行数据，再用split(data, ',')分开三个角度的值。在函数draw()中box(200,50,150)创建一个长方体，使用rotateX(radians(roll))、rotateY(radians(yaw))、rotateZ(radians(pitch))来显示其当前姿态，radians()函数是将角度值转化为弧度制。
+在Processing文件motion_display.pde中的void setup()中size(height, width, P3D)创建3D场景，此外创建串口对象myPort = new Serial(this, "COM3", baudrate)，其中COM3为端口名，baudrate为波特率，此处取9600。定义函数void serialEvent (Serial myPort)接收数据，其中使用readStringUntil('\n')读取每行数据，再用split(data, ',')分开三个角度的值。在函数draw()中box(box_length, box_height, box_width)创建一个长方体，使用rotateX(radians(roll))、rotateY(radians(yaw))、rotateZ(radians(pitch))来显示其当前姿态，radians()函数是将角度值转化为弧度制。
 
 **步骤4** 运行步骤
 
