@@ -39,7 +39,7 @@
                 "dataSource": "mxpi_tensorinfer0",
                 "postProcessConfigPath":"../model/yolo.cfg",
                 "labelPath": "../model/label.names",
-                "postProcessLibPath": "../plugins/libyolov3postprocess.so"
+                "postProcessLibPath":  "${MX_SDK_HOME}/lib/modelpostprocessors/libyolov3postprocess.so"
             },
             "factory": "mxpi_objectpostprocessor",
             "next": "appsink0"
