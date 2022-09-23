@@ -23,21 +23,20 @@ int baudrate = 9600;
 int box_length = 200, box_height = 50, box_width = 150;
 
 void setup(){
-  size(800, 480, P3D);
+  size(800, 480, P3D); // 创建一个高800、宽480的3D场景
   myPort = new Serial(this, "COM3", baudrate);
 }
 
 void draw(){
-  background(255);
-  fill(255, 0, 0);
-  directionalLight(255, 255, 255, 1, 1, -1);
+  background(255); // 将背景颜色设为白色
+  fill(255, 0, 0); // 将box设为红色
+  directionalLight(255, 255, 255, 1, 1, -1); // 设置一个从（1,1,-1）方向投射来的白光
   pushMatrix();
-  translate(width / 2, height / 2);
+  translate(width / 2, height / 2); // 将中心点设为场景中央
   rotateX(radians(roll));
   rotateY(radians(yaw));
   rotateZ(radians(-pitch));
-  
-  box(box_length, box_height, box_width);
+  box(box_length, box_height, box_width); // 创建box
   popMatrix();
 }
 
