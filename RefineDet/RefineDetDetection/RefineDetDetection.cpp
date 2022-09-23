@@ -309,23 +309,27 @@ APP_ERROR RefineDetDetection::WriteResult(MxBase::TensorBase &tensor,
             const cv::Scalar black = cv::Scalar(0, 0, 0);
             const uint32_t thickness = 1;
             const uint32_t lineType = 8;
-            const float fontScale = 1.0;
+            const float fontScale = 0.3333;
             int conf = int(resultInfo[k].confidence*100);
             int baseline = 0;
+            const int offset1 = 15;
+            const int offset2 = 3;
+            const int offset3 = 2;
+
             const uint32_t fontFace = cv::FONT_HERSHEY_SCRIPT_COMPLEX;
             cv::Point2i c1((int)resultInfo[k].x0, (int)resultInfo[k].y0);
             cv::Point2i c2((int)resultInfo[k].x1, (int)resultInfo[k].y1);
             cv::Size sSize = cv::getTextSize(std::to_string(conf) + "%", fontFace,
-                                             fontScale / 3, thickness, &baseline);
+                                             fontScale, thickness, &baseline);
             cv::Size textSize = cv::getTextSize(labelMap_[((int)resultInfo[k].classId)], fontFace,
-                                                fontScale / 3, thickness, &baseline);
-            cv::rectangle(imgBgr, c1, cv::Point(c1.x + textSize.width + 15 + sSize.width,
-                                                c1.y - textSize.height - 3),
+                                                fontScale, thickness, &baseline);
+            cv::rectangle(imgBgr, c1, cv::Point(c1.x + textSize.width + offset1 + sSize.width,
+                                                c1.y - textSize.height - offset2),
                           green, -1);
             // 在图像上绘制文字
             cv::putText(imgBgr, labelMap_[((int)resultInfo[k].classId)] + ": " + std::to_string(conf) + "%",
-                        cv::Point(resultInfo[k].x0, resultInfo[k].y0 - 2),
-                        cv::FONT_HERSHEY_SIMPLEX, fontScale / 3, black, thickness,
+                        cv::Point(resultInfo[k].x0, resultInfo[k].y0 - offset3),
+                        cv::FONT_HERSHEY_SIMPLEX, fontScale, black, thickness,
                         lineType);
             // 绘制矩形
             cv::rectangle(imgBgr, cv::Rect(resultInfo[k].x0, resultInfo[k].y0,
