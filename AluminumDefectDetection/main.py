@@ -18,7 +18,7 @@ import cv2
 from StreamManagerApi import StreamManagerApi, MxDataInput
 import numpy as np
 from plots import box_label, colors
-from utils import preprocess, scale_coords, xyxy2xywh,is_legal
+from utils import preprocess, scale_coords, xyxy2xywh, is_legal
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',
          'motley', 'dirty_spot']
@@ -42,7 +42,6 @@ if __name__ == '__main__':
     dataInput = MxDataInput()
     ORI_IMG_PATH = "test.png"
     is_legal(ORI_IMG_PATH)
-
 
     # read image
     ori_img = cv2.imread(ORI_IMG_PATH)

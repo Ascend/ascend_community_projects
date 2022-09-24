@@ -19,7 +19,7 @@ import glob
 import cv2
 from StreamManagerApi import StreamManagerApi, MxDataInput
 import numpy as np
-from utils import preprocess, scale_coords, xyxy2xywh,is_legal
+from utils import preprocess, scale_coords, xyxy2xywh, is_legal
 from plots import box_label, colors
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',

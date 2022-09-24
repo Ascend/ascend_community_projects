@@ -17,7 +17,6 @@ import numpy as np
 import cv2
 
 
-
 def preprocess(im, new_shape, color=(114, 114, 114)):
     # Resize and pad image while meeting stride-multiple constraints
     shape = im.shape[:2]  # current shape [height, width]
@@ -84,6 +83,7 @@ def is_jpg(image_path):
     if ending != ".jpg":
         return False
     return True
+
 
 def is_legal(image_path):
     if not os.path.exists(image_path):

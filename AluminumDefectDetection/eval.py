@@ -19,7 +19,7 @@ import glob
 import cv2
 from StreamManagerApi import StreamManagerApi, MxDataInput
 import numpy as np
-from utils import xyxy2xywh,is_legal
+from utils import xyxy2xywh, is_legal
 
 from plots import box_label, colors
 
