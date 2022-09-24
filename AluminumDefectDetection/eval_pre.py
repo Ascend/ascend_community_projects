@@ -19,7 +19,7 @@ import glob
 import cv2
 from StreamManagerApi import StreamManagerApi, MxDataInput
 import numpy as np
-from utils import preprocess, scale_coords, xyxy2xywh
+from utils import preprocess, scale_coords, xyxy2xywh,is_legal
 from plots import box_label, colors
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',
@@ -70,9 +70,7 @@ if __name__ == '__main__':
 
         # preprocess
         ori_img_path = os.path.join(ORI_IMG_PATH, item)
-        if os.path.getsize(ori_img_path) == 0:
-            print("Error!The test image is empty.")
-            continue
+        is_legal(ori_img_path)
 
         ori_img = cv2.imread(ori_img_path)  # 读取图片
         h0, w0 = ori_img.shape[:2]

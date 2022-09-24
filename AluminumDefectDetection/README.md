@@ -91,9 +91,9 @@ eg：推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如�
 # 执行如下命令，打开.bashrc文件
 vim ~/.bashrc
 # 在.bashrc文件中添加以下环境变量
-. ${MindX_SDK_HOME}/set_env.sh
+. ${MX_SDK_HOME}/set_env.sh
 . ${HOME}/Ascend/ascend-toolkit/set_env.sh
-
+# 其中${MX_SDK_HOME}为MindX SDK安装目录，${HOME}为用户目录（如果CANN 开发包装在用户目录，否则为/usr/local/），配置的时候请自行替换成相应目录
 # 保存退出.bashrc文件
 # 执行如下命令使环境变量生效
 source ~/.bashrc
@@ -104,13 +104,17 @@ env
 
 ## 3 模型转换
 
-**步骤1** 下载onnx模型文件。
+**步骤1** 训练铝材缺陷检测对应的yolov5模型，输出pt模型文件。
+
+> pt模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/best.pt
+
+**步骤2** 将pt模型文件转换成onnx，也可直接通过以下链接下载onnx模型。
 
 > onnx模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/best.onnx
 
-**步骤2** 将转化后的YOLOv5模型onnx文件存放至`./models/yolov5/`。
+**步骤3** 将转化后的YOLOv5模型onnx文件存放至`./models/yolov5/`。
 
-**步骤3** AIPP配置
+**步骤4** AIPP配置
 
 由于yolov5模型的输入为rgb格式，pipeline中的图像解码为yuv格式，且数据类型不同，需要在atc转换模型时使用aipp预处理，aipp配置内容如下：
 
@@ -142,20 +146,12 @@ var_reci_chn_2 : 0.0039216
 }
 ```
 
-**步骤4** 模型转换
+**步骤5** 模型转换
 
 在`./models/yolov5`目录下执行一下命令
 
 ```bash
-# 设置环境变量（请确认install_path路径是否正确）
-# Set environment PATH (Please confirm that the install_path is correct).
-
-export install_path=/usr/local/Ascend/ascend-toolkit/latest
-export PATH=/usr/local/python3.9.2/bin:${install_path}/atc/ccec_compiler/bin:${install_path}/atc/bin:$PATH
-export PYTHONPATH=${install_path}/atc/python/site-packages:${install_path}/atc/python/site-packages/auto_tune.egg/auto_tune:${install_path}/atc/python/site-packages/schedule_search.egg
-export LD_LIBRARY_PATH=${install_path}/atc/lib64:$LD_LIBRARY_PATH
-export ASCEND_OPP_PATH=${install_path}/opp
-
+# 执行前需确保环境变量正确配置
 # 执行，转换YOLOv5模型
 # Execute, transform YOLOv5 model.
 
@@ -197,7 +193,11 @@ python main.py
 
 ### 精度测试
 
-**步骤1**：准备测试数据和om模型文件：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/yolov5_add_bs1_fp16.om
+**步骤1**：准备测试数据和om模型文件
+
+	> 测试数据集链接:https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/testDatas.zip
+	>
+	> om模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/yolov5_add_bs1_fp16.om
 
 **步骤2**：执行如下命令循环输入测试数据集图片
 
@@ -225,7 +225,7 @@ python eval.py
 
 ​	上传onnx文件到项目目录，onnx模型连接为：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/best.onnx
 
-​	修改val.py第204行multi_label值为False；修改utils/datasets.py第643行为参数r<1以改变缩放插值方式；修改utils/augmentation.py为top, bottom =0,160，以对齐MindX SDK推理操作；将utils/general.py的648函数修改为如下
+​	修改val.py第204行multi_label值为False；修改utils/datasets.py第643行为参数r<1以改变缩放插值方式；修改utils/augmentation.py第137行为top, bottom =0,160，以对齐MindX SDK推理操作；将utils/general.py的648行函数修改为如下
 
 ```python
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None, pad_flag=True):

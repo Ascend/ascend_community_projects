@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import numpy as np
 import cv2
+
 
 
 def preprocess(im, new_shape, color=(114, 114, 114)):
@@ -75,3 +77,21 @@ def xyxy2xywh(x):
     y[:, 2] = x[:, 2] - x[:, 0]  # width
     y[:, 3] = x[:, 3] - x[:, 1]  # height
     return y
+
+
+def is_jpg(image_path):
+    _, ending = os.path.splitext(image_path)
+    if ending != ".jpg":
+        return False
+    return True
+
+def is_legal(image_path):
+    if not os.path.exists(image_path):
+        print("The test image does not exist.")
+        exit()
+    if os.path.getsize(image_path) == 0:
+        print("Error!The test image is empty.")
+        exit()
+    if not is_jpg(image_path):
+        print("Please enter a JPG image")
+        exit()
