@@ -43,8 +43,12 @@ if __name__ == '__main__':
         exit()
     dataInput = MxDataInput()
     # It is best to use absolute path
-    FILENAME = "../image/test.jpg"
-    RESULTFILE = "../image/output.jpg"
+    FILENAME = "../dataset/test.jpg"
+    RESULTFILE = "../dataset/output.jpg"
+    image = Image.open(INPUT)
+    if image.format != "JPEG" or image.format != "JPG":
+        print("the image is not JPG format")
+        exit()   
     if os.path.exists(FILENAME) != 1:
         print("The test image does not exist. Exit.")
         exit()

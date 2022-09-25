@@ -34,8 +34,10 @@
 │      visualize.py
 │      main.py
 │
-├─image    -- 自行创建，存放检测图片
-│     
+├─dataset (自行创建，存放测试图片)
+│
+├─img   
+│      test_output.png 
 │
 ├─plugins
 │      libyolov3postprocess.
@@ -60,7 +62,13 @@
 
 ### 2.1 环境变量
 <br>
-运行模型前要设置环境变量，需要运行的命令已经写进shell脚本,请自行修改bash脚本中的SDK_PATH和ascend_toolkit_path
+运行模型前要设置环境变量，命令如下,请自行修改bash脚本中的SDK_PATH和ascend_toolkit_path
+
+```bash
+. ${SDK-path}/set_env.sh  ## 修改SDK-path为你自己的SDK安装路径
+. ${ascend_toolkit_path}/set_env.sh ## 修改ascend_toolkit_path为自己Ascend的ascend_toolkit路径
+
+```
 <br>
 
 ### 2.2 软件依赖
@@ -75,12 +83,59 @@ numpy|1.21.2
 <br>
 
 ## 3.模型转换
+
+#### 步骤1 下载onnx模型文件
 本工程原型是pytorch模型，需要使用atc工具转换为om模型，模型权重文件已上传至
 https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Insulator_detection/insulator.onnx
-请点击下载,将下载好的模型放到model文件夹下,随后执行脚本
+
+<br>
+
+#### 步骤2 将模型放到models目录下
+<br>
+
+#### 步骤3 AIPP配置
+由于pipeline中的解码格式为YUV，而模型的输入格式为RGB，所以需要在atc模型转换的时候配置AIPP，AIPP配置的内容如下
+
+```
+aipp_op {
+    aipp_mode: static
+    input_format : YUV420SP_U8
+    csc_switch : true
+    rbuv_swap_switch : false
+    matrix_r0c0 : 256
+    matrix_r0c1 : 0
+    matrix_r0c2 : 359
+    matrix_r1c0 : 256
+    matrix_r1c1 : -88
+    matrix_r1c2 : -183
+    matrix_r2c0 : 256
+    matrix_r2c1 : 454
+    matrix_r2c2 : 0
+    input_bias_0 : 0
+    input_bias_1 : 128
+    input_bias_2 : 128
+    var_reci_chn_0 : 0.003921568627451
+    var_reci_chn_1 : 0.003921568627451
+    var_reci_chn_2 : 0.003921568627451
+}
+
+
+```
+
+#### 步骤4 转换模型
+跳转到models目录，运行如下命令，进行模型转换。
+
 ```
 bash run.sh
 ```
+
+模型转换结果如下，如果出现ATC run success，说明转换模型成功
+
+```bash
+ATC start working now, please wait for a moment.
+ATC run success, welcome to the next use.
+```
+
 
 ## 4.编译运行
 <br>
@@ -97,11 +152,44 @@ bash run.sh
 ```
 python main.py
 ```
-查看图片检测结果是否成功
+图片结果保存在自己设置的RESULTFILE目录下，测试图片结果如下
 
-## 5.评估精度和FPS
+
 <br>
-首先在test目录下创建dataset文件夹，把要测试的coco数据集的JPGIMAGES和json放到该文件夹下。随后运行parse_COCO.py，然后运行testmain获取数据集，最后再运行map_calculate获取精度和FPS，精度结果保存在output文件夹下
+
+![pipeline](./img/test_output.png)
+
+
+
+## 5.评估精度
+<br>
+首先在test目录下创建dataset文件夹，把要测试的coco数据集的JPGIMAGES和json放到该文件夹下。运行如下代码
+
+```bash
+python parse_coco.py
+
+python testmain.py
+
+python map_calculate.py
+
+```
+
+精度评估的结果会存放到output文件下，评估的结果如下图
+
+![precision](./img/precision.png)
+
+
+## 6.FPS测试
+选择一张1080P的图片放到dataset目录下，跳转至python目录
+
+```
+python main.py
+```
+
+结果如下
+![fps](./img/fps.png)
+
+
 
 
 

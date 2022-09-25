@@ -29,7 +29,7 @@
         "mxpi_tensorinfer0": {
             "props": {
                 "dataSource": "mxpi_imageresize0",
-                "modelPath": "../model/insulator.om"
+                "modelPath": "../models/insulator.om"
             },
             "factory": "mxpi_tensorinfer",
             "next": "mxpi_objectpostprocessor0"
@@ -37,8 +37,8 @@
         "mxpi_objectpostprocessor0": {
             "props": {
                 "dataSource": "mxpi_tensorinfer0",
-                "postProcessConfigPath":"../model/yolo.cfg",
-                "labelPath": "../model/label.names",
+                "postProcessConfigPath":"../models/yolo.cfg",
+                "labelPath": "../models/label.names",
                 "postProcessLibPath":  "${MX_SDK_HOME}/lib/modelpostprocessors/libyolov3postprocess.so"
             },
             "factory": "mxpi_objectpostprocessor",
