@@ -101,11 +101,12 @@ bash ${ascend_toolkit_path}/set_env.sh
 
 ## 3 模型转换
 
-本项目中使用的模型是DM-Count模型,其参考链接为：[Pytorch 实现版本](https://github.com/cvlab-stonybrook/DM-Count)。onnx模型可以直接[下载](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/UAV_CrowdCounting.onnx)。下载后使用模型转换工具ATC将onnx模型转换为om模型，模型转换工具相关介绍参考[链接](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)
+本项目中使用的模型是DM-Count模型,其参考链接为：[Pytorch 实现版本](https://github.com/cvlab-stonybrook/DM-Count)。onnx模型可以直接[下载https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/UAV_CrowdCounting.onnx](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/UAV_CrowdCounting.onnx)。下载后使用模型转换工具ATC将onnx模型转换为om模型，模型转换工具相关介绍参考[链接](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)
 
 下载或转换成onnx模型之后，将onnx文件移至models目录下,并在终端执行如下命令：
 
 ```bash
+wget https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/UAV_CrowdCounting.onnx  --no-check-certificate
 atc  --model=./UAV_CrowdCounting.onnx  --framework=5  --output=./uav_crowdcounting_norm   --soc_version=Ascend310   --input_shape="input:1,3,512,640"  --input_format=NCHW   --insert_op_conf=./aipp.cfg
 ```
 
@@ -133,13 +134,13 @@ aipp_op {
 }
 ```
 
-已经转换好的om可通过[模型om地址](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/uav_crowdcounting_norm.om)获取。
+已经转换好的om可通过[模型om地址https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/uav_crowdcounting_norm.om](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/uav_crowdcounting_norm.om)获取。
 
 ## 4 编译与运行
 
 **步骤1** 按照第2小结**环境依赖中**的步骤设置环境变量。
 
-**步骤2** 按照第4小节模型转换中的步骤获得om模型文件，放置在`./models`目录下。
+**步骤2** 按照第3小节**模型转换**中的步骤获得om模型文件，放置在`./models`目录下。
 
 **步骤3** 将待测试的图片重命名为`test.jpg`或`test.png`，并放置在`./data`目录下
 
