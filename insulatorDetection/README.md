@@ -64,8 +64,8 @@
 运行模型前要设置环境变量，命令如下,请自行修改bash脚本中的SDK_PATH和ascend_toolkit_path
 
 ```bash
-. ${SDK-path}/set_env.sh  ## 修改SDK-path为你自己的SDK安装路径
-. ${ascend_toolkit_path}/set_env.sh ## 修改ascend_toolkit_path为自己Ascend的ascend_toolkit路径
+. ${SDK-path}/set_env.sh  ## 修改${SDK-path}为你自己的SDK安装路径
+. ${ascend_toolkit_path}/set_env.sh ## 修改${ascend_toolkit_path}为自己Ascend的ascend_toolkit路径
 
 ```
 <br>
