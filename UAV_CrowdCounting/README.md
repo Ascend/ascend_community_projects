@@ -66,11 +66,11 @@ npu-smi info
 
 ![pic](flowcharts.jpg)
 
-图1 无人机场景下人群密度估计流程图
+<p align="center">图1 无人机场景下人群密度估计流程图</p>
 
 ![pic](pipeline.jpg)
 
-图2 无人机场景下人群密度估计pipeline示意图
+<p align="center">图2 无人机场景下人群密度估计pipeline示意图</p>
 
 
 ### 1.6 特性及适用场景
@@ -147,6 +147,7 @@ aipp_op {
 **步骤4** 图像测试，在主目录下执行命令：
 
 ```bash
+# 更改脚本命令中${sdk安装路径}
 bash run.sh
 ```
 
@@ -156,6 +157,7 @@ bash run.sh
 
 下载[VisDrone2021数据集](http://aiskyeye.com/download/crowd-counting_/)，将数据集中`RGB`和`GT_`目录放置在VisDrone2021目录中，在主目录下执行命令：
 ```bash
+# 更改脚本命令中${sdk安装路径}
 bash eval.sh
 ```
 
