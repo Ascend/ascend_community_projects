@@ -20,6 +20,7 @@ import stat
 import time
 import cv2
 from cv2 import getTickCount, getTickFrequency
+from PIL import Image
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
@@ -43,15 +44,16 @@ if __name__ == '__main__':
         exit()
     dataInput = MxDataInput()
     # It is best to use absolute path
-    FILENAME = "../dataset/test.jpg"
+    FILENAME = "../dataset/0051.jpg"
     RESULTFILE = "../dataset/output.jpg"
-    image = Image.open(INPUT)
-    if image.format != "JPEG" or image.format != "JPG":
-        print("the image is not JPG format")
-        exit()   
+    
     if os.path.exists(FILENAME) != 1:
         print("The test image does not exist. Exit.")
         exit()
+    image = Image.open(FILENAME)
+    if image.format != "JPEG" and image.format != "JPG":
+        print("the image is not JPG format")
+        exit()   
                 
     with os.fdopen(os.open(FILENAME, os.O_RDONLY, MODES), 'rb') as f:
         dataInput.data = f.read()
@@ -104,7 +106,7 @@ if __name__ == '__main__':
                      cls_id=class_id,
                      label=class_name,
                      box_score=score)
-    print("fps:", time.time()-t1)
+    print("fps:", 1/(time.time()-t1))
     cv2.imwrite(RESULTFILE, img)
     # destroy streams
     steammanager_api.DestroyAllStreams()

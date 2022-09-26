@@ -38,9 +38,8 @@
 │
 ├─img   
 │      test_output.png 
-│
-├─plugins
-│      libyolov3postprocess.
+│      fps.png
+│      precision.png
 │
 ├─model
 │      label.names
@@ -146,7 +145,25 @@ ATC run success, welcome to the next use.
 <br> 
 <br>
 
-### 4.2 运行推理工程
+
+### 4.2 修改pipeline的后处理路径
+
+本应用使用的是MindX_SDK提供的后处理库，将${MX_SDK_HOME}改为自己SDK安装的路径
+
+```
+"mxpi_objectpostprocessor0": {
+            "props": {
+                "dataSource": "mxpi_tensorinfer0",
+                "postProcessConfigPath":"../models/yolo.cfg",
+                "labelPath": "../models/label.names",
+                "postProcessLibPath":  "${MX_SDK_HOME}/lib/modelpostprocessors/libyolov3postprocess.so"
+            },
+            "factory": "mxpi_objectpostprocessor",
+            "next": "appsink0"
+        },        
+```
+
+### 4.3 运行推理工程
 进入python目录，打开main.py，其中有个FILENAME为输入的图片路径，RESULTNAME为输出的图片路径，将其修改为自己需要的路径。执行python文件
 
 ```
