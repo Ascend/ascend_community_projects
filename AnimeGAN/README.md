@@ -199,6 +199,8 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
 
 - 运行
 
+  运行前注意清空outputPath指定的输出路径里的图片，因为在测试时需要保证输出路径里的图片与测试参照组有一一对应的关系。
+
   ```bash
   python main.py
   ```
@@ -223,7 +225,7 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
   DATA_PATH = "dataset/test"
   ```
 
-  更改animegan.pipeline中animeganpostprocessor插件的outputPath，以防与HR_photo数据集的推理结果覆盖干扰。
+  更改animegan.pipeline中animeganpostprocessor插件的outputPath，以防与HR_photo数据集的推理结果覆盖干扰。或者不更改路径，再次将该文件夹清空亦可。
 
   ```python
       "animeganpostprocessor0": {
