@@ -36,7 +36,13 @@ def eval_metrics(gpu_path, npu_path):
     # should ensure the files'order keeping the same as before.
     gpu_imgs = sorted(glob.glob(os.path.join(gpu_path, '*.jpg')))
     npu_imgs = sorted(glob.glob(os.path.join(npu_path, '*.jpg')))
-    assert len(gpu_imgs) == len(npu_imgs)
+    if len(gpu_imgs) != len(npu_imgs):
+        print("The number of pictures in the two folders does not match!Please check it.")
+        print('It may be caused by:')
+        print("     1.The outputPath dir not being empty before running main.py.")
+        print("     2.Comparing with wrong gpu dir.")
+        print("     3.Some pictures not being processed successfully in npu.")
+        exit()
 
     for index, img1_path in enumerate(gpu_imgs):
         img1 = cv2.imread(img1_path)
