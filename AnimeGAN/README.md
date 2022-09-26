@@ -184,7 +184,7 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
     }
   ```
   
-  更改animegan.pipeline中animeganpostprocessor插件的outputPath为输出文件夹路径，若该文件夹不存在，请先创建文件夹。
+  更改animegan.pipeline中animeganpostprocessor插件的outputPath为输出文件夹路径，若该文件夹不存在，请先创建文件夹。若该文件夹中已有图片，请先清空。
 
   ```python
       "animeganpostprocessor0": {
@@ -219,13 +219,15 @@ atc  --output_type="generator/G_MODEL/output:0:FP32" --input_shape="test:1,864,8
 
   提供的GPU端的推理结果还有另一个数据集的推理结果，其来自于提供的原模型数据集数据集中的dataset/test/real，与HR_photo不同的是，该数据集的图片分辨率较小且固定为255*255。若还要另外测试对于此数据集GPU端与NPU端的平均PSNR和SSIM，可按照上述步骤重复。
 
-  将原模型数据集中的dataset/test/real拷贝至项目中的dataset/test，并修改main.py中的DATA_PATH。
+  将原模型数据集中的dataset/test/real拷贝至项目中的dataset/real，并修改main.py中的DATA_PATH。
 
   ``` python
-  DATA_PATH = "dataset/test"
+  DATA_PATH = "dataset/real"
   ```
 
-  更改animegan.pipeline中animeganpostprocessor插件的outputPath，以防与HR_photo数据集的推理结果覆盖干扰。或者不更改路径，再次将该文件夹清空亦可。
+  更改animegan.pipeline中animeganpostprocessor插件的outputPath，以防HR_photo数据集的推理结果干扰。或者不更改路径，再次将该文件夹清空亦可。总之，要保证在运行前输出文件夹为空，这样才可以保持测试参照组的数量和输出结果的数量对应，可以进行测试。
+
+  此处我们更改outputPath为npu_real。
 
   ```python
       "animeganpostprocessor0": {
