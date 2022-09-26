@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-export MX_SDK_HOME="${~/MindX_SDK}/mxVision"
+export MX_SDK_HOME="${sdk安装路径}/mxVision"
 export LD_LIBRARY_PATH=${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:/usr/local/Ascend/ascend-toolkit/latest/atc/lib64:$LD_LIBRARY_PATH
 export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 python ./main/main.py
