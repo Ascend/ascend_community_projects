@@ -16,29 +16,9 @@
 
 path_cur="$(dirname "$0")"
 
-function check_env()
-{
-    # set ASCEND_VERSION to ascend-toolkit/latest when it was not specified by user
-    if [ ! "${ASCEND_VERSION}" ]; then
-        export ASCEND_VERSION=ascend-toolkit/latest
-        echo "Set ASCEND_VERSION to the default value: ${ASCEND_VERSION}"
-    else
-        echo "ASCEND_VERSION is set to ${ASCEND_VERSION} by user"
-    fi
-
-    if [ ! "${ARCH_PATTERN}" ]; then
-        # set ARCH_PATTERN to ./ when it was not specified by user
-        export ARCH_PATTERN=./
-        echo "ARCH_PATTERN is set to the default value: ${ARCH_PATTERN}"
-    else
-        echo "ARCH_PATTERN is set to ${ARCH_PATTERN} by user"
-    fi
-}
-
 function build_refinedet()
 {
     cd "$path_cur" || exit
-    export LD_LIBRARY_PATH=/usr/local/Ascend/ascend-toolkit/latest/acllib/lib64:/usr/local/Ascend/driver/lib64/:$LD_LIBRARY_PATH
     rm -rf build
     mkdir -p build
     cd build || exit
@@ -51,5 +31,4 @@ function build_refinedet()
     fi
 }
 
-check_env
 build_refinedet

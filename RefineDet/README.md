@@ -201,3 +201,9 @@ bash build.sh
 ```
 
 得到`result.jpg`即为输出结果。
+
+
+
+## 6 精度验证
+
+此处精度验证可参考[链接](https://gitee.com/mikochi13/mindxsdk-referenceapps/tree/master/contrib/RefineDet)，两者模型与后处理实现完全相同。
