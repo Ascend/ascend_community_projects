@@ -21,15 +21,6 @@ import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
-'''
-Dataset：
-    Count the number of people for each picture in the test set.
-        Args:
-            the the test set path,
-            the picture count file
-        Returns:
-            the test image name, datainput, keypoints
-'''
 class Dataset:
     def __init__(self, image_root_path, image_format='.jpg'):
         self.image_root_path = image_root_path
