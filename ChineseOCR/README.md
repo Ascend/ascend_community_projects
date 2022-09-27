@@ -9,7 +9,7 @@
 
 ### 1.2 支持的版本
 
-支持1.75.T11.0.B116, 1.75.T15.0.B150, 20.1.0
+本样例配套的 CANN 版本为 5.1.RC2，支持的 SDK 版本为 3.0.RC2
 
 版本号查询方法，在Atlas产品环境下，运行以下命令：
 
@@ -77,18 +77,6 @@ npu-smi info
 | protobuf | 3.19.0 |
 | google   | 3.0.0  |
 
-在编译运行项目前，需要设置环境变量：
-
-- `ASCEND_HOME` Ascend安装的路径，一般为 `/usr/local/Ascend`
-- `DRIVER_HOME` 可选，driver安装路径，默认和$ASCEND_HOME一致，不一致时请设置
-- `ASCEND_VERSION` acllib 的版本号，用于区分不同的版本，参考$ASCEND_HOME下两级目录，一般为 `ascend-toolkit/*version*`
-- `ARCH_PATTERN` acllib 适用的 CPU 架构，查看`$ASCEND_HOME/$ASCEND_VERSION`文件夹，可取值为 `x86_64-linux` 或 `arm64-linux`等
-
-```
-export ASCEND_HOME=/usr/local/Ascend
-export DRIVER_HOME=/usr/local/Ascend
-export ASCEND_VERSION=ascend-toolkit/latest
-export ARCH_PATTERN=x86_64-linux
 ```
 
 
@@ -122,7 +110,7 @@ https://gitee.com/link?target=https%3A%2F%2Fmindx.sdk.obs.cn-north-4.myhuaweiclo
 **步骤5 ** 使用atc命令转单batch模型
 
 ```bash
-atc --model=/home/liuyipeng2/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_modify_bs1_om --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
+atc --model=/model/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_modify_bs1_om --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
 ```
 
 
@@ -134,7 +122,7 @@ atc --model=/home/liuyipeng2/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framew
 
 ## 运行
 
-**步骤1** 将`crnn`模型放到`models/paddlecrnn`文件夹内
+**步骤1** 将经过模型转化的Paddle om模型放到`models/paddlecrnn`文件夹内
 
 **步骤2**配置环境变量，根据自己的环境变量不同，需要配置不同的环境变量，下面给出参考示例：
 
@@ -143,8 +131,8 @@ export ASCEND_HOME=/usr/local/Ascend
 export ASCEND_AICPU_PATH=${XXX}/Ascend/ascend-toolkit/latest
 export ASCEND_OPP_PATH=${XXX}/Ascend/ascend-toolkit/latest/opp
 export ASCEND_HOME_PATH=${XXX}/Ascend/ascend-toolkit/latest
-export GST_PLUGIN_SCANNER=/home/liuyipeng2/NewSDK/mxVision-3.0.RC2/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
-export MX_SDK_HOME=/home/liuyipeng2/NewSDK/mxVision-3.0.RC2
+export GST_PLUGIN_SCANNER=${XXX}/NewSDK/mxVision-3.0.RC2/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
+export MX_SDK_HOME=${XXX}/NewSDK/mxVision-3.0.RC2
 ```
 
 **步骤3** 在main.py`中，更改`pipeline路径
