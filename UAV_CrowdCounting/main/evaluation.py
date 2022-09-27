@@ -20,6 +20,7 @@ import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
+
 class Dataset:
     '''
         Count the number of people for each picture in the test set.
