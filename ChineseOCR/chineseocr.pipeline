@@ -32,69 +32,6 @@
       "factory": "mxpi_imageresize",
       "next": "crnn_recognition"
     },
-//    "mxpi_imagenormalize0": {
-//      "props": {
-//        "dataSource": "mxpi_imageresize0",
-//        "dataType": "UINT8",
-//        "processType": "0"
-//      },
-//      "factory": "mxpi_imagenormalize",
-//      "next": "crnn_recognition"
-//    },
-    //    "angle_recognition": {
-    //      "props": {
-    //        "dataSource": "mxpi_imageresize0",
-    //        "modelPath": "/home/liuyipeng2/angle.om"
-    //      },
-    //      "factory": "mxpi_tensorinfer",
-    //      "next": "mxpi_imageresize1"
-    //    },
-    //    "mxpi_imageresize1": {
-    //      "props": {
-    //        "dataSource": "angle_recognition",
-    //        "resizeType": "Resizer_Stretch",
-    //        "cvProcessor": "opencv"
-    //      },
-    //      "factory": "mxpi_imageresize",
-    //      "next": "mxpi_tensorinfer0"
-    //    },
-    //    "mxpi_tensorinfer0": {
-    //      "props": {
-    //        "dataSource": "mxpi_imageresize1",
-    //        "modelPath": "/home/liuyipeng2/yolotext.om"
-    //      },
-    //      "factory": "mxpi_tensorinfer",
-    //      "next": "mxpi_textobjectpostprocessor0"
-    //    },
-    //
-    //    "mxpi_textobjectpostprocessor0": {
-    //      "props": {
-    //        "dataSource": "mxpi_tensorinfer0",
-    //        "postProcessConfigPath": "/home/liuyipeng2/yolotext.cfg",
-    //        "labelPath": "/home/liuyipeng2/text.names",
-    //        "postProcessLibPath": "/home/liuyipeng2/NewSDK/mxVision-3.0.RC2/lib/modelpostprocessors/libyolov3postprocess.so"
-    //      },
-    //      "factory": "mxpi_objectpostprocessor",
-    //      "next": "mxpi_warpperspective0"
-    //    },
-    //    "mxpi_warpperspective0": {
-    //      "props": {
-    //        "debugMode": "true"
-    //      },
-    //      "factory": "mxpi_warpperspective",
-    //      "next": "mxpi_imageresize2"
-    //    },
-    //
-    //
-    //    "mxpi_imageresize2": {
-    //      "props": {
-    //        "resizeHeight": "32",
-    //        "resizeWidth": "100",
-    //        "dataSource": "mxpi_warpperspective0"
-    //      },
-    //      "factory": "mxpi_imageresize",
-    //      "next": "crnn_recognition"
-    //    },
     "crnn_recognition": {
       "props": {
         "dataSource": "mxpi_imageresize0",
@@ -106,7 +43,6 @@
     "mxpi_textgenerationpostprocessor0": {
       "props": {
         "dataSource": "crnn_recognition",
-        //        "funcLanguage":"python",danshi
         "postProcessConfigPath": "/home/liuyipeng2/crnn.cfg",
         "labelPath": "/home/liuyipeng2/ppocr_keys_v1.txt",
         "postProcessLibPath": "/home/liuyipeng2/NewSDK/mxVision-3.0.RC2/lib/modelpostprocessors/libcrnnpostprocess.so"
