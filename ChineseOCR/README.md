@@ -77,8 +77,6 @@ npu-smi info
 | protobuf | 3.19.0 |
 | google   | 3.0.0  |
 
-```
-
 
 
 ### 3. 模型转换
