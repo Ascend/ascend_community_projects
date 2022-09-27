@@ -35,7 +35,7 @@
     "crnn_recognition": {
       "props": {
         "dataSource": "mxpi_imageresize0",
-        "modelPath": "/home/liuyipeng2/ch_ppocr_server_v2.0_rec_infer_bs1.om"
+        "modelPath": "/model/ch_ppocr_server_v2.0_rec_infer_bs1.om"
       },
       "factory": "mxpi_tensorinfer",
       "next": "mxpi_textgenerationpostprocessor0"
@@ -43,9 +43,9 @@
     "mxpi_textgenerationpostprocessor0": {
       "props": {
         "dataSource": "crnn_recognition",
-        "postProcessConfigPath": "/home/liuyipeng2/crnn.cfg",
-        "labelPath": "/home/liuyipeng2/ppocr_keys_v1.txt",
-        "postProcessLibPath": "/home/liuyipeng2/NewSDK/mxVision-3.0.RC2/lib/modelpostprocessors/libcrnnpostprocess.so"
+        "postProcessConfigPath": "/cfg/crnn.cfg",
+        "labelPath": "/cfg/ppocr_keys_v1.txt",
+        "postProcessLibPath": "/cfg/libcrnnpostprocess.so"
       },
       "factory": "mxpi_textgenerationpostprocessor",
       "next": "mxpi_dataserialize0"
