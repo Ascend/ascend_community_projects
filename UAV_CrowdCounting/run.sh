@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-. ~/${sdk路径}/mxVision/set_env.sh
+. ${sdk路径}/mxVision/set_env.sh
 export LD_LIBRARY_PATH=${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:/usr/local/Ascend/ascend-toolkit/latest/atc/lib64:$LD_LIBRARY_PATH
 export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 python3 ./main/main.py
