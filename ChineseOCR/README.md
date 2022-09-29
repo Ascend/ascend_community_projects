@@ -54,7 +54,7 @@ npu-smi info
 ├── data
 │   ├── inputdata
 ├── cfg
-│   ├── crnn.cfg
+│   ├── crnn.txt
 │   ├── ppocr_keys_v1.txt
 ```
 
@@ -144,9 +144,7 @@ bash ${SDK安装路径}/set_env.sh
 bash ${CANN安装路径}/set_env.sh
 ```
 
-**步骤3** 在main.py`中，更改`pipeline路径
-
-**步骤4** 运行main.py文件得到中文识别结果
+**步骤3** 运行main.py文件得到中文识别结果
 
 
 
