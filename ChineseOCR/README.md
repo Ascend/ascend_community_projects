@@ -54,7 +54,7 @@ npu-smi info
 ├── data
 │   ├── inputdata
 ├── cfg
-│   ├── crnn.txt
+│   ├── crnn.cfg
 │   ├── ppocr_keys_v1.txt
 ```
 
