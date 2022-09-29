@@ -46,15 +46,16 @@ npu-smi info
 本Sample工程名称为ChineseOCR，工程目录如下图1.2所示：
 
 ```
-├── IDCardRecognition
-│   ├── ChineseOCR.py
-│   └── README.md
-├── pipeline
-│   ├── chineseocr.pipeline
-├── models
+├── main.py
+├── README.md
+├── chineseocr.pipeline
+├── model
 │   ├── crnn
 ├── data
 │   ├── inputdata
+├── cfg
+│   ├── crnn.txt
+│   ├── ppocr_keys_v1.txt
 ```
 
 ### 1.5 技术实现流程图
@@ -65,7 +66,13 @@ npu-smi info
 
 ### 1.6 特性及适用场景
 
-任意长宽高度的的单行中文字符图片
+本案例可以满足单行中文文字识别，但同时对输入图像有以下限制：
+
+1、输入图像要求是jpg,jpeg,JPG,PNG编码格式
+
+2、输入图像尺寸过大或者过小会对图片进行放缩处理
+
+
 
 ## 2 环境依赖
 
@@ -85,21 +92,27 @@ npu-smi info
 
 **步骤1** 在github上下载PaddleOCR模型。下载地址：[GitHub - PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
 
-**步骤2** 将获取到的PaddleOCR模型文件解压后存放到`./models/paddleocr/`。
+**步骤2** 将获取到的PaddleOCR模型文件解压后存放到`model/paddleocr/ch_ppocr_server_v2.0_rec_infer`。
 
-**步骤3** 安装环境依赖
+**步骤3** 安装环境依赖。笔者使用docker pull paddlepaddle/paddle:2.3.2-gpu-cuda11.2-cudnn8拉取镜像，建立docker容器并进入容器后运行如下命令
 
 ```
- pip install paddle2onnx
+ pip install paddle2onnx==1.0.0
 ```
 
-**步骤4 ** 在`./models/paddleocr/`目录下执行一下命令
+**步骤4** 将模型文件拷贝进容器里面
+
+```
+ docker cp -r model/paddleocr/ch_ppocr_server_v2.0_rec_infer {容器id}:/models/
+```
+
+**步骤4 ** 在`/models`目录下执行以下命令
 
 ```
 paddle2onnx --model_dir ./ch_ppocr_server_v2.0_rec_infer/ --model_filename inference.pdmodel --params_filename inference.pdiparams --save_file ./ch_ppocr_server_v2.0_rec_infer.onnx --opset_version 11 --enable_onnx_checker True
 ```
 
-如果在成功执行完命令后会生成OCR的onnx模型，如果出现`E16005: The model has [2] [--domain_version] fields, but only one is allowed.`错误，使用 https://gitee.com/Ronnie_zheng/MagicONNX调用keep_default_domain这个接口修改onnx解决
+如果在成功执行完命令后会生成OCR的onnx模型，如果出现`E16005: The model has [2] [--domain_version] fields, but only one is allowed.`错误，使用[MagicONNX](https://gitee.com/Ronnie_zheng/MagicONNX)调用keep_default_domain这个接口修改onnx解决
 
 由于笔者下载的paddle模型在转换后出现图片识别精度大幅下降的问题，所以尽量使用官方已经转化完成的om模型进行识别
 
@@ -107,44 +120,39 @@ https://gitee.com/link?target=https%3A%2F%2Fmindx.sdk.obs.cn-north-4.myhuaweiclo
 
 **步骤5 ** 使用atc命令转单batch模型
 
+将模型从docker容器中拷贝出来上传到昇腾服务器
+
 ```bash
 atc --model=/model/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_modify_bs1_om --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
 ```
 
 
-## 依赖安装
+## 3 依赖安装
 
 使用pip安装所需的插件
 
 
 
-## 运行
+## 4 运行
 
 **步骤1** 将经过模型转化的Paddle om模型放到`models/paddlecrnn`文件夹内
 
-**步骤2**配置环境变量，根据自己的环境变量不同，需要配置不同的环境变量，下面给出参考示例：
+**步骤2 ** 配置环境变量，根据自己的环境变量不同，需要配置不同的环境变量，在CANN以及MindX SDK的安装目录找到set_env.sh,并运行脚本：
 
 ```
-export ASCEND_HOME=/usr/local/Ascend
-export ASCEND_AICPU_PATH=${XXX}/Ascend/ascend-toolkit/latest
-export ASCEND_OPP_PATH=${XXX}/Ascend/ascend-toolkit/latest/opp
-export ASCEND_HOME_PATH=${XXX}/Ascend/ascend-toolkit/latest
-export GST_PLUGIN_SCANNER=${XXX}/NewSDK/mxVision-3.0.RC2/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
-export MX_SDK_HOME=${XXX}/NewSDK/mxVision-3.0.RC2
+bash ${SDK安装路径}/set_env.sh
+bash ${CANN安装路径}/set_env.sh
 ```
 
 **步骤3** 在main.py`中，更改`pipeline路径
 
 **步骤4** 运行main.py文件得到中文识别结果
 
-输入样例：
-![pic](RESOURCES/iexample.png)
-输出样例：
-![pic](RESOURCES/oexample.png)
 
 
 
-## 4 精度测试
+
+## 5 精度测试
 
 #### 使用官方paddle模型在GPU上测试
 
@@ -189,7 +197,7 @@ print(score/index)
 | NPU      | 41.78% |
 
 
-## 5 软件依赖说明
+## 6 软件依赖说明
 
 
 
@@ -200,9 +208,9 @@ print(score/index)
 
 
 
-## 6 常见问题
+## 7 常见问题
 
-### 6.1 输入图片大小与模型不匹配问题
+### 7.1 输入图片大小与模型不匹配问题
 
 **问题描述：**
 
