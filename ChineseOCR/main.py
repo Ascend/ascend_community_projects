@@ -14,14 +14,16 @@
 
 import glob
 import os
-
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
+
+FILE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.JPG', '*.PNG','*.png','*.JPEG']
 
 if __name__ == '__main__':
     # init stream manager
     PIPELINE_PATH = "chineseocr.pipeline"
     STREAMNAME = b'chineseocr'
+
     stream_manager_api = StreamManagerApi()
     ret = stream_manager_api.InitManager()
     if ret != 0:
@@ -39,13 +41,20 @@ if __name__ == '__main__':
     INPLUGIN_ID = 0
     # Construct the input of the stream
     data_input = MxDataInput()
-
     output_path = os.path.dirname(os.path.realpath(__file__))
     output_exer = os.path.join(output_path, 'output')
     if not os.path.exists(output_exer):
         os.makedirs(output_exer)
 
-    for index, img_path in enumerate(glob.glob(os.path.join(output_path, '6/*.jpg'))):
+    paths = []
+    for extension in FILE_EXTENSIONS:
+        paths.extend(glob.glob(os.path.join("dataset", extension)))
+    paths.sort()
+    if len(paths) == 0:
+        print("The dataset is empty!Only jpg or png format support.Please check the dataset and files.")
+        exit()
+
+    for index, img_path in enumerate(paths):
         text_label = img_path.replace('jpg', 'txt')
         with open(img_path, 'rb') as fp:
             data_input.data = fp.read()
