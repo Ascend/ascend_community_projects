@@ -45,7 +45,7 @@
         "dataSource": "crnn_recognition",
         "postProcessConfigPath": "./cfg/crnn.cfg",
         "labelPath": "./cfg/ppocr_keys_v1.txt",
-        "postProcessLibPath": "./cfg/libcrnnpostprocess.so"
+        "postProcessLibPath": "libcrnnpostprocess.so"
       },
       "factory": "mxpi_textgenerationpostprocessor",
       "next": "mxpi_dataserialize0"
