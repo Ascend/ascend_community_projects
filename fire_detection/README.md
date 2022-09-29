@@ -28,14 +28,13 @@
 <center>
     <img style="border-radius: 0.3125em;
     box-shadow: 0 2px 4px 0 rgba(34,36,38,.12),0 2px 10px 0 rgba(34,36,38,.08);" 
-    src="pic/火灾检测SDK流程图.png">
+    src="figures/火灾检测SDK流程图.png">
     <br>
     <div style="color:orange; border-bottom: 1px #d9d9d9;
     display: inline-block;
     color: #999;
     padding: 2px;">图1-3 火灾检测SDK流程图</div>
 </center>
-
 
 
 ## 2 软件方案介绍
@@ -76,6 +75,8 @@
 |   `-- test
 |-- envs
 |   `-- atc_env.txt
+|-- figures
+|   `-- 火灾检测SDK流程图.png
 |-- main.py
 |-- models
 |   `-- pth2onnx_310.py

@@ -54,16 +54,20 @@ else:
 STREAM_NAME = b'classication'    # 流的名称
 IN_PLUGIN_ID = 0    
 
-# CarInFlames-FireFighterHelmetCam4591.png 汽车火灾
-# CarInFlames-FireFighterHelmetCam6896.png 汽车烟雾
-# HelmetCam2ndAlarmDwellingFire2361 住宅火灾
-# HelmetCam2ndAlarmDwellingFire179 住宅烟雾
-# Ogdenhousefire7071 火灾
-# Ogdenhousefire459 烟雾
-# /home/luoyang1/fire_detection/images/test.jpg 大型火灾
+# 大型火灾.jpg                                      大型火灾场景
+# CarInFlames-FireFighterHelmetCam4591.png          汽车失火场景
+# CarInFlames-FireFighterHelmetCam6896.png          汽车失火烟雾场景
+# HelmetCam2ndAlarmDwellingFire2361                 屋顶失火场景
+# HelmetCam2ndAlarmDwellingFire179                  屋顶失火烟雾场景
+# Ogdenhousefire7071                                房屋失火场景
+# Ogdenhousefire459                                 房屋失火烟雾场景
+# HelmetCam2ndAlarmDwellingFire1185.png             火灾场景拍摄不完整
+# 夕阳.jpg                                          夕阳
+# 山间道路.jpg                                      山间道路
+# 城市夜灯.jpg                                      城市夜灯
 
-TEST_PATH = '{图片路径}'
-PICTURE = '{图片名称}'
+TEST_PATH = '{图片所在文件夹路径}' # 若在fire_detection文件夹下可设置为./fire_detection/other
+PICTURE = '{图片名称}' # 修改图片名称，如：大型火灾.jpg
 TEST_PATH = TEST_PATH + PICTURE 
 PIC_TYPE = imghdr.what(TEST_PATH)
 
