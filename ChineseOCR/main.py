@@ -15,9 +15,11 @@
 import glob
 import os
 import MxpiDataType_pb2 as MxpiDataType
+import textdistance
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
-FILE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.JPG', '*.PNG','*.png','*.JPEG']
+FILE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.JPG', '*.PNG', '*.png', '*.JPEG']
+data_path = "/home/liuyipeng2/MindStudio-WorkSpace/untitled_ff8ab2d4/output/"
 
 if __name__ == '__main__':
     # init stream manager
@@ -38,8 +40,8 @@ if __name__ == '__main__':
         print("Failed to create Stream, ret=%s" % str(ret))
         exit()
 
-    INPLUGIN_ID = 0
     # Construct the input of the stream
+    INPLUGIN_ID = 0
     data_input = MxDataInput()
     output_path = os.path.dirname(os.path.realpath(__file__))
     output_exer = os.path.join(output_path, 'output')
@@ -54,6 +56,8 @@ if __name__ == '__main__':
         print("The dataset is empty!Only jpg or png format support.Please check the dataset and files.")
         exit()
 
+    score = 0
+    num = 0
     for index, img_path in enumerate(paths):
         text_label = img_path.replace('jpg', 'txt')
         with open(img_path, 'rb') as fp:
@@ -79,10 +83,10 @@ if __name__ == '__main__':
         result.ParseFromString(infer_result[0].messageBuf)
         CONTENT_PIC = str(result.textsInfoVec[0].text)
         print(CONTENT_PIC[2:-2])
+        num += 1
 
         with open(text_label, 'r', encoding='utf-8') as f:
             CONTENT = ""
-
             for i in f.readlines():
                 CONTENT += i.strip()
 
@@ -96,5 +100,8 @@ if __name__ == '__main__':
             wf.write(CONTENT_PIC[2:-2])
             wf.close()
 
+        score += textdistance.hamming.normalized_similarity(CONTENT_PIC[2:-2], CONTENT)
+
+    print(score / num)
     # destroy streams
     stream_manager_api.DestroyAllStreams()
