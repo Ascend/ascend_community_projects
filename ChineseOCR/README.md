@@ -1,11 +1,11 @@
 # ChineseOCR
 
 ## 1 介绍
-本开发样例演示中文字体识别ChineseOCR，供用户参考。 本系统基于昇腾Atlas300卡。主要为单行中文识别系统，系统将图像进行适当的仿射变化，然后送入字符识别系统中进行识别后将识别结果输出。
+本开发样例基于MindX SDK开发，可以实现中文字体识别，案例基于Paddle模型供用户参考。 本系统基于昇腾310。主要为单行中文识别系统，系统将图像进行适当的仿射变化，然后送入字符识别系统中进行识别后将识别结果输出。
 
 ### 1.1 支持的产品
 
-本系统采用Atlas300-3010作为实验验证的硬件平台，并支持Atlas200RC以及Atlas500的硬件平台.具体产品实物图和硬件参数请参见《Atlas 300 AI加速卡 用户指南（型号 3010）》。由于采用的硬件平台为含有Atlas 300的Atlas 800 AI服务器 （型号3010），而服务器一般需要通过网络访问，因此需要通过笔记本或PC等客户端访问服务器，而且展示界面一般在客户端。
+Ascend 310
 
 ### 1.2 支持的版本
 
@@ -27,7 +27,7 @@ npu-smi info
 
 | 序号 | 子系统   | 功能描述                                                     |
 | ---- | -------- | ------------------------------------------------------------ |
-| 1    | 字符识别 | 从pipeline中读取到输入的图片，然后将图片放缩为固定大小，放缩的大小与模型的输入有关，然后将放缩后的结果送入字符识别系统，放缩的大小与模型的输入大小有关，之后将结果送入到文字识别模型进行文字识别，并将识别结果进行输出。 |
+| 1    | 字符识别 | 从pipeline中读取到输入的图片，然后将图片放缩为固定大小，放缩的大小与模型的输入有关，然后将放缩后的结果送入字符识别系统，放缩的大小与模型的输入大小有关，之后将结果送入到文字识别模型与标签进行文字识别，并将识别结果进行输出。 |
 
 表1.2 系统方案中各模块功能：
 
@@ -66,11 +66,17 @@ npu-smi info
 
 ### 1.6 特性及适用场景
 
-本案例可以满足单行中文文字识别，但同时对输入图像有以下限制：
+本案例可以满足单行中文文字识别，但同时对输入有以下限制：
 
 1、输入图像要求是jpg,jpeg,JPG,PNG编码格式
 
 2、输入图像尺寸过大或者过小会对图片进行放缩处理
+
+3、手写字体检测，由于测试图片的手写字体较为潦草，因此手写字体结果不是很理想
+
+4、在图片中夹杂的大量英文字符时候会对模型字体检测造成干扰
+
+5、输入数据需要同时包含同名的图片和单独的标签数据
 
 
 
@@ -94,11 +100,7 @@ npu-smi info
 
 **步骤2** 将获取到的PaddleOCR模型文件解压后存放到`model/paddleocr/ch_ppocr_server_v2.0_rec_infer`。
 
-**步骤3** 安装环境依赖。笔者使用docker pull paddlepaddle/paddle:2.3.2-gpu-cuda11.2-cudnn8拉取镜像，建立docker容器并进入容器后运行如下命令
-
-```
- pip install paddle2onnx==1.0.0
-```
+**步骤3** 安装环境依赖。
 
 **步骤4** 将模型文件拷贝进容器里面
 
@@ -106,7 +108,7 @@ npu-smi info
  docker cp -r model/paddleocr/ch_ppocr_server_v2.0_rec_infer {容器id}:/models/
 ```
 
-**步骤4 ** 在`/models`目录下执行以下命令
+**步骤5** 在`/models`目录下执行以下命令
 
 ```
 paddle2onnx --model_dir ./ch_ppocr_server_v2.0_rec_infer/ --model_filename inference.pdmodel --params_filename inference.pdiparams --save_file ./ch_ppocr_server_v2.0_rec_infer.onnx --opset_version 11 --enable_onnx_checker True
@@ -118,7 +120,7 @@ paddle2onnx --model_dir ./ch_ppocr_server_v2.0_rec_infer/ --model_filename infer
 
 https://gitee.com/link?target=https%3A%2F%2Fmindx.sdk.obs.cn-north-4.myhuaweicloud.com%2Fmindxsdk-referenceapps%2520%2Fcontrib%2FOCR%2Fmodel%2Fmodels_ocr.zip
 
-**步骤5 ** 使用atc命令转单batch模型
+**步骤6** 使用atc命令转单batch模型
 
 将模型从docker容器中拷贝出来上传到昇腾服务器
 
@@ -128,23 +130,29 @@ atc --model=/model/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framework=5 --ou
 
 
 ## 3 依赖安装
+**步骤1** 在CANN以及MindX SDK的安装目录找到set_env.sh,并运行脚本：
 
-使用pip安装所需的插件
+```
+bash ${SDK安装路径}/set_env.sh
+bash ${CANN安装路径}/set_env.sh
+```
+**步骤2** 使用docker pull paddlepaddle/paddle:2.3.2-gpu-cuda11.2-cudnn8拉取镜像，建立docker容器并进入容器后运行如下命令
 
+```
+ pip install paddle2onnx==0.3.1
+```
+如果出现版本不兼容则尽量使用低版本包
 
 
 ## 4 运行
 
 **步骤1** 将经过模型转化的Paddle om模型放到`models/paddlecrnn`文件夹内
 
-**步骤2 ** 配置环境变量，根据自己的环境变量不同，需要配置不同的环境变量，在CANN以及MindX SDK的安装目录找到set_env.sh,并运行脚本：
+**步骤2** 配置环境变量
 
-```
-bash ${SDK安装路径}/set_env.sh
-bash ${CANN安装路径}/set_env.sh
-```
+**步骤3** 将准备好的包含标签和图片的数据库放入文件夹内
 
-**步骤3** 运行main.py文件得到中文识别结果
+**步骤4** 运行main.py文件得到中文识别结果
 
 
 
@@ -152,11 +160,12 @@ bash ${CANN安装路径}/set_env.sh
 
 ## 5 精度测试
 
-#### 使用官方paddle模型在GPU上测试
+#### 5.1使用官方paddle模型在GPU上测试
 
 **步骤1** 导入paddleocr包
 
 **步骤2** 通过paddleocr包内的paddleocr函数将手写图片数据集进行识别，识别后分别写入文档
+
 ```python
 ocr = paddleocr.PaddleOCR()
 ocr.ocr(img_path,rec=True,det=False,cls=False)
@@ -164,31 +173,13 @@ ocr.ocr(img_path,rec=True,det=False,cls=False)
 
 **步骤3** 将识别结果和标签分别进行比对输出平均相似度
 
-#### 使用经过转化的om模型在NPU上测试
+#### 5.2使用经过转化的om模型在NPU上测试
 
 **步骤1** 将官方数据库的手写数据放入datasets输入目录下
 
-**步骤2** 在项目主目录下执行检测命令：python main.py，输出识别结果后分别写入文档
+**步骤2** 在项目主目录下执行检测命令：python main.py，输出识别相似度将打印到输出结果里
 
-**步骤3** 将识别结果和标签分别进行比对输出平均相似度
 
-```python
-for text_path in glob.glob(os.path.join(data_path,'*_pic.txt')):
-        text_label= text_path.replace('_pic','')
-        with open(text_label,'r',encoding='utf-8') as f:
-            ref_list = f.readlines()
-            ref = ""
-            for line in ref_list:
-                ref += line.strip('\n')
-        with open(text_path,'r',encoding='utf-8') as f:
-            out_list = f.readlines()
-            out = ""
-            for line in out_list:
-                out += line.strip('\n')
-        index += 1    
-        score += textdistance.hamming.normalized_similarity(out, ref)
-print(score/index)
-```
 | 测试版本 | 相似度 |
 | -------- | ------ |
 | GPU      | 41.58% |
