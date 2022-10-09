@@ -185,7 +185,7 @@ python3 nopre_post.py
 ```
 
 其中val2017文件夹下应存放jpg格式的待检测图片。
-                                                                                                                                                                          
+
 2. 使用以下指令运行路径``python/test``下的文件 parse_coco.py                         
 ```
 python3 parse_coco.py --json_file=data/annotations/instances_val2017.json --img_path=data/val2017
