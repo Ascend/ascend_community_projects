@@ -72,6 +72,7 @@
 
 ```
 onnx模型下载地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx
+
 om模型下载地址： https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om
 
 ### 1.5 技术实现流程图
@@ -86,9 +87,10 @@ YOLOX 的后处理插件接收模型推理插件输出的特征图，该特征�
 ### 1.6 特性及适用场景
 
 该项目适用于x光安检图象的监测，对单个清晰目标图像、高分辨率图像、大量目标图像、存在部分遮挡图象有较好的检测效果，对于存在大量遮挡的图象有轻微漏检现象，只支持jpg格式图象。
+
 但是在以下几种情况下，检测效果不够理想：
-1.在对某些尖锐物品，如剪刀和刀具，形状重合度较高，容易出现重复鉴别的情况，但是不影响实际应用时对危险物品的判别
-2.由于训练集中包含的隐蔽性较高的样例以及角度特殊的样例图片较少，对于此类物品进行辨识置信度较低
+1.在对某些尖锐物品，如剪刀和刀具，形状重合度较高，容易出现重复鉴别的情况，但是不影响实际应用时对危险物品的判别。
+2.由于训练集中包含的隐蔽性较高的样例以及角度特殊的样例图片较少，对于此类物品进行辨识置信度较低。
 
 ## 2 环境依赖
 
@@ -183,10 +185,8 @@ python3 nopre_post.py
 ```
 
 其中val2017文件夹下应存放jpg格式的待检测图片。
-
-2. 修改``python/models``下的文件 yolox_eval.cfg 的参数 OBJECTNESS_THRESH=0.01 IOU_THRESH=0.65
-                                                                                                                                                                            
-3. 使用以下指令运行路径``python/test``下的文件 parse_coco.py                         
+                                                                                                                                                                          
+2. 使用以下指令运行路径``python/test``下的文件 parse_coco.py                         
 ```
 python3 parse_coco.py --json_file=data/annotations/instances_val2017.json --img_path=data/val2017
 ```              
@@ -194,14 +194,14 @@ python3 parse_coco.py --json_file=data/annotations/instances_val2017.json --img_
                                               
 接下来将每张图的预测结果转为txt文件，并保存在同一文件夹下，其步骤如下：
 
-4. 进入``python/Main``路径，运行命令：
+3. 进入``python/Main``路径，运行命令：
 ```
 python3 eval_pre_post.py
 python3 noeval_pre_post.py
 ```                      
 若运行成功，会在``python/test`` 路径下生成 test_pre_post(test_nopre_post) 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
 
-5. 在``python/test``路径下，运行命令: 
+4. 在``python/test``路径下，运行命令: 
 ```                                                        
 python3 map_calculate.py  --npu_txt_path="./test_pre_post" 
 python3 map_calculate.py  --npu_txt_path="./test_nopre_post" 
