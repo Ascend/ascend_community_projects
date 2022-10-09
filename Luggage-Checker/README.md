@@ -129,7 +129,7 @@ ascend-toolkit-path: CANN 安装路径
 
 1. 从链接中下载 onnx 模型 best.onnx 至 ``python/models`` 文件夹下。
 
-2. 将该模型转换为om模型，具体操作为： ``python/models/conversion-scripts`` 文件夹下,执行atc指令：
+2. 将该模型转换为om模型，具体操作为： ``python/models`` 文件夹下,执行atc指令：
 
 1)加预处理
 ```
