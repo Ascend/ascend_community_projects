@@ -1,4 +1,5 @@
-# X-Ray安检
+<<<<<<< HEAD
+# 行李箱安检
 ## 1 介绍
 
 本项目利用 YOLOX 目标检测框架，对安检X光图象中的不同类目标进行检测，将检测得到的不同类的目标用不同颜色的矩形框标记。输入一幅图像，可以检测得到图像中大部分类别目标的位置。本方案使用在 SDANet and PIDray dataset 数据集上训练得到的 YOLOX-m 模型进行目标检测，数据集中共包含 12 个目标类，可以对警棍、老虎钳、榔头、充电宝、剪刀、扳手、枪支、子弹、喷罐、手铐、小刀、打火机以上目标进行检测。
@@ -86,7 +87,9 @@ YOLOX 的后处理插件接收模型推理插件输出的特征图，该特征�
 ### 1.6 特性及适用场景
 
 该项目适用于x光安检图象的监测，对单个清晰目标图像、高分辨率图像、大量目标图像、存在部分遮挡图象有较好的检测效果，对于存在大量遮挡的图象有轻微漏检现象，只支持jpg格式图象。
-
+但是在以下几种情况下，检测效果不够理想：
+1.在对某些尖锐物品，如剪刀和刀具，形状重合度较高，容易出现重复鉴别的情况，但是不影响实际应用时对危险物品的判别
+2.由于训练集中包含的隐蔽性较高的样例以及角度特殊的样例图片较少，对于此类物品进行辨识置信度较低
 
 ## 2 环境依赖
 
@@ -118,16 +121,16 @@ CANN 环境变量：
 
 ```
 SDK-path: mxVision SDK 安装路径
-ascend-toolkit-path: CANN 安装路径。
+ascend-toolkit-path: CANN 安装路径
 ```  
 ## 3. 模型转换
 
-本项目中采用的模型是 YOLOX-m 模型，参考实现代码：https://github.com/Megvii-BaseDetection/YOLOX ，通过对训练数据集（数据集源参考链接：https://github.com/bywang2018/security-dataset） 中29458张图片数据训练得到模型，通过export_onnx.py文件得到onnx模型（onnx模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx）。使用模型转换工具 ATC 将 onnx 模型转换为 om 模型（om模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om），模型转换工具相关介绍参考链接：https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html
+本项目中采用的模型是 YOLOX-m 模型，参考实现[代码](https://github.com/Megvii-BaseDetection/YOLOX)，通过对[训练数据集](https://github.com/bywang2018/security-dataset) 中29458张图片数据训练得到模型，通过export_onnx.py文件得到[onnx模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx)。使用模型转换工具 ATC 将 onnx 模型转换为 [om模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om)，模型转换工具相关介绍参考[链接](https://support.huawei.com/enterprise/zh/doc/EDOC1100234054/6dfa6beb)
 
 1. 从链接中下载 onnx 模型 yolox_nano.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
 
 
-2. 将该模型转换为om模型，具体操作为： ``python/models/conversion-scripts`` 文件夹下,执行atc指令：
+2. 将该模型转换为om模型，具体操作为： ``python/models`` 文件夹下,执行atc指令：
 1)加预处理
 ```
 atc --model=best.onnx --framework=5 --output=./yolox_pre_post --output_type=FP32 --soc_version=Ascend310  --input_shape="images:1, 3, 640, 640" --insert_op_conf=./python/models/aipp-configs/yolox_bgr.cfg
@@ -171,14 +174,9 @@ python3 nopre_post.py
 
 命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg(nopre_post.py)，查看结果文件验证检测结果。
 
-<center>
-    <img src="./python/test_img/pre_post_bgr.jpg">
-    <br>
-</center>
+## 5. 精度测试
 
-**步骤4** 精度测试 
-
-下载COCO VAL 2017[验证数据集]和[标注文件]( https://github.com/bywang2018/security-dataset )，并保存在项目目录``python/test/data``下，此文件夹下的组织形式应如下图所示：
+1. 下载COCO VAL 2017[验证数据集]和[标注文件](https://github.com/bywang2018/security-dataset)，并保存在项目目录``python/test/data``下，此文件夹下的组织形式应如下图所示：
                                                                    
 ```
 ├── annotations                                                                                                                                                                             
@@ -222,33 +220,7 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
 
 ## 5 常见问题
 
-### 5.1 未修改 pipeline 文件中的 ${MX_SDK_HOME} 值为具体值
-运行demo前需要正确导入环境变量，否则会报错，如下图所示：
-<center>
-    <img src="./images/MindXSDKValueError.png">
-    <br>
-</center>
-
-### 5.2 后处理插件权限问题
-
-运行检测 demo 时需要将生成的YOLOX后处理动态链接库、以及config文件的权限修改，否则将会报权限错误，如下图所示：
-
-<center>
-    <img src="./images/permissionerror.png">
-    <br>
-</center>
-
-**解决方案：**
-
-在YOLOX对应文件的路径下将如下文件权限改为640：
-
-```
-libYoloxPostProcess.so
-yolox_eval.cfg
-coco.names
-```
-
-### 5.3 模型转换时会警告缺slice算子
+### 5.1 模型转换时会警告缺slice算子
 
 YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样的算子，因此会报出如图所示的警告：
 
@@ -268,3 +240,42 @@ YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样�
 **解决方案：**
 
 png格式图片需要转换成jpg格式图片再进行检测。
+=======
+# ascend_community_projects
+
+#### 介绍
+MindX边缘开发套件社区代码仓库
+
+#### 软件架构
+软件架构说明
+
+
+#### 安装教程
+
+1.  xxxx
+2.  xxxx
+3.  xxxx
+
+#### 使用说明
+
+1.  xxxx
+2.  xxxx
+3.  xxxx
+
+#### 参与贡献
+
+1.  Fork 本仓库
+2.  新建 Feat_xxx 分支
+3.  提交代码
+4.  新建 Pull Request
+
+
+#### 特技
+
+1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
+2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
+3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
+4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
+5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
+6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+>>>>>>> 09c51f5dcf16b48a4f74a24489c7bfc5fdcafe70
