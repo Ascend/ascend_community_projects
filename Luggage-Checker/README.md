@@ -14,7 +14,7 @@
 
 ### 1.3 软件方案介绍
 
-整体业务流程为：待检测图片通过 appsrc 插件输入，然后使用图像解码插件 mxpi_imagedecoder 对图片进行解码，再通过图像缩放插件 mxpi_imageresize 将图像缩放至满足检测模型要求的输入图像大小要求，缩放后的图像输入模型推理插件 mxpi_tensorinfer 得到推理结果，推理结果输入 mxpi_objectpostprocessor 插件进行后处理，得到输入图片中所有的目标框位置和对应的置信度。最后通过输出插件 appsink 获取检测结果，并在外部进行可视化，将检测结果标记到原图上，本系统的各模块及功能描述如表1所示：
+整体业务流程为：待检测图片通过 appsrc 插件输入，然后使用图像解码插件 imagedecoder 对图片进行解码，再通过图像缩放插件 imageresize 将图像缩放至满足检测模型要求的输入图像大小要求，缩放后的图像输入模型推理插件 tensorinfer 得到推理结果，推理结果输入 objectpostprocessor 插件进行后处理，得到输入图片中所有的目标框位置和对应的置信度。最后通过输出插件 appsink 获取检测结果，并在外部进行可视化，将检测结果标记到原图上，本系统的各模块及功能描述如表1所示：
 
 表1 系统方案各模块功能描述：
 
@@ -31,7 +31,7 @@
 
 ### 1.4 代码目录结构与说明
 
-本工程名称为 Luggage—Checker，工程目录如下所示：
+本工程名称为 Luggage-checker，工程目录如下所示：
 ```
 .
 ├── build.sh
@@ -124,21 +124,13 @@ ascend-toolkit-path: CANN 安装路径
 ```  
 ## 3. 模型转换
 
-<<<<<<< HEAD
 本项目中采用的模型是 YOLOX-m 模型，参考实现[代码](https://github.com/Megvii-BaseDetection/YOLOX)，通过对[训练数据集](https://github.com/bywang2018/security-dataset) 中29458张图片数据训练得到模型，通过export_onnx.py文件得到[onnx模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx)。使用模型转换工具 ATC 将 onnx 模型转换为 [om模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om)，模型转换工具相关介绍参考[链接](https://support.huawei.com/enterprise/zh/doc/EDOC1100234054/6dfa6beb)
-=======
-本项目中采用的模型是 YOLOX-m 模型，参考实现代码：https://github.com/Megvii-BaseDetection/YOLOX ，通过对训练数据集（数据集源参考链接：https://github.com/bywang2018/security-dataset） 中29458张图片数据训练得到模型，通过export_onnx.py文件得到onnx模型（onnx模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx）。使用模型转换工具 ATC 将 onnx 模型转换为 om 模型（om模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om），模型转换工具相关介绍参考链接：https://support.huawei.com/enterprise/zh/doc/EDOC1100234054/6dfa6beb
->>>>>>> 09c51f5dcf16b48a4f74a24489c7bfc5fdcafe70
-
-1. 从链接中下载 onnx 模型 best.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
 
 
-<<<<<<< HEAD
-2. 将该模型转换为om模型，具体操作为： ``python/models`` 文件夹下,执行atc指令：
-=======
+1. 从链接中下载 onnx 模型 best.onnx 至 ``python/models`` 文件夹下。
+
 2. 将该模型转换为om模型，具体操作为： ``python/models/conversion-scripts`` 文件夹下,执行atc指令：
 
->>>>>>> 09c51f5dcf16b48a4f74a24489c7bfc5fdcafe70
 1)加预处理
 ```
 atc --model=best.onnx --framework=5 --output=./yolox_pre_post --output_type=FP32 --soc_version=Ascend310  --input_shape="images:1, 3, 640, 640" --insert_op_conf=./python/models/aipp-configs/yolox_bgr.cfg
@@ -167,8 +159,6 @@ W11001: Op [Slice_20] does not hit the high-priority operator information librar
  
 ```
 bash build.sh  
-修改.so文件权限为640
-cp postprocess/build/libYoloxPostProcess.so ${MX_SDK_HOME}/lib/modelpostprocessors/
 ```   
 
 **步骤2** 放入待测图片。将一张图片放在路径``python/test_img``下，命名为 test.jpg。
@@ -226,9 +216,9 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
 注：在pipeline中加图像预处理后验证结果与原框不同的原因为：YOLOX的图像预处理中，Resize方式为按长边缩放，而Mindx SDK默认使用dvpp的图像解码方式，没有按长边缩放的方法，因此本项目将"resizeType"属性设置为 "Resizer_KeepAspectRatio_Fit"，这样会导致精度下降。
 我们同时给出了一套不加图像预处理的推理流程，见上文，不加预处理流程精度结果与源项目可以保持一致。
 
-## 5 常见问题
+## 6 常见问题
 
-### 5.1 模型转换时会警告缺slice算子
+### 6.1 模型转换时会警告缺slice算子
 
 YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样的算子，因此会报出如图所示的警告：
 
@@ -243,47 +233,8 @@ YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样�
 
 由于在本项目下是否修改算子并不影响检测结果，因此默认不做处理。
 
-### 5.4 图片无法识别
+### 6.2 图片无法识别
 
 **解决方案：**
 
 png格式图片需要转换成jpg格式图片再进行检测。
-=======
-# ascend_community_projects
-
-#### 介绍
-MindX边缘开发套件社区代码仓库
-
-#### 软件架构
-软件架构说明
-
-
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
->>>>>>> 09c51f5dcf16b48a4f74a24489c7bfc5fdcafe70
