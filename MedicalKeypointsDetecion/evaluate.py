@@ -1,5 +1,5 @@
 from xmlrpc.client import boolean
-import numpy as np
+
 import cv2
 import os
 import stat
@@ -15,6 +15,7 @@ from collections import defaultdict
 from collections import OrderedDict
 from StreamManagerApi import *
 import MxpiDataType_pb2 as MxpiDataType
+import numpy as np
 
 color2 = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
           (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
@@ -352,16 +353,16 @@ def get_max_preds(batch_heatmaps):
 
     batch_size = batch_heatmaps.shape[0]
     num_joints = batch_heatmaps.shape[1]
-    width = batch_heatmaps.shape[3]
+    _width = batch_heatmaps.shape[3]
     heatmaps_reshaped = batch_heatmaps.reshape((batch_size, num_joints, -1))
-    idx = np.argmax(heatmaps_reshaped, 2)
+    _idx = np.argmax(heatmaps_reshaped, 2)
     _maxvals = np.amax(heatmaps_reshaped, 2)
     _maxvals = _maxvals.reshape((batch_size, num_joints, 1))
-    idx = idx.reshape((batch_size, num_joints, 1))
+    _idx = _idx.reshape((batch_size, num_joints, 1))
 
-    _preds = np.tile(idx, (1, 1, 2)).astype(np.float32)
-    _preds[:, :, 0] = (_preds[:, :, 0]) % width
-    _preds[:, :, 1] = np.floor((_preds[:, :, 1]) / width)
+    _preds = np.tile(_idx, (1, 1, 2)).astype(np.float32)
+    _preds[:, :, 0] = (_preds[:, :, 0]) % _width
+    _preds[:, :, 1] = np.floor((_preds[:, :, 1]) / _width)
 
     pred_mask = np.tile(np.greater(_maxvals, 0.0), (1, 1, 2))
     pred_mask = pred_mask.astype(np.float32)
@@ -416,7 +417,7 @@ def mask_generate(_filter, num_joint):
     return _mask
 
 
-def evaluate(preds, _output_dir, _all_boxes, img_path, flag=0):
+def evaluate(_preds, _output_dir, _all_boxes, img_path, flag=0):
     if flag == 0:
         rank = 0
     else:
@@ -432,7 +433,7 @@ def evaluate(preds, _output_dir, _all_boxes, img_path, flag=0):
     res_file = os.path.join(
         res_folder, 'keypoints_{}_results_0.json'.format('coco'))
     _kpts = []
-    for _idx, kpt in enumerate(preds):
+    for _idx, kpt in enumerate(_preds):
         print("idx", _idx)
         _kpts.append({
             'keypoints': kpt,
@@ -485,7 +486,8 @@ def evaluate(preds, _output_dir, _all_boxes, img_path, flag=0):
 
 
 def write_coco_keypoint_results(keypoints, res_file):
-    coco_anno = COCO('./data/person_keypoints_val2017.json') #修改为测试集的标注json文件路径
+    # 修改为测试集的标注json文件路径
+    coco_anno = COCO('./data/person_keypoints_val2017.json') 
     cats = [cat['name']
             for cat in coco_anno.loadCats(coco_anno.getCatIds())]
     classes = ['__background__'] + cats
@@ -502,21 +504,21 @@ def write_coco_keypoint_results(keypoints, res_file):
 
     results = coco_keypoint_results_one_category_kernel(data_pack[0])
     print('=> writing results json to %s' % res_file)
-    FLAGS = os.O_WRONLY | os.O_CREAT
-    MODES = stat.S_IWUSR | stat.S_IRUSR
-    with os.fdopen(os.open(res_file, FLAGS, MODES), "w") as f1:
-        json.dump(results, f1, sort_keys=True, indent=4)
+    flags = os.O_WRONLY | os.O_CREAT
+    modes = stat.S_IWUSR | stat.S_IRUSR
+    with os.fdopen(os.open(res_file, flags, modes), "w") as _f1:
+        json.dump(results, _f1, sort_keys=True, indent=4)
     try:
         json.load(open(res_file))
     except Exception:
         content = []
-        with open(res_file, 'r') as f2:
-            for line in f2:
+        with open(res_file, 'r') as _f2:
+            for line in _f2:
                 content.append(line)
         content[-1] = ']'
-        with os.fdopen(os.open(res_file, FLAGS, MODES), "w") as f3:
+        with os.fdopen(os.open(res_file, flags, modes), "w") as _f3:
             for c in content:
-                f3.write(c)
+                _f3.write(c)
 
 
 def coco_keypoint_results_one_category_kernel(data_pack):
@@ -685,16 +687,16 @@ if __name__ == '__main__':
 
     # Construct the input of the stream & check the input image
     dataInput = MxDataInput()
-    ImageFolder = './data/'
-    annotation_file = './data/person_keypoints_val2017.json'
-    annotations = codecs.open(annotation_file, 'r', 'gbk')
+    IMAGEFOLDER = './data/'
+    FILE_ANNO = './data/person_keypoints_val2017.json'
+    annotations = codecs.open(FILE_ANNO, 'r', 'gbk')
     annotations = json.load(annotations)
     image_list = annotations['images']
     cls_target = []
 
     top1 = ClassAverageMeter()
     kp_acc = AverageMeter()
-    coco = COCO(annotation_file)
+    coco = COCO(FILE_ANNO)
 
     # txt为cls 分类情况,在该路径下创建新txt并修改该路径
     TXT = 'evaluate_result_0922_3.txt'
@@ -710,7 +712,7 @@ if __name__ == '__main__':
     idx = 0
 
     for image_idx, image_info in enumerate(image_list):
-        image_path = os.path.join(ImageFolder, image_info['file_name'])
+        image_path = os.path.join(IMAGEFOLDER, image_info['file_name'])
         image_id = image_info['id']
         width = image_info['width']
         height = image_info['height']
