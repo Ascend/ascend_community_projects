@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 09c51f5dcf16b48a4f74a24489c7bfc5fdcafe70
 # 行李箱安检
 ## 1 介绍
 
@@ -32,7 +35,7 @@
 
 ### 1.4 代码目录结构与说明
 
-本工程名称为 xray，工程目录如下所示：
+本工程名称为 Luggage—Checker，工程目录如下所示：
 ```
 .
 ├── build.sh
@@ -125,12 +128,21 @@ ascend-toolkit-path: CANN 安装路径
 ```  
 ## 3. 模型转换
 
+<<<<<<< HEAD
 本项目中采用的模型是 YOLOX-m 模型，参考实现[代码](https://github.com/Megvii-BaseDetection/YOLOX)，通过对[训练数据集](https://github.com/bywang2018/security-dataset) 中29458张图片数据训练得到模型，通过export_onnx.py文件得到[onnx模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx)。使用模型转换工具 ATC 将 onnx 模型转换为 [om模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om)，模型转换工具相关介绍参考[链接](https://support.huawei.com/enterprise/zh/doc/EDOC1100234054/6dfa6beb)
+=======
+本项目中采用的模型是 YOLOX-m 模型，参考实现代码：https://github.com/Megvii-BaseDetection/YOLOX ，通过对训练数据集（数据集源参考链接：https://github.com/bywang2018/security-dataset） 中29458张图片数据训练得到模型，通过export_onnx.py文件得到onnx模型（onnx模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx）。使用模型转换工具 ATC 将 onnx 模型转换为 om 模型（om模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om），模型转换工具相关介绍参考链接：https://support.huawei.com/enterprise/zh/doc/EDOC1100234054/6dfa6beb
+>>>>>>> 09c51f5dcf16b48a4f74a24489c7bfc5fdcafe70
 
-1. 从链接中下载 onnx 模型 yolox_nano.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
+1. 从链接中下载 onnx 模型 best.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
 
 
+<<<<<<< HEAD
 2. 将该模型转换为om模型，具体操作为： ``python/models`` 文件夹下,执行atc指令：
+=======
+2. 将该模型转换为om模型，具体操作为： ``python/models/conversion-scripts`` 文件夹下,执行atc指令：
+
+>>>>>>> 09c51f5dcf16b48a4f74a24489c7bfc5fdcafe70
 1)加预处理
 ```
 atc --model=best.onnx --framework=5 --output=./yolox_pre_post --output_type=FP32 --soc_version=Ascend310  --input_shape="images:1, 3, 640, 640" --insert_op_conf=./python/models/aipp-configs/yolox_bgr.cfg
