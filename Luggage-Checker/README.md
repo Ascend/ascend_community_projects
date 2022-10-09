@@ -1,4 +1,4 @@
-# X-Ray安检
+# 行李箱安检
 ## 1 介绍
 
 本项目利用 YOLOX 目标检测框架，对安检X光图象中的不同类目标进行检测，将检测得到的不同类的目标用不同颜色的矩形框标记。输入一幅图像，可以检测得到图像中大部分类别目标的位置。本方案使用在 SDANet and PIDray dataset 数据集上训练得到的 YOLOX-m 模型进行目标检测，数据集中共包含 12 个目标类，可以对警棍、老虎钳、榔头、充电宝、剪刀、扳手、枪支、子弹、喷罐、手铐、小刀、打火机以上目标进行检测。
@@ -31,7 +31,7 @@
 
 ### 1.4 代码目录结构与说明
 
-本工程名称为 xray，工程目录如下所示：
+本工程名称为 Luggage—Checker，工程目录如下所示：
 ```
 .
 ├── build.sh
@@ -124,7 +124,7 @@ ascend-toolkit-path: CANN 安装路径。
 
 本项目中采用的模型是 YOLOX-m 模型，参考实现代码：https://github.com/Megvii-BaseDetection/YOLOX ，通过对训练数据集（数据集源参考链接：https://github.com/bywang2018/security-dataset） 中29458张图片数据训练得到模型，通过export_onnx.py文件得到onnx模型（onnx模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx）。使用模型转换工具 ATC 将 onnx 模型转换为 om 模型（om模型地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om），模型转换工具相关介绍参考链接：https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html
 
-1. 从链接中下载 onnx 模型 yolox_nano.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
+1. 从链接中下载 onnx 模型 best.onnx 至 ``python/models/conversion-scripts`` 文件夹下。
 
 
 2. 将该模型转换为om模型，具体操作为： ``python/models/conversion-scripts`` 文件夹下,执行atc指令：
