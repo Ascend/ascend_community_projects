@@ -1,5 +1,5 @@
 {
-    "test_model2": {
+    "model2": {
         "stream_config": {
             "deviceId": "0"
         },
@@ -13,7 +13,7 @@
         "mxpi_tensorinfer0": {
             "props": {
                 "dataSource":"appsrc0",
-                "modelPath": "pose_model_384_288_noAipp_fp16.om"
+                "modelPath": "./model/pose_model_384_288_noAipp_fp16.om"
             },
             "factory": "mxpi_tensorinfer",
             "next": "appsink0"

@@ -1,7 +1,7 @@
 from xmlrpc.client import boolean
 import os
 import math
-from StreamManagerApi import *
+from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 import MxpiDataType_pb2 as MxpiDataType
 import numpy as np
 import cv2
@@ -9,14 +9,22 @@ from PIL import Image
 import mindspore as ms
 import mindspore.ops as ops
 
-color2 = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
-          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
-          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
-          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
-          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
-          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
-          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
-          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),]
+color2 = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
+          (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), ]
 
 
 def get_img_metas(file_name):
@@ -44,7 +52,8 @@ def bbox2result_1image(bboxes, labels, num_classes):
         list(ndarray): bbox results of each class
     """
     if bboxes.shape[0] == 0:
-        result = [np.zeros((0, 5), dtype=np.float32) for i in range(num_classes - 1)]
+        result = [np.zeros((0, 5), dtype=np.float32)
+                  for i in range(num_classes - 1)]
     else:
         result = [bboxes[labels == i, :] for i in range(num_classes - 1)]
         result_person = bboxes[labels == 0, :]
@@ -90,7 +99,7 @@ def box_to_center_scale(box, model_image_width, model_image_height):
         scale_temp = scale_temp * 1.25
 
     return center_temp, scale_temp
-    
+
 
 def get_dir(src_point, rot_rad):
     sn, cs = np.sin(rot_rad), np.cos(rot_rad)
@@ -191,11 +200,11 @@ def get_final_preds(batch_heatmaps, c, s):
             hm = batch_heatmaps[n][p]
             px = int(math.floor(coords[n][p][0] + 0.5))
             py = int(math.floor(coords[n][p][1] + 0.5))
-            if 1 < px < heatmap_width-1 and 1 < py < heatmap_height-1:
+            if 1 < px < heatmap_width - 1 and 1 < py < heatmap_height - 1:
                 diff = np.array(
                     [
-                        hm[py][px+1] - hm[py][px-1],
-                        hm[py+1][px] - hm[py-1][px]
+                        hm[py][px + 1] - hm[py][px - 1],
+                        hm[py + 1][px] - hm[py - 1][px]
                     ]
                 )
                 coords[n][p] += np.sign(diff) * .25
@@ -210,16 +219,18 @@ def get_final_preds(batch_heatmaps, c, s):
 
 
 def mask_generate(_filter, num_joint):
-    class_num = [27, 5, 10, 6, 6, 4, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    idx_num =  [0, 27, 32, 42, 48, 54, 58, 60, 63, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80]
+    class_num = [27, 5, 10, 6, 6, 4, 2, 3, 3, 1,
+                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    idx_num = [0, 27, 32, 42, 48, 54, 58, 60, 63, 66, 67,
+               68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80]
     _mask = np.zeros(
         (len(_filter), num_joint, 2),
         dtype=np.float32
     )
-    for i, index in enumerate(_filter):
-        for j in range(idx_num[index], idx_num[index + 1]):
-            _mask[i][j][0] = 1
-            _mask[i][j][1] = 1
+    for i1, index in enumerate(_filter):
+        for j1 in range(idx_num[index], idx_num[index + 1]):
+            _mask[i1][j1][0] = 1
+            _mask[i1][j1][1] = 1
 
     return _mask
 
@@ -268,33 +279,34 @@ if __name__ == '__main__':
     if ret != 0:
         print("Failed to create Stream, ret=%s" % str(ret))
         exit()
-        
+
     # Construct the input of the stream & check the input image
     dataInput = MxDataInput()
-    file_path = "test.jpg"
-    
-    if os.path.exists(file_path) != 1:
+    FILE_PATH = "test.jpg"
+
+    if os.path.exists(FILE_PATH) != 1:
         print("Failed to get the input picture. Please check it!")
         streamManagerApi.DestroyAllStreams()
         exit()
-    
-    with open(file_path, 'rb') as f:
-        dataInput.data = f.read()
-                    
-    # Inputs data to a specified stream based on streamName.
-    stream_name_1 = b'model1'
-    in_Plugin_id = 0
-    uniqueId = streamManagerApi.SendData(stream_name_1, in_Plugin_id, dataInput)
 
-    #send image data
-    meta = get_img_metas(file_path).astype(np.float32).tobytes()
+    with open(FILE_PATH, 'rb') as f:
+        dataInput.data = f.read()
+
+    # Inputs data to a specified stream based on streamName.
+    STREAM_NAME1 = b'model1'
+    IN_PLUGIN_ID = 0
+    uniqueId = streamManagerApi.SendData(
+        STREAM_NAME1, IN_PLUGIN_ID, dataInput)
+
+    # send image data
+    META = get_img_metas(FILE_PATH).astype(np.float32).tobytes()
 
     KEY = b'appsrc1'
     visionList = MxpiDataType.MxpiVisionList()
     visionVec = visionList.visionVec.add()
     visionVec.visionData.deviceId = 0
     visionVec.visionData.memType = 0
-    visionVec.visionData.dataStr = meta
+    visionVec.visionData.dataStr = META
     protobuf = MxProtobufIn()
     protobuf.key = KEY
     protobuf.type = b'MxTools.MxpiVisionList'
@@ -302,7 +314,8 @@ if __name__ == '__main__':
     protobufVec = InProtobufVector()
     protobufVec.push_back(protobuf)
 
-    uniqueId1 = streamManagerApi.SendProtobuf(stream_name_1, b'appsrc1', protobufVec)
+    uniqueId1 = streamManagerApi.SendProtobuf(
+        STREAM_NAME1, b'appsrc1', protobufVec)
 
     if uniqueId1 < 0:
         print("Failed to send data to stream.")
@@ -312,9 +325,9 @@ if __name__ == '__main__':
     KEYS = b"mxpi_tensorinfer0"
     for key in KEYS:
         keyVec.push_back(KEYS)
-    infer_result = streamManagerApi.GetProtobuf(stream_name_1, 0, keyVec)
+    infer_result = streamManagerApi.GetProtobuf(STREAM_NAME1, 0, keyVec)
     # print the infer result
-    
+
     if infer_result.size() == 0:
         print("infer_result is null")
         exit()
@@ -326,11 +339,17 @@ if __name__ == '__main__':
 
     tensorList = MxpiDataType.MxpiTensorPackageList()
     tensorList.ParseFromString(infer_result[0].messageBuf)
-    pre_mask = np.frombuffer(tensorList.tensorPackageVec[0].tensorVec[2].dataStr, dtype = boolean)
+    pre_mask = np.frombuffer(
+        tensorList.tensorPackageVec[0].tensorVec[2].dataStr,
+        dtype=boolean)
     pre_mask = pre_mask.reshape((1, 80000, 1))
-    pre_label = np.frombuffer(tensorList.tensorPackageVec[0].tensorVec[1].dataStr, dtype = np.uint32)
+    pre_label = np.frombuffer(
+        tensorList.tensorPackageVec[0].tensorVec[1].dataStr,
+        dtype=np.uint32)
     pre_label = pre_label.reshape((1, 80000, 1))
-    pre_bbox = np.frombuffer(tensorList.tensorPackageVec[0].tensorVec[0].dataStr, dtype = np.float16)
+    pre_bbox = np.frombuffer(
+        tensorList.tensorPackageVec[0].tensorVec[0].dataStr,
+        dtype=np.float16)
     pre_bbox = pre_bbox.reshape((1, 80000, 5))
 
     bbox_squee = np.squeeze(pre_bbox.reshape(80000, 5))
@@ -341,18 +360,19 @@ if __name__ == '__main__':
     all_labels_tmp_mask = label_squee[mask_squee]
 
     if all_bboxes_tmp_mask.shape[0] > 128:
-        inds = np.argsort(-all_bboxes_tmp_mask[:, -1]) # 返回降序排列索引值
+        inds = np.argsort(-all_bboxes_tmp_mask[:, -1])  # 返回降序排列索引值
         inds = inds[:128]
         all_bboxes_tmp_mask = all_bboxes_tmp_mask[inds]
         all_labels_tmp_mask = all_labels_tmp_mask[inds]
 
     outputs = []
-    outputs_tmp, out_person = bbox2result_1image(all_bboxes_tmp_mask, all_labels_tmp_mask, 81)
+    outputs_tmp, out_person = bbox2result_1image(
+        all_bboxes_tmp_mask, all_labels_tmp_mask, 81)
     outputs.append(outputs_tmp)
 
-    img = cv2.imread(file_path)
-    box_person = (int(out_person[0][0]), int(out_person[0][1])) , (int(out_person[0][2]), int(out_person[0][3]))
-    
+    img = cv2.imread(FILE_PATH)
+    box_person = (int(out_person[0][0]), int(out_person[0][1])), (int(
+        out_person[0][2]), int(out_person[0][3]))
 
     ret2 = streamManagerApi.InitManager()
     if ret2 != 0:
@@ -367,29 +387,28 @@ if __name__ == '__main__':
         print("Failed to create Stream, ret=%s" % str(ret))
         exit()
 
-    image_bgr = cv2.imread(file_path)
+    image_bgr = cv2.imread(FILE_PATH)
     image = image_bgr[:, :, [2, 1, 0]]
 
-    center, scale = box_to_center_scale(box_person, 288, 384) 
-    image_pose = image.copy() 
+    center, scale = box_to_center_scale(box_person, 288, 384)
+    image_pose = image.copy()
     # model 2 preprocess
     trans = get_affine_transform(center, scale, 0, [288, 384])
     model_input = cv2.warpAffine(
         image_pose,
         trans,
         (288, 384),
-        flags = cv2.INTER_LINEAR)
+        flags=cv2.INTER_LINEAR)
 
-    mean = np.array([0.485, 0.456, 0.406], dtype = np.float32)
-    std = np.array([0.229, 0.224, 0.225], dtype = np.float32)
+    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+    std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
     data_test = normalize(model_input, mean, std)
     data_test = data_test.astype('float32')
     data_test = np.reshape(data_test, (1, 3, 384, 288))
     print("model_input_gai", data_test.shape, data_test)
 
     tensors = data_test
-    stream_name_2 = b'test_model2'
-    inPluginId = 0
+    STREAM_NAME_2 = b'model2'
 
     tensorPackageList = MxpiDataType.MxpiTensorPackageList()
     tensorPackage = tensorPackageList.tensorPackageVec.add()
@@ -413,7 +432,8 @@ if __name__ == '__main__':
     protobuf.protobuf = tensorPackageList.SerializeToString()
     protobufVec.push_back(protobuf)
 
-    ret = streamManagerApi.SendProtobuf(stream_name_2, in_Plugin_id, protobufVec)
+    ret = streamManagerApi.SendProtobuf(
+        STREAM_NAME_2, IN_PLUGIN_ID, protobufVec)
     if ret != 0:
         print("Failed to send data to stream.")
         exit()
@@ -422,36 +442,40 @@ if __name__ == '__main__':
     KEYS_2 = b"mxpi_tensorinfer0"
     for key in KEYS_2:
         keyVec.push_back(KEYS_2)
-    infer_result = streamManagerApi.GetProtobuf(stream_name_2, 0, keyVec)
+    infer_result = streamManagerApi.GetProtobuf(STREAM_NAME_2, 0, keyVec)
     tensorList = MxpiDataType.MxpiTensorPackageList()
     tensorList.ParseFromString(infer_result[0].messageBuf)
-    keypoint_outputs = np.frombuffer(tensorList.tensorPackageVec[0].tensorVec[0].dataStr, dtype = np.float16)
+    keypoint_outputs = np.frombuffer(
+        tensorList.tensorPackageVec[0].tensorVec[0].dataStr,
+        dtype=np.float16)
     keypoint_outputs = keypoint_outputs.reshape((1, 80, 96, 72))
-    cls_outputs = np.frombuffer(tensorList.tensorPackageVec[0].tensorVec[1].dataStr, dtype = np.float16)
+    cls_outputs = np.frombuffer(
+        tensorList.tensorPackageVec[0].tensorVec[1].dataStr,
+        dtype=np.float16)
     cls_outputs = cls_outputs.reshape((1, 23))
 
-    #post_process
+    # post_process
     if isinstance(keypoint_outputs, list):
         kp_output = keypoint_outputs[-1]
     else:
         kp_output = keypoint_outputs
-    
+
     preds, maxvals = get_final_preds(
-            kp_output,
-            np.asarray([center]),
-            np.asarray([scale]))
-    filter = np.argmax(cls_outputs, axis = 1)
-    mask = mask_generate(filter, 80)
-    
-    preds_mask = preds * mask        
-    image_bgr = cv2.imread(file_path)
+        kp_output,
+        np.asarray([center]),
+        np.asarray([scale]))
+    filters = np.argmax(cls_outputs, axis=1)
+    mask = mask_generate(filters, 80)
+
+    preds_mask = preds * mask
+    image_bgr = cv2.imread(FILE_PATH)
     if len(preds_mask) >= 1:
         for kpt in preds_mask:
             draw_pose(kpt, image_bgr)  # draw the poses
 
     SAVEPATH = 'output.jpg'
     cv2.imwrite(SAVEPATH, image_bgr)
-    print('the result image has been saved as {}'.format(SAVEPATH)) 
+    print('the result image has been saved as {}'.format(SAVEPATH))
 
     # destroy streams
     streamManagerApi.DestroyAllStreams()
