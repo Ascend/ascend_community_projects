@@ -50,9 +50,8 @@ npu-smi info
 ├── README.md
 ├── chineseocr.pipeline
 ├── model
-│   ├── crnn
-├── data
-│   ├── inputdata
+│   ├── ch_ppocr_server_v2.0_rec_infer_bs1.om
+├── dataset
 ├── cfg
 │   ├── crnn.txt
 │   ├── ppocr_keys_v1.txt
@@ -84,13 +83,32 @@ npu-smi info
 
 推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如下表：
 
-| 软件名称 | 版本   |
-| -------- | ------ |
-| Python   | 3.9.12 |
-| protobuf | 3.19.0 |
-| google   | 3.0.0  |
+| 依赖软件 | 版本   | 说明                                         |
+| -------- | ------ | -------------------------------------------- |
+| Python   | 3.9.12 |                                              |
+| protobuf | 3.19.0 |            数据传输使用                       |
+| google   | 3.0.0  |                                              |
 
+所需依赖的安装包如下所示：
 
+| 依赖软件 | 版本   | 说明                                         |
+| -------- | ------ | -------------------------------------------- |
+| glob     | 0.7    | 数据查找，并将搜索的到的结果返回到一个列表中 |
+| protobuf | 3.19.0 | 数据序列化反序列化组件                       |
+
+在模型转换过程中则安装如下环境依赖
+**步骤1** 在CANN以及MindX SDK的安装目录找到set_env.sh,并运行脚本：
+
+```
+bash ${SDK安装路径}/set_env.sh
+bash ${CANN安装路径}/set_env.sh
+```
+**步骤2** 使用docker pull paddlepaddle/paddle:2.3.2-gpu-cuda11.2-cudnn8拉取镜像，建立docker容器并进入容器后运行如下命令
+
+```
+ pip install paddle2onnx==0.3.1
+```
+如果出现版本不兼容则尽量使用低版本包
 
 ### 3. 模型转换
 
@@ -125,42 +143,28 @@ https://gitee.com/link?target=https%3A%2F%2Fmindx.sdk.obs.cn-north-4.myhuaweiclo
 将模型从docker容器中拷贝出来上传到昇腾服务器
 
 ```bash
-atc --model=/model/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_modify_bs1_om --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
+atc --model=/model/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_bs1 --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
 ```
 
 
-## 3 依赖安装
-**步骤1** 在CANN以及MindX SDK的安装目录找到set_env.sh,并运行脚本：
 
-```
-bash ${SDK安装路径}/set_env.sh
-bash ${CANN安装路径}/set_env.sh
-```
-**步骤2** 使用docker pull paddlepaddle/paddle:2.3.2-gpu-cuda11.2-cudnn8拉取镜像，建立docker容器并进入容器后运行如下命令
-
-```
- pip install paddle2onnx==0.3.1
-```
-如果出现版本不兼容则尽量使用低版本包
-
-
-## 4 运行
+## 3 运行
 
 **步骤1** 将经过模型转化的Paddle om模型放到`models/paddlecrnn`文件夹内
 
 **步骤2** 配置环境变量
 
-**步骤3** 将准备好的包含标签和图片的数据库放入文件夹内
+**步骤3** 将准备好的包含标签和图片的数据库放入`dataset`文件夹内
 
-**步骤4** 运行main.py文件得到中文识别结果
-
-
+**步骤4** 运行main.py文件后，中文识别结果将打印到控制台中并会将每张图片的结果分别以txt格式写入到output文件里
 
 
 
-## 5 精度测试
 
-#### 5.1使用官方paddle模型在GPU上测试
+
+## 4 精度测试
+
+#### 4.1使用官方paddle模型在GPU上测试
 
 **步骤1** 导入paddleocr包
 
@@ -170,12 +174,13 @@ bash ${CANN安装路径}/set_env.sh
 ocr = paddleocr.PaddleOCR()
 ocr.ocr(img_path,rec=True,det=False,cls=False)
 ```
+手写数据集链接：[ChineseOCR](https://github.com/chineseocr/chineseocr)
 
 **步骤3** 将识别结果和标签分别进行比对输出平均相似度
 
-#### 5.2使用经过转化的om模型在NPU上测试
+#### 4.2使用经过转化的om模型在NPU上测试
 
-**步骤1** 将官方数据库的手写数据放入datasets输入目录下
+**步骤1** 将官方数据库的手写数据放入`dataset`输入目录下
 
 **步骤2** 在项目主目录下执行检测命令：python main.py，输出识别相似度将打印到输出结果里
 
@@ -186,20 +191,10 @@ ocr.ocr(img_path,rec=True,det=False,cls=False)
 | NPU      | 41.78% |
 
 
-## 6 软件依赖说明
 
+## 5 常见问题
 
-
-| 依赖软件 | 版本   | 说明                                         |
-| -------- | ------ | -------------------------------------------- |
-| glob     | 0.7    | 数据查找，并将搜索的到的结果返回到一个列表中 |
-| protobuf | 3.19.0 | 数据序列化反序列化组件                       |
-
-
-
-## 7 常见问题
-
-### 7.1 输入图片大小与模型不匹配问题
+### 5.1 输入图片大小与模型不匹配问题
 
 **问题描述：**
 
