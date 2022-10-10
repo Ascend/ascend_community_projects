@@ -46,6 +46,7 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 │   │   ├── insert_op.cfg				# yolov5 aipp转换配置
 │   │   ├── yolov5_add_bs1_fp16.cfg		# yolov5后处理配置
 │   │   ├── yolov5_add_bs1_fp16.om      # 铝材缺陷检测模型
+│   │   ├── best.onnx                   # 用于模型转换
 ├── pipeline
 │   └── AlDefectDetection.pipeline      # pipeline文件
 ├── main.py	
@@ -170,7 +171,7 @@ var_reci_chn_2 : 0.0039216
 
 **步骤5** 模型转换
 
-在`./models/yolov5`目录下执行一下命令
+在项目目录下执行一下命令
 
 ```bash
 # 执行前需确保环境变量正确配置
@@ -329,3 +330,4 @@ python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --sav
 **解决方案：**
 
 修改pipeline文件中**mxpi_objectpostprocessor0**插件的`postProcessLibPath`属性，修改为`libyolov3postprocess.so`
+
