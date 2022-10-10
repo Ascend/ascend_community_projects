@@ -20,7 +20,7 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
 FILE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.JPG', '*.PNG', '*.png', '*.JPEG']
 LABEL_EXTENSIONS = ['*.TXT', '*.txt']
-DATA_PATH = "output"
+
 
 if __name__ == '__main__':
     # init stream manager
