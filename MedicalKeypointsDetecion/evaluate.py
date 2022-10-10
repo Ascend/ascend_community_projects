@@ -1,21 +1,20 @@
 from xmlrpc.client import boolean
-
-import cv2
 import os
 import stat
 import math
 from PIL import Image
 import mindspore as ms
 import mindspore.ops as ops
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
 import json
 import codecs
 from collections import defaultdict
 from collections import OrderedDict
-from StreamManagerApi import *
+from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 import MxpiDataType_pb2 as MxpiDataType
 import numpy as np
+import cv2
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 
 color2 = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
           (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
@@ -701,15 +700,15 @@ if __name__ == '__main__':
     # txt为cls 分类情况,在该路径下创建新txt并修改该路径
     TXT = 'evaluate_result_0922_3.txt'
 
-    num_samples = 3651
-    all_preds_no_mask = np.zeros((num_samples, 80, 3), dtype=np.float32)
-    all_preds = np.zeros((num_samples, 80, 3), dtype=np.float32)
-    all_boxes = np.zeros((num_samples, 6))
+    NUM_TEST = 3651
+    all_preds_no_mask = np.zeros((NUM_TEST, 80, 3), dtype=np.float32)
+    all_preds = np.zeros((NUM_TEST, 80, 3), dtype=np.float32)
+    all_boxes = np.zeros((NUM_TEST, 6))
     image_path = []
     image_path_all = []
     filenames = []
     imgnums = []
-    idx = 0
+    IDX = 0
 
     for image_idx, image_info in enumerate(image_list):
         image_path = os.path.join(IMAGEFOLDER, image_info['file_name'])
@@ -723,7 +722,6 @@ if __name__ == '__main__':
         anns_len = len(anns)
         joints_3d = np.zeros((80, 3), dtype=np.float64)
         joints_3d_vis = np.zeros((80, 3), dtype=np.float64)
-        cls_target = 0
         image_path_all.extend([image_id])
         for i, _ in enumerate(range(anns_len)):
             center_gt = np.zeros((1, 2), dtype=np.float64)
@@ -739,11 +737,11 @@ if __name__ == '__main__':
                 joints_3d[ipt, 0] = anns[i]['keypoints'][ipt * 3 + 0]
                 joints_3d[ipt, 1] = anns[i]['keypoints'][ipt * 3 + 1]
                 joints_3d[ipt, 2] = 0
-                t_vis = anns[i]['keypoints'][ipt * 3 + 2]
-                if t_vis > 1:
-                    t_vis = 1
-                joints_3d_vis[ipt, 0] = t_vis
-                joints_3d_vis[ipt, 1] = t_vis
+                T_VIS = anns[i]['keypoints'][ipt * 3 + 2]
+                if T_VIS > 1:
+                    T_VIS = 1
+                joints_3d_vis[ipt, 0] = T_VIS
+                joints_3d_vis[ipt, 1] = T_VIS
                 joints_3d_vis[ipt, 2] = 0
             trans_gt = get_affine_transform(center_gt, scale_gt, 0, [288, 384])
 
@@ -753,12 +751,12 @@ if __name__ == '__main__':
                         joints_3d[j, 0:2], trans_gt)
 
             # double check this all_boxes parts
-            all_boxes[idx, 0] = center_gt[0]
-            all_boxes[idx, 1] = center_gt[1]
-            all_boxes[idx, 2] = scale_gt[0]
-            all_boxes[idx, 3] = scale_gt[1]
-            all_boxes[idx:idx + 1, 4] = np.prod(scale_gt * 200, 0)
-            all_boxes[idx:idx + 1, 5] = 1
+            all_boxes[IDX, 0] = center_gt[0]
+            all_boxes[IDX, 1] = center_gt[1]
+            all_boxes[IDX, 2] = scale_gt[0]
+            all_boxes[IDX, 3] = scale_gt[1]
+            all_boxes[IDX:IDX + 1, 4] = np.prod(scale_gt * 200, 0)
+            all_boxes[IDX:IDX + 1, 5] = 1
 
         if os.path.exists(image_path) != 1:
             print("Failed to get the input picture. Please check it!")
@@ -770,40 +768,37 @@ if __name__ == '__main__':
             print("load:", image_path)
 
         # Inputs data to a specified stream based on streamName.
-        streamName1 = b'model1'
-        inPluginId = 0
-        uniqueId = streamManagerApi.SendData(
-            streamName1, inPluginId, dataInput)
+        STREAM_NAME1 = b'model1'
+        uniqueId = streamManagerApi.SendData(STREAM_NAME1, 0, dataInput)
 
         # send image data
-        metas = get_img_metas(image_path).astype(np.float32).tobytes()
+        META = get_img_metas(image_path).astype(np.float32).tobytes()
 
-        key = b'appsrc1'
+        KEY = b'appsrc1'
         visionList = MxpiDataType.MxpiVisionList()
         visionVec = visionList.visionVec.add()
         visionVec.visionData.deviceId = 0
         visionVec.visionData.memType = 0
-        visionVec.visionData.dataStr = metas
+        visionVec.visionData.dataStr = META
         protobuf = MxProtobufIn()
-        protobuf.key = key
+        protobuf.key = KEY
         protobuf.type = b'MxTools.MxpiVisionList'
         protobuf.protobuf = visionList.SerializeToString()
         protobufVec = InProtobufVector()
         protobufVec.push_back(protobuf)
 
-        inPluginId1 = 1
         uniqueId1 = streamManagerApi.SendProtobuf(
-            streamName1, b'appsrc1', protobufVec)
+            STREAM_NAME1, b'appsrc1', protobufVec)
 
         if uniqueId1 < 0:
             print("Failed to send data to stream.")
             exit()
 
         keyVec = StringVector()
-        keys = b"mxpi_tensorinfer0"
-        for key in keys:
-            keyVec.push_back(keys)
-        infer_result = streamManagerApi.GetProtobuf(streamName1, 0, keyVec)
+        KEYS = b"mxpi_tensorinfer0"
+        for key in KEYS:
+            keyVec.push_back(KEYS)
+        infer_result = streamManagerApi.GetProtobuf(STREAM_NAME1, 0, keyVec)
         # print the infer result
 
         if infer_result.size() == 0:
@@ -947,10 +942,10 @@ if __name__ == '__main__':
         top1.update(prec1, 1)
 
         # has mask
-        all_preds[idx:idx + NUM_IMAGES, :, 0:2] = preds_mask[:, :, 0:2]
-        all_preds[idx:idx + NUM_IMAGES, :, 2:3] = maxvals
+        all_preds[IDX:IDX + NUM_IMAGES, :, 0:2] = preds_mask[:, :, 0:2]
+        all_preds[IDX:IDX + NUM_IMAGES, :, 2:3] = maxvals
 
-        idx += 1
+        IDX += 1
 
         MSG = 'Test: [{0}/{1}]\t' \
             'kp_Accuracy {kp_acc.val:.3f} ({kp_acc.avg:.3f})\t' \
