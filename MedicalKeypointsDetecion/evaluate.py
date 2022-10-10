@@ -648,10 +648,10 @@ def normalize(data, _mean, _std):
         _mean = np.reshape(_mean, (-1, 1, 1))
     if _std.ndim == 1:
         _std = np.reshape(_std, (-1, 1, 1))
-    _div = np.divide(data, 255)  # i.e. _div = data / _max
+    _div = np.divide(data, 255)  
     _div = np.transpose(_div, (2, 0, 1))
-    _sub = np.subtract(_div, _mean)  # i.e. arrays = _div - mean
-    arrays = np.divide(_sub, _std)  # i.e. arrays = (_div - mean) / std
+    _sub = np.subtract(_div, _mean)  
+    arrays = np.divide(_sub, _std)  
     return arrays
 
 
