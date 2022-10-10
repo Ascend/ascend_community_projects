@@ -52,6 +52,7 @@ npu-smi info
 ├── model
 │   ├── ch_ppocr_server_v2.0_rec_infer_bs1.om
 ├── dataset
+├── output
 ├── cfg
 │   ├── crnn.txt
 │   ├── ppocr_keys_v1.txt
@@ -97,6 +98,7 @@ npu-smi info
 | protobuf | 3.19.0 | 数据序列化反序列化组件                       |
 
 在模型转换过程中则安装如下环境依赖
+
 **步骤1** 在CANN以及MindX SDK的安装目录找到set_env.sh,并运行脚本：
 
 ```
