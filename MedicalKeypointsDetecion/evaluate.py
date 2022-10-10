@@ -579,7 +579,7 @@ def oks_nms(kpts_database, thr, sigmas=None, in_vis_thre=None):
     while order.size > 0:
         _i = order[0]
         keep.append(_i)
-        oks_ovr = oks_iou(keypoints[_i],
+        oks_ovr = compute_oks_iou(keypoints[_i],
                           keypoints[order[1:]],
                           areas[_i],
                           areas[order[1:]],
@@ -591,27 +591,27 @@ def oks_nms(kpts_database, thr, sigmas=None, in_vis_thre=None):
     return keep
 
 
-def oks_iou(g, d, a_g, a_d, sigmas=None, in_vis_thre=None):
+def compute_oks_iou(g, d, a_g, a_d, sigmas=None, in_vis_thre=None):
     if not isinstance(sigmas, np.ndarray):
         sigmas = np.array([.26, .25, .25, .35, .35, .79, .79, .72, .72, .62, .62,
                           1.07, 1.07, .87, .87, .89, .89]) / 10.0
     _vars = (sigmas * 2) ** 2
-    xg = g[0::3]
-    yg = g[1::3]
-    vg = g[2::3]
+    x_gt = g[0::3]
+    y_gt = g[1::3]
+    v_gt = g[2::3]
     ious = np.zeros((d.shape[0]))
     for n_d in range(0, d.shape[0]):
-        xd = d[n_d, 0::3]
-        yd = d[n_d, 1::3]
-        vd = d[n_d, 2::3]
-        dx = xd - xg
-        dy = yd - yg
-        e = (dx ** 2 + dy ** 2) / _vars / \
+        x_d = d[n_d, 0::3]
+        y_d = d[n_d, 1::3]
+        v_d = d[n_d, 2::3]
+        dx = x_d - x_gt
+        dy = y_d - y_gt
+        err = (dx ** 2 + dy ** 2) / _vars / \
             ((a_g + a_d[n_d]) / 2 + np.spacing(1)) / 2
         if in_vis_thre is not None:
-            ind = list(vg > in_vis_thre) and list(vd > in_vis_thre)
-            e = e[ind]
-        ious[n_d] = np.sum(np.exp(-e)) / e.shape[0] if e.shape[0] != 0 else 0.0
+            ind = list(v_gt > in_vis_thre) and list(v_d > in_vis_thre)
+            err = err[ind]
+        ious[n_d] = np.sum(np.exp(-err)) / err.shape[0] if err.shape[0] != 0 else 0.0
     return ious
 
 
