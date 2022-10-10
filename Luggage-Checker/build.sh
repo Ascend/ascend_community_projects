@@ -16,11 +16,10 @@
 set -e
 CURRENT_PATH="$( cd "$(dirname "$0")" ;pwd -P )"
 
+
 POSTPROCESS_FOLDER=(
 	/postprocess/
 )
-cp postprocess/build/libYoloxPostProcess.so ${MX_SDK_HOME}/lib/modelpostprocessors/
-chmod 640 postprocess/build/libYoloxPostProcess.so
 chmod 640 python/models/yolox_eval.cfg
 chmod 640 python/models/coco.names
 
@@ -31,10 +30,12 @@ for path in ${POSTPROCESS_FOLDER[@]};do
         echo -e "Failed to build postprocess plugin ${path}"
 		FLAG=1
     }
+    cp build/libYoloxPostProcess.so ${MX_SDK_HOME}/lib/modelpostprocessors/
+    chmod 640 build/libYoloxPostProcess.so
 done
-
-
 if [ ${FLAG} -eq 1 ]; then
 	exit 1
 fi
+
+
 exit 0

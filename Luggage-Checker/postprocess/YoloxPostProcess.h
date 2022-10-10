@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #ifndef YOLOX_YOLOXPOSTPROCESS_H
 #define YOLOX_YOLOXPOSTPROCESS_H
 #include "MxBase/PostProcessBases/ObjectPostProcessBase.h"
-namespace default_values {
+namespace DefaultValues {
     // 回归框坐标和预测得分
     const float LOGIT_AND_SCORE = 5;
     const float DEFAULT_OBJECTNESS_THRESH = 0.3;
@@ -33,7 +33,7 @@ namespace default_values {
     };
 }
 // YOLOX继承ObjectPostProcessBase
-namespace mx_base {
+namespace MxBase {
     class YoloxPostProcess : public MxBase::ObjectPostProcessBase {
     public:
         YoloxPostProcess() = default;
