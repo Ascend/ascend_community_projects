@@ -1,11 +1,11 @@
 # ChineseOCR
 
 ## 1 介绍
-本开发样例基于MindX SDK开发，可以实现中文字体识别，案例基于Paddle模型供用户参考。 本系统基于昇腾310。主要为单行中文识别系统，系统将图像进行适当的仿射变化，然后送入字符识别系统中进行识别后将识别结果输出。
+本开发样例基于MindX SDK开发，可以实现中文字体识别，案例基于Paddle模型供用户参考。 本系统基于昇腾310卡。主要为单行中文识别系统，系统将图像进行适当的仿射变化，然后送入字符识别系统中进行识别后将识别结果输出。
 
 ### 1.1 支持的产品
 
-Ascend 310
+Ascend 310卡
 
 ### 1.2 支持的版本
 
@@ -16,8 +16,6 @@ Ascend 310
 ```
 npu-smi info
 ```
-
-
 
 ### 1.3 软件方案介绍
 
@@ -52,7 +50,6 @@ npu-smi info
 ├── model
 │   ├── ch_ppocr_server_v2.0_rec_infer_bs1.om
 ├── dataset
-├── output
 ├── cfg
 │   ├── crnn.txt
 │   ├── ppocr_keys_v1.txt
@@ -84,31 +81,30 @@ npu-smi info
 
 推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如下表：
 
-| 依赖软件 | 版本   | 说明                                         |
-| -------- | ------ | -------------------------------------------- |
-| Python   | 3.9.12 |                                              |
-| protobuf | 3.19.0 |            数据传输使用                       |
-| google   | 3.0.0  |                                              |
+| 依赖软件 | 版本  |
+| -------- | ----- |
+| Python   | 3.9.12 |
+| protobuf | 3.19.0 |
+| google   | 3.0.0  |
 
 所需依赖的安装包如下所示：
 
-| 依赖软件 | 版本   | 说明                                         |
-| -------- | ------ | -------------------------------------------- |
-| glob     | 0.7    | 数据查找，并将搜索的到的结果返回到一个列表中 |
-| protobuf | 3.19.0 | 数据序列化反序列化组件                       |
+| 依赖软件 | 版本  |
+| -------- | ----- |
+| glob     | 0.7   |
+| fastwer  | 0.1.3 |
 
 在模型转换过程中则安装如下环境依赖
 
-**步骤1** 在CANN以及MindX SDK的安装目录找到set_env.sh,并运行脚本：
-
 ```
-bash ${SDK安装路径}/set_env.sh
-bash ${CANN安装路径}/set_env.sh
+. ${SDK安装路径}/set_env.sh
+. ${CANN安装路径}/set_env.sh
 ```
-**步骤2** 使用docker pull paddlepaddle/paddle:2.3.2-gpu-cuda11.2-cudnn8拉取镜像，建立docker容器并进入容器后运行如下命令
+建立docker容器并进入容器后运行如下命令
 
 ```
  pip install paddle2onnx==0.3.1
+ pip install paddleocr
 ```
 如果出现版本不兼容则尽量使用低版本包
 
@@ -116,75 +112,65 @@ bash ${CANN安装路径}/set_env.sh
 
 #### 3.1 使用官方paddle模型
 
-**步骤1** 在github上下载PaddleOCR模型。下载地址：[GitHub - PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)
+**步骤1** [下载PaddleOCR模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/chineseOcr/ch_ppocr_mobile_v2.0_cls_train.tar)。
 
-**步骤2** 将获取到的PaddleOCR模型文件解压后存放到`model/paddleocr/ch_ppocr_server_v2.0_rec_infer`。
+**步骤2** 使用docker pull paddlepaddle/paddle:2.3.2-gpu-cuda11.2-cudnn8拉取镜像，并创建容器
 
-**步骤3** 安装环境依赖。
-
-**步骤4** 将模型文件拷贝进容器里面
+**步骤3** 将获取到的PaddleOCR模型文件拷贝至容器解压后存放到容器中创建的`model`文件夹内。
 
 ```
- docker cp -r model/paddleocr/ch_ppocr_server_v2.0_rec_infer {容器id}:/models/
+ docker cp -r model/paddleocr/ch_ppocr_server_v2.0_rec_infer {容器id}:/model/
 ```
 
-**步骤5** 在`/models`目录下执行以下命令
+**步骤4** 在`model`目录下执行以下命令
 
 ```
-paddle2onnx --model_dir ./ch_ppocr_server_v2.0_rec_infer/ --model_filename inference.pdmodel --params_filename inference.pdiparams --save_file ./ch_ppocr_server_v2.0_rec_infer.onnx --opset_version 11 --enable_onnx_checker True
+paddle2onnx --model_dir model/ch_ppocr_server_v2.0_rec_infer/ --model_filename inference.pdmodel --params_filename inference.pdiparams --save_file ./ch_ppocr_server_v2.0_rec_bs1.onnx --opset_version 11 --enable_onnx_checker True
 ```
 
-如果在成功执行完命令后会生成OCR的onnx模型，如果出现`E16005: The model has [2] [--domain_version] fields, but only one is allowed.`错误，使用[MagicONNX](https://gitee.com/Ronnie_zheng/MagicONNX)调用keep_default_domain这个接口修改onnx解决
+成功执行完命令后会生成OCR的onnx模型。
 
-由于笔者下载的paddle模型在转换后出现图片识别精度大幅下降的问题，所以尽量使用官方已经转化完成的om模型进行识别
+**步骤5** 使用atc命令转单batch模型
 
-https://gitee.com/link?target=https%3A%2F%2Fmindx.sdk.obs.cn-north-4.myhuaweicloud.com%2Fmindxsdk-referenceapps%2520%2Fcontrib%2FOCR%2Fmodel%2Fmodels_ocr.zip
-
-**步骤6** 使用atc命令转单batch模型
-
-将模型从docker容器中拷贝出来上传到昇腾服务器
+将onnx模型从docker容器中拷贝出来上传到昇腾服务器中项目的`model`文件夹内
 
 ```bash
-atc --model=/model/ch_ppocr_server_v2.0_rec_infer_modify.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_bs1 --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
+atc --model=./ch_ppocr_server_v2.0_rec_bs1.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_bs1 --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
 ```
 
-
-
-## 3 运行
-
-**步骤1** 将经过模型转化的Paddle om模型放到`models/paddlecrnn`文件夹内
-
-**步骤2** 配置环境变量
-
-**步骤3** 将准备好的包含标签和图片的数据库放入`dataset`文件夹内
-
-**步骤4** 运行main.py文件后，中文识别结果将打印到控制台中并会将每张图片的结果分别以txt格式写入到output文件里
+由于笔者下载的paddle模型在转换后出现图片识别精度大幅下降的问题，所以尽量使用官方已经转化完成的[OM模型进行识别](https://github.com/PaddlePaddle/PaddleOCR)
 
 
 
+## 4 运行
+
+**步骤1** 将准备好的包含标签和图片的[数据集](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/chineseOcr/6.rar)放入`dataset`文件夹内
+
+**步骤2** 运行main.py文件后，中文识别结果将打印到控制台中并会将每张图片的结果分别以txt格式写入到output文件里
 
 
-## 4 精度测试
 
-#### 4.1使用官方paddle模型在GPU上测试
+## 5 精度测试
 
-**步骤1** 导入paddleocr包
+#### 5.1使用官方paddle模型在GPU上测试
 
-**步骤2** 通过paddleocr包内的paddleocr函数将手写图片数据集进行识别，识别后分别写入文档
+**步骤1** 此步骤需要读者自己手写识别文件，在docker容器内通过paddleocr包内的paddleocr函数将手写图片数据集进行识别，并分别将每张图片的结果以txt格式写入到output文件里。
 
 ```python
 ocr = paddleocr.PaddleOCR()
 ocr.ocr(img_path,rec=True,det=False,cls=False)
 ```
-手写数据集链接：[ChineseOCR](https://github.com/chineseocr/chineseocr)
+**步骤2** 将识别结果和标签分别进行比对输出平均相似度
 
-**步骤3** 将识别结果和标签分别进行比对输出平均相似度
+#### 5.2使用经过转化的om模型在NPU上测试
 
-#### 4.2使用经过转化的om模型在NPU上测试
+**步骤1** 将官方数据库的[手写数据集](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/chineseOcr/6.rar)放入`dataset`
 
-**步骤1** 将官方数据库的手写数据放入`dataset`输入目录下
-
-**步骤2** 在项目主目录下执行检测命令：python main.py，输出识别相似度将打印到输出结果里
+**步骤2** 在项目主目录下执行检测命令：
+```python
+python main.py
+```
+输出识别相似度将打印到控制台中
 
 
 | 测试版本 | 相似度 |
@@ -192,11 +178,13 @@ ocr.ocr(img_path,rec=True,det=False,cls=False)
 | GPU      | 41.58% |
 | NPU      | 41.78% |
 
+由于没有目标精度，因此笔者参考了GPU的实验精度结果，相差在1%范围内
 
 
-## 5 常见问题
 
-### 5.1 输入图片大小与模型不匹配问题
+## 6 常见问题
+
+### 6.1 输入图片大小与模型不匹配问题
 
 **问题描述：**
 
@@ -209,4 +197,18 @@ E20220826 10:05:45.466817 19546 MxpiTensorInfer.cpp:750] [crnn recognition][1001
 
 **解决方案：**
 
-在imagedecode插件，设定解码方式的参数为opencv，选择模型格式为RGB，然后再imageresize插件里面设定o解码方式为opencv
+在imagedecode插件属性里，设定解码方式的参数为opencv，选择模型格式为RGB，然后在imageresize插件里面设定的解码方式为opencv
+
+### 6.2 onnx模型转换问题
+
+**问题描述：**
+在原模型转换成onnx模型中出现错误
+
+```
+E16005: The model has [2] [--domain_version] fields, but only one is allowed.
+...
+```
+
+
+**解决方案：**
+使用[MagicONNX](https://gitee.com/Ronnie_zheng/MagicONNX)调用keep_default_domain这个接口修改onnx解决
