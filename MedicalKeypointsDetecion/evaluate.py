@@ -2,13 +2,13 @@ from xmlrpc.client import boolean
 import os
 import stat
 import math
-from PIL import Image
-import mindspore as ms
-import mindspore.ops as ops
 import json
 import codecs
 from collections import defaultdict
 from collections import OrderedDict
+from PIL import Image
+import mindspore as ms
+import mindspore.ops as ops
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 import MxpiDataType_pb2 as MxpiDataType
 import numpy as np
