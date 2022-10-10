@@ -54,10 +54,9 @@
 │   │   ├── nopre_post.py
 │   │   ├── visualize.py
 │   │   └── preprocess.py
-│   ├── models
+│   ├── models                      # 下载的onnx模型存放在该文件夹下
 │   │   ├── aipp-configs
-│   │   │   └── yolox_bgr.cfg
-│   │   ├── conversion-scripts              # 下载的onnx模型存放在该文件夹下
+│   │   │   └── yolox_bgr.cfg                  
 │   │   ├── yolox_eval.cfg
 │   │   └── coco.names                    
 │   ├── test    
@@ -96,7 +95,7 @@ YOLOX 的后处理插件接收模型推理插件输出的特征图，该特征�
 
 推荐系统为ubuntu 18.04，环境依赖软件和版本如下表：
 
-| 软件名称 | 版本   |
+| 软件名称  | 版本   |
 | -------- | ------ |
 | cmake    | 3.5+   |
 | mxVision | 2.0.4  |
@@ -216,6 +215,7 @@ python3 parse_coco.py --json_file=data/annotations/instances_val2017.json --img_
 python3 eval_pre_post.py
 python3 eval_nopre_post.py
 ```                      
+
 若运行成功，会在``python/test`` 路径下生成 test_pre_post(test_nopre_post) 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
 
 4. 在``python/test``路径下，运行命令: 
@@ -230,6 +230,7 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
     <br>
 </center>
 挑选的是hard中的图片验证精度，精度为31.68%与源项目精度31.82%误差为0.14%。精度对齐。
+
 
 注：在pipeline中加图像预处理后验证结果与原框不同的原因为：YOLOX的图像预处理中，Resize方式为按长边缩放，而Mindx SDK默认使用dvpp的图像解码方式，没有按长边缩放的方法，因此本项目将"resizeType"属性设置为 "Resizer_KeepAspectRatio_Fit"，这样会导致精度下降。
 我们同时给出了一套不加图像预处理的推理流程，见上文，不加预处理流程精度结果与源项目可以保持一致。
