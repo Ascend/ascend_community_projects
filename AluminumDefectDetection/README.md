@@ -70,13 +70,17 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 
 项目适用于光照条件较好，背景简单，且图片较清晰的测试图片
 
+以下几种情况下，检测效果不够理想：
+1.在进行脏点检测时，由于脏点过小，模型不易检测到铝材表面的脏点缺陷，导致脏点缺陷检测置信度偏低
+2.在进行喷流检测时，由于喷流痕迹不明显，检测置信度偏低，影响最终精度
+
 ## 2 环境依赖
 
 eg：推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如下表：
 
 |   软件名称    |    版本     |
 | :-----------: | :---------: |
-|    ubantu     | 18.04.1 LTS |
+|    ubuntu     | 18.04.1 LTS |
 |   MindX SDK   |    2.0.4    |
 |    Python     |    3.9.2    |
 |     CANN      |    5.0.4    |
@@ -91,9 +95,15 @@ eg：推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如�
 # 执行如下命令，打开.bashrc文件
 vim ~/.bashrc
 # 在.bashrc文件中添加以下环境变量
-. ${MX_SDK_HOME}/set_env.sh
-. ${HOME}/Ascend/ascend-toolkit/set_env.sh
-# 其中${MX_SDK_HOME}为MindX SDK安装目录，${HOME}为用户目录（如果CANN 开发包装在用户目录，否则为/usr/local/），配置的时候请自行替换成相应目录
+export MX_SDK_HOME=${SDK安装路径}
+
+export LD_LIBRARY_PATH=${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:${MX_SDK_HOME}/opensource/lib64:/usr/local/Ascend/ascend-toolkit/latest/acllib/lib64:/usr/local/Ascend/driver/lib64/
+
+export GST_PLUGIN_SCANNER=${MX_SDK_HOME}/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
+
+export GST_PLUGIN_PATH=${MX_SDK_HOME}/opensource/lib/gstreamer-1.0:${MX_SDK_HOME}/lib/plugins
+
+export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 # 保存退出.bashrc文件
 # 执行如下命令使环境变量生效
 source ~/.bashrc
@@ -104,11 +114,23 @@ env
 
 ## 3 模型转换
 
+### 3.1 模型获取
+
 **步骤1** 训练铝材缺陷检测对应的yolov5模型，输出pt模型文件。
 
 > pt模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/best.pt
 
-**步骤2** 将pt模型文件转换成onnx，也可直接通过以下链接下载onnx模型。
+**步骤2** 将pt模型文件转换成onnx
+
+​	下载yolov5官方源码6.1版本[Releases · ultralytics/yolov5 (github.com)](https://github.com/ultralytics/yolov5/releases)，进入项目根目录，将best.pt模型文件复制到项目目录，执行命令
+
+```bash
+   python export.py --weights best.pt --simplify
+```
+
+![pt2onnx](./images/pt2onnx.png)
+
+​         模型转换成功之后，显示的日志信息如下图所示，在项目根目录会生成best.onnx模型文件。也可直接通过以下链接下载onnx模型。
 
 > onnx模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/best.onnx
 
@@ -168,11 +190,6 @@ atc  --input_shape="images:1,3,640,640" --out_nodes="Transpose_286:0;Transpose_3
 
 **步骤1** 
 
-修改`pipeline/AlDefectDetection.pipeline`文件中: **mxpi_objectpostprocessor0**插件的`postProcessLibPath`属性，修改为
-
-```bash
-{SDK安装路径}/lib/modelpostprocessors/libyolov3postprocess.so
-```
 修改yolov5_add_bs1_fp16.cfg中的SCORE_THRESH=0.25
 
 **步骤2**
@@ -183,29 +200,35 @@ atc  --input_shape="images:1,3,640,640" --out_nodes="Transpose_286:0;Transpose_3
 python main.py
 ```
 
+预期结果：
+
+终端会显示输出结果的类别、位置信息以及置信度信息。保存推理结果图为result_test.jpg,pre_test.jpg为输入到模型之前的图片预处理结果。
+
 结果展示：
 
 ![print_result](./images/print_result.png)
-
-
-
-![result_test](./images/result_test.jpg)
 
 ### 精度测试
 
 **步骤1**：准备测试数据和om模型文件
 
 	> 测试数据集链接:https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/testDatas.zip
-	>
+	
 	> om模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/yolov5_add_bs1_fp16.om
 
 **步骤2**：执行如下命令循环输入测试数据集图片
 
+```bash
 python eval.py
+```
 
 生成的位置信息和类别信息会以txt文件的形式保存在项目目录下的test/test_out_txt/
 
-执行python map.py –gt ${ground_truth_path} –test_path ${test_path}输出结果
+执行如下命令输出结果
+
+```bash
+python map.py –gt ${ground_truth_path} –test_path ${test_path}
+```
 
 其中${ground_truth_path}为测试集数据的标签路径，${test_path}为模型输出结果的路径（即上述test/test_out_txt/），包括分类结果、位置信息和置信度参数。
 
@@ -215,7 +238,7 @@ python eval.py
 
 **步骤3**：由于数据集为非公开的数据集，训练集测试集为自行划分，在满足mAP>80%的基础上进一步测试与GPU精度上的差距。首先，下载YOLOv5官方源码6.1版本https://github.com/ultralytics/yolov5/releases/tag/v6.1
 
-**步骤4**：在项目data目录下创建al.yaml数据配置文件，复制coco128.yaml的内容，并做如下修改
+**步骤4**：在项目data目录下创建al.yaml数据配置文件(配置精度测试时数据加载路径以及类别信息)，复制coco128.yaml的内容，并做如下修改.
 
 ![yolov5_data_cfg](./images/yolov5_data_cfg.png)
 
@@ -305,4 +328,4 @@ python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --sav
 
 **解决方案：**
 
-修改pipeline文件中**mxpi_objectpostprocessor0**插件的`postProcessLibPath`属性，修改为`{SDK安装路径}/lib/modelpostprocessors/libyolov3postprocess.so`
+修改pipeline文件中**mxpi_objectpostprocessor0**插件的`postProcessLibPath`属性，修改为`libyolov3postprocess.so`

@@ -40,7 +40,7 @@
                 "dataSource": "mxpi_tensorinfer0",
                 "postProcessConfigPath": "./models/yolov5/yolov5_add_bs1_fp16.cfg",
                 "labelPath": "./models/yolov5/aldefectdetection.names",
-                "postProcessLibPath": "{SDK安装目录}/lib/modelpostprocessors/libyolov3postprocess.so"
+                "postProcessLibPath": "libyolov3postprocess.so"
             },
       "factory": "mxpi_objectpostprocessor",
       "next": "mxpi_dataserialize0"
