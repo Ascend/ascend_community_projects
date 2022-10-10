@@ -61,39 +61,24 @@ def bbox2result_1image(bboxes, labels, num_classes):
 
 
 def box_to_center_scale(box, model_image_width, model_image_height):
-    """convert a box to center,scale information required for pose transformation
-    Parameters
-    ----------
-    box : list of tuple
-        list of length 2 with two tuples of floats representing
-        bottom left and top right corner of a box
-    model_image_width : int
-    model_image_height : int
-    Returns
-    -------
-    (numpy array, numpy array)
-        Two numpy arrays, coordinates for the center of the box and the scale of the box
-    """
-    center_temp = np.zeros((2), dtype=np.float32)
-
-    bottom_left_corner = box[0]
-    top_right_corner = box[1]
-    box_width = top_right_corner[0] - bottom_left_corner[0]
-    box_height = top_right_corner[1] - bottom_left_corner[1]
-    bottom_left_x = bottom_left_corner[0]
-    bottom_left_y = bottom_left_corner[1]
-    center_temp[0] = bottom_left_x + box_width * 0.5
-    center_temp[1] = bottom_left_y + box_height * 0.5
-
-    aspect_ratio = model_image_width * 1.0 / model_image_height
     pixel_std = 200
+    center_temp = np.zeros((2), dtype=np.float32)
+    bottom_left_point = box[0]
+    top_right_point = box[1]
+    bbox_w = top_right_point[0] - bottom_left_point[0]
+    bbox_h = top_right_point[1] - bottom_left_point[1]
+    bottom_left_x = bottom_left_point[0]
+    bottom_left_y = bottom_left_point[1]
+    center_temp[0] = bottom_left_x + bbox_w * 0.5
+    center_temp[1] = bottom_left_y + bbox_h * 0.5
 
-    if box_width > aspect_ratio * box_height:
-        box_height = box_width * 1.0 / aspect_ratio
-    elif box_width < aspect_ratio * box_height:
-        box_width = box_height * aspect_ratio
+    ratio_w2h = model_image_width * 1.0 / model_image_height
+    if bbox_w > ratio_w2h * bbox_h:
+        bbox_h = bbox_w * 1.0 / ratio_w2h
+    elif bbox_w < ratio_w2h * bbox_h:
+        bbox_w = bbox_h * ratio_w2h
     scale_temp = np.array(
-        [box_width * 1.0 / pixel_std, box_height * 1.0 / pixel_std],
+        [bbox_w * 1.0 / pixel_std, bbox_h * 1.0 / pixel_std],
         dtype=np.float32)
     if center_temp[0] != -1:
         scale_temp = scale_temp * 1.25
@@ -103,10 +88,10 @@ def box_to_center_scale(box, model_image_width, model_image_height):
 
 def get_dir(src_point, rot_rad):
     sn, cs = np.sin(rot_rad), np.cos(rot_rad)
-    src_result = [0, 0]
-    src_result[0] = src_point[0] * cs - src_point[1] * sn
-    src_result[1] = src_point[0] * sn + src_point[1] * cs
-    return src_result
+    _src_result = [0, 0]
+    _src_result[0] = src_point[0] * cs - src_point[1] * sn
+    _src_result[1] = src_point[0] * sn + src_point[1] * cs
+    return _src_result
 
 
 def transform_preds(coords, c, s, output_size):
