@@ -58,7 +58,7 @@ if __name__ == '__main__':
         exit()
     paths_label = []
     for extension in LABEL_EXTENSIONS:
-        paths.extend(glob.glob(os.path.join("dataset", extension)))
+        paths_label.extend(glob.glob(os.path.join("dataset", extension)))
     paths_label.sort()
     if len(paths_label) == 0:
         print("The label is none! We need input the txt and image file together.Please check the dataset and files.")
