@@ -576,40 +576,33 @@ def do_python_keypoint_eval(res_file, res_folder):
         'AR .75',
         'AR (M)',
         'AR (L)']
-    info_str = []
-    for ind, name in enumerate(stats_names):
-        info_str.append((name, coco_eval.stats[ind]))
-    return info_str
+    out_info_str = []
+    for index1, _name in enumerate(stats_names):
+        out_info_str.append((_name, coco_eval.stats[index1]))
+    return out_info_str
 
 
-def oks_nms(kpts_db, thresh, sigmas=None, in_vis_thre=None):
-    """
-    greedily select boxes with high confidence and overlap with current maximum <= thresh
-    rule out overlap >= thresh, overlap = oks
-    :param kpts_db
-    :param thresh: retain overlap < thresh
-    :return: indexes to keep
-    """
-    if len(kpts_db) == 0:
-        print("len is 0")
+def oks_nms(kpts_database, thr, sigmas=None, in_vis_thre=None):
+    if len(kpts_database) == 0:
+        print("the database length is 0. please check!")
         return []
-    scores = np.array([kpts_db[i]['score'] for i in range(len(kpts_db))])
-    kpts = np.array([kpts_db[i]['keypoints'].flatten()
-                    for i in range(len(kpts_db))])
-    areas = np.array([kpts_db[i]['area'] for i in range(len(kpts_db))])
+    scores = np.array([kpts_database[i]['score'] for i in range(len(kpts_database))])
+    keypoints = np.array([kpts_database[i]['keypoints'].flatten()
+                    for i in range(len(kpts_database))])
+    areas = np.array([kpts_database[i]['area'] for i in range(len(kpts_database))])
 
     order = scores.argsort()[::-1]
     keep = []
     while order.size > 0:
         _i = order[0]
         keep.append(_i)
-        oks_ovr = oks_iou(kpts[_i],
-                          kpts[order[1:]],
+        oks_ovr = oks_iou(keypoints[_i],
+                          keypoints[order[1:]],
                           areas[_i],
                           areas[order[1:]],
                           sigmas,
                           in_vis_thre)
-        _inds = np.where(oks_ovr <= thresh)[0]
+        _inds = np.where(oks_ovr <= thr)[0]
         order = order[_inds + 1]
 
     return keep

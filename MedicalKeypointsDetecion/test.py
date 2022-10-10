@@ -256,43 +256,40 @@ def normalize(data, _mean, _std):
         _mean = np.reshape(_mean, (-1, 1, 1))
     if _std.ndim == 1:
         _std = np.reshape(_std, (-1, 1, 1))
-    _max = np.max(abs(data))
-    _div = np.divide(data, 255)  # i.e. _div = data / _max
+    _div = np.divide(data, 255)  
     _div = np.transpose(_div, (2, 0, 1))
-    _sub = np.subtract(_div, _mean)  # i.e. arrays = _div - mean
-    arrays = np.divide(_sub, _std)  # i.e. arrays = (_div - mean) / std
-    return arrays
+    _sub = np.subtract(_div, _mean)  
+    out_normalize = np.divide(_sub, _std)  
+    return out_normalize
 
 
 if __name__ == '__main__':
-    # init stream manager
+    # stream manager init
     streamManagerApi = StreamManagerApi()
     ret = streamManagerApi.InitManager()
     if ret != 0:
-        print("Failed to init Stream manager, ret=%s" % str(ret))
+        print("The Stream manager failed to init, ret=", str(ret))
         exit()
 
-    # create streams by pipeline config file
+    # create streams
     with open("./pipeline/model1.pipeline", 'rb') as f1:
         pipelineStr = f1.read()
     ret = streamManagerApi.CreateMultipleStreams(pipelineStr)
     if ret != 0:
-        print("Failed to create Stream, ret=%s" % str(ret))
+        print("The Stream cannot be created. ret=", str(ret))
         exit()
 
-    # Construct the input of the stream & check the input image
+    # Construct the stream input
     dataInput = MxDataInput()
-    FILE_PATH = "test.jpg"
-
+    FILE_PATH = " "
     if os.path.exists(FILE_PATH) != 1:
-        print("Failed to get the input picture. Please check it!")
+        print("The input picture cannot be found. Check the path.")
         streamManagerApi.DestroyAllStreams()
         exit()
-
     with open(FILE_PATH, 'rb') as f:
         dataInput.data = f.read()
 
-    # Inputs data to a specified stream based on streamName.
+    # Inputs data to a specified stream.
     STREAM_NAME1 = b'model1'
     IN_PLUGIN_ID = 0
     uniqueId = streamManagerApi.SendData(
