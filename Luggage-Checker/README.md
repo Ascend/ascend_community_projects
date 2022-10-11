@@ -221,7 +221,7 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
 若运行成功则得到最终检测精度，结果如下：
 
 <center>
-    <img src="./images/result_map.png">
+    <img src="./images/result_map.jpg">
     <br>
 </center>
 挑选的是test中的图片验证精度，精度为47.43%与源项目精度误差为0.14%。精度对齐。
