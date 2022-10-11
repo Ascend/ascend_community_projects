@@ -51,10 +51,10 @@ python3 nopre_post.py
 ```
 pidray
 ├── annotations                                                                                 
-│    ├── xray_test_easy.json
-│    ├── xray_test_hard.json
-│    ├── xray_test_hidden.json
-│    └── xray_train.json                                                                             
+│    ├── test_easy.json
+│    ├── test_hard.json
+│    ├── test_hidden.json
+│    └── train.json                                                                             
 ├── easy
 ├── hard
 ├── hidden
@@ -62,4 +62,4 @@ pidray
 ```
 其中，easy,hard,hidden,train中存放的都是png格式的图片
 
-将hard文件夹和annotations中的xray_test_hard.json文件保存在项目目录``python/test/data``下，其中将hard文件夹名改成val2017，xray_test_hard.json改成instances_val2017.json此文件夹下的组织形式应如下图所示：
+将hard文件夹和annotations中的test_hard.json文件保存在项目目录``python/test/data``下，其中将hard文件夹名改成val2017，test_hard.json改成instances_val2017.json此文件夹下的组织形式应如下图所示：
