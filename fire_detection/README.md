@@ -8,13 +8,13 @@
 
 ### 1.2 模型介绍
 
-项目中用于火灾识别的是DenseNet模型，模型相关文件可以在此处下载：https://dl.dropbox.com/s/6t17srif65vzqfn/firedetect-densenet121-pretrained.pt
+项目中用于火灾识别的是DenseNet模型，模型相关文件可以在此处下载：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Fire_identification/models.zip
 
 ### 1.3 实现流程
 
 1、在昇腾云服务器上搭建开发环境，设置环境变量配置mxVision、Ascend-CANN-toolkit。
 
-2、下载模型：https://dl.dropbox.com/s/6t17srif65vzqfn/firedetect-densenet121-pretrained.pt ，将PyTorch模型转换为昇腾离线模型：densenet.pt  --> densemet.onnx --> densenet.om。
+2、下载模型：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Fire_identification/models.zip ，将模型文件放至 fire_detection/models 文件夹下，并按流程将PyTorch模型转换为昇腾离线模型：densenet.pt  --> densemet.onnx --> densenet.om。
 
 3、业务流程编排与配置。
 
@@ -117,7 +117,7 @@ export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 ```
 ### 3.2 densenet模型转换
 
-**步骤1**   下载densenet模型，下载地址：https://dl.dropbox.com/s/6t17srif65vzqfn/firedetect-densenet121-pretrained.pt ，将*.pt模型放至 fire_detection/models/ 文件夹下。
+**步骤1**   下载densenet模型，下载地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Fire_identification/models.zip ，将*.pt模型放至 fire_detection/models/ 文件夹下。
 
 **步骤2**   将*.pt模型转换为*.onnx模型,执行 fire_detection/models 下脚本 pth2onnx_310.py ，得到 densenet.onnx 模型。注意修改*.pt模型输入路径`MODEL_PATH = './models/firedetect-densenet121-pretrained.pt`，以及*.onnx模型输出路径`OUTPUT_MODEL_PATH = './models/densenet.onnx'`，将输出*.onnx模型保存在 ./models 文件夹下。
 
@@ -158,7 +158,8 @@ aipp_op {
 
 ### 3.3 进行图像推理
 
-下载测试集data，将data下的test和other文件夹放至 fire_detection/data 下，在 fire_detection 路径下下运行 main.py 脚本，从 fire.pipeline 流中得到推理结果。
+下载测试集data:https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Fire_identification/data.zip
+将data下的test和other文件夹放至 fire_detection/data 下，在 fire_detection 路径下下运行 main.py 脚本，从 fire.pipeline 流中得到推理结果。
 
 ## 4 设置运行环境
 

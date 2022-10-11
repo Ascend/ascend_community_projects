@@ -20,6 +20,7 @@ import os
 import time 
 import cv2
 import numpy as np
+from PIL import Image
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 import MxpiDataType_pb2 as MxpiDataType
 
@@ -51,8 +52,7 @@ else:
     print("-----------------Create Stream Successfully, ret=%s-----------------" % str(ret) )
 # Stream name
 
-STREAM_NAME = b'classication'    # 流的名称
-IN_PLUGIN_ID = 0    
+ 
 
 # 大型火灾.jpg                                      大型火灾场景
 # CarInFlames-FireFighterHelmetCam4591.png          汽车失火场景
@@ -70,6 +70,35 @@ TEST_PATH = '{图片所在文件夹路径}' # 若在fire_detection文件夹下�
 PICTURE = '{图片名称}' # 修改图片名称，如：大型火灾.jpg
 TEST_PATH = TEST_PATH + PICTURE 
 PIC_TYPE = imghdr.what(TEST_PATH)
+
+min_image_size = 32
+max_image_size = 8192
+
+if os.path.exists(TEST_PATH) != 1:
+    print("Failed to get the input picture. Please check it!")
+    streamManagerApi.DestroyAllStreams()
+    exit()
+else:
+    image = Image.open(TEST_PATH)
+    if (image.format == 'JPEG' or image.format == 'PNG') != 1:
+        print('input image only support jpg and png, curr format is {}.'.format(image.format))
+        streamManagerApi.DestroyAllStreams()
+        exit()
+    elif image.width < min_image_size or image.width > max_image_size:
+        print('input image width must in range [{}, {}], curr width is {}.'.format(
+            min_image_size, max_image_size, image.width))
+        streamManagerApi.DestroyAllStreams()
+        exit()
+    elif image.height < min_image_size or image.height > max_image_size:
+        print('input image height must in range [{}, {}], curr height is {}.'.format(
+            min_image_size, max_image_size, image.height))
+        streamManagerApi.DestroyAllStreams()
+        exit()
+
+
+STREAM_NAME = b'classication'    # 流的名称
+IN_PLUGIN_ID = 0   
+
 
 # 输入为png图片则转换为jpg再进行读取，若为jpg直接读取
 if PIC_TYPE == 'png':
