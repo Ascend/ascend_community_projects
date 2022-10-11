@@ -226,7 +226,7 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
     <img src="./images/result_map.jpg">
     <br>
 </center>
-挑选的是test中的图片验证精度，精度为47.43%与源项目精度误差为0.14%。精度对齐。
+挑选的是test中的图片验证精度，mAP(0.5:0.95)精度为47.43%与源项目精度误差为0.14%。精度对齐。
 
 
 注：使用不在pipeline中加预处理的方法验证精度的原因为：YOLOX的图像预处理中，Resize方式为按长边缩放，而Mindx SDK默认使用dvpp的图像解码方式，没有按长边缩放的方法，因此本项目将"resizeType"属性设置为 "Resizer_KeepAspectRatio_Fit"，这样会导致精度下降。
