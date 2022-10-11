@@ -130,6 +130,8 @@ ascend-toolkit-path: CANN 安装路径
 
 2. 将该模型转换为om模型，具体操作为： ``python/models`` 文件夹下,执行atc指令：
 
+此项目需要对模型进行以下两种转换。
+
 1)加预处理
 ```
 atc --model=best.onnx --framework=5 --output=./yolox_pre_post --output_type=FP32 --soc_version=Ascend310  --input_shape="images:1, 3, 640, 640" --insert_op_conf=./aipp-configs/yolox_bgr.cfg
@@ -169,7 +171,7 @@ python3 pre_post.py
 python3 nopre_post.py
 ```     
 
-命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg(nopre_post.py)，查看结果文件验证检测结果。
+命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg，查看结果文件验证检测结果。
 
 ## 5. 精度测试
 
@@ -212,7 +214,7 @@ python3 parse_coco.py --json_file=data/annotations/instances_test2017.json --img
 python3 eval_nopre_post.py
 ```                      
 
-若运行成功，会在``python/test`` 路径下生成 test_pre_post(test_nopre_post) 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
+若运行成功，会在``python/test`` 路径下生成 test_nopre_post 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
 
 4. 在``python/test``路径下，运行命令: 
 ```                                                        
