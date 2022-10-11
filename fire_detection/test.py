@@ -71,8 +71,9 @@ PICTURE = '{图片名称}' # 修改图片名称，如：大型火灾.jpg
 TEST_PATH = TEST_PATH + PICTURE 
 PIC_TYPE = imghdr.what(TEST_PATH)
 
-min_image_size = 32
-max_image_size = 8192
+
+MIN_IMAGE_SIZE = 32
+MAX_IMAGE_SIZE = 8192
 
 if os.path.exists(TEST_PATH) != 1:
     print("Failed to get the input picture. Please check it!")
@@ -84,14 +85,14 @@ else:
         print('input image only support jpg and png, curr format is {}.'.format(image.format))
         streamManagerApi.DestroyAllStreams()
         exit()
-    elif image.width < min_image_size or image.width > max_image_size:
+    elif image.width < MIN_IMAGE_SIZE or image.width > MAX_IMAGE_SIZE:
         print('input image width must in range [{}, {}], curr width is {}.'.format(
-            min_image_size, max_image_size, image.width))
+            MIN_IMAGE_SIZE, MAX_IMAGE_SIZE, image.width))
         streamManagerApi.DestroyAllStreams()
         exit()
-    elif image.height < min_image_size or image.height > max_image_size:
+    elif image.height < MIN_IMAGE_SIZE or image.height > MAX_IMAGE_SIZE:
         print('input image height must in range [{}, {}], curr height is {}.'.format(
-            min_image_size, max_image_size, image.height))
+            MIN_IMAGE_SIZE, MAX_IMAGE_SIZE, image.height))
         streamManagerApi.DestroyAllStreams()
         exit()
 
