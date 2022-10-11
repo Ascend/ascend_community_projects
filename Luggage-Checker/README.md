@@ -180,18 +180,19 @@ python3 nopre_post.py
 ```
 pidray
 ├── annotations                                                                                 
-│    ├── instance_test2017.json
-│    ├── instance_hard2017.json
-│    ├── instance_hidden2017.json
+│    ├── test_easy2017.json
+│    ├── test_hard2017.json
+│    ├── test_hidden2017.json
 │    └── train.json                                                                             
-├── test
+├── easy
 ├── hard
 ├── hidden
 └── train                                                                                                                  
 ```
-其中，test,hard,hidden,train中存放的都是png格式的图片
+其中，easy,hard,hidden,train中存放的都是png格式的图片
 
-将test文件夹和annotations中的instance_test.json文件保存在项目目录``python/test/data``下，此文件夹下的组织形式应如下图所示：
+将easy文件夹和annotations中的test_easy.json文件保存在项目目录``python/test/data``下，并修改名称
+此文件夹下的组织形式应如下图所示：
 
 ```
 ├──annotations │                                                                       
@@ -199,7 +200,7 @@ pidray
 └──test2017                                                                                                                 
 ```
 
-其中test2017文件夹下应存放待检测图片。
+其中test2017文件夹下应存放待检测png格式图片。
 
 2. 使用以下指令运行路径``python/test``下的文件 parse_coco.py                         
 ```
