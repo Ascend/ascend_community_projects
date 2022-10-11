@@ -70,7 +70,6 @@
 └── README.md
 
 ```
-om模型下载地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om
 
 ### 1.5 技术实现流程图
 
