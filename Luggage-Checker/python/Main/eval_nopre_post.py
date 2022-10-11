@@ -47,7 +47,7 @@ if ret != 0:
 print("load pipline done!")
 TESTIMGS = 0
 # Input object of streams -- detection target
-PATH = "../test/data/val2017/"
+PATH = "../test/data/test2017/"
 input_shape = [640, 640]
 TXT_PATH = "../test/" + "test_nopre_post/"
 if not os.path.exists(TXT_PATH):
