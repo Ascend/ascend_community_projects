@@ -16,10 +16,13 @@ import os
 import time
 import cv2
 import numpy as np
+import stat
 
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
+
+MODES = stat.S_IWUSR | stat.S_IRUSR
 # The following belongs to the SDK Process
 streamManagerApi = StreamManagerApi()
 # init stream manager
@@ -104,7 +107,7 @@ for item in os.listdir(PATH):
 
         # save txt for results
         
-        with os.fdopen(os.open(img_txt, os.O_RDWR | os.O_CREAT, MODES), "w")  as f:
+        with os.fdopen(os.open(img_txt, os.O_CREAT | os.O_WRONLY, MODES), "a+")  as f:
             CONTENT = '{} {} {} {} {} {}'.format(L1[5], L1[4], L1[0], L1[2], L1[1], L1[3])
             f.write(CONTENT)
             f.write('\n')
