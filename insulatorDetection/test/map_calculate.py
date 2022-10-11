@@ -44,7 +44,7 @@ def file_lines_to_list(path):
     Convert the lines of a file to a list
     """
     # open txt file lines to a list
-    with os.fdopen(os.open(path, os.O_RDONLY, MODES), 'rb') as f:
+    with os.fdopen(os.open(path, os.O_RDONLY, MODES), 'rt') as f:
         content = f.readlines()
     # remove whitespace characters like `\n` at the end of each line
     content = [x.strip() for x in content]
@@ -307,8 +307,8 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
         """
         dr_data = class_bbox[class_name]
         nd = len(dr_data)
+        fp = [0] * nd        
         tp = [0] * nd  # creates an array of zeros of size nd
-        fp = [0] * nd
         for idx, detection in enumerate(dr_data):
             file_id = detection["file_id"]
             ground_truth_data = labels[file_id]
@@ -316,18 +316,21 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
             ovmax = -1
             gt_match = -1
             # load detected object bounding-box
-            bb = [float(x) for x in detection["bbox"].split()]
+            bbox = [float(x) for x in detection["bbox"].split()]
             for obj in ground_truth_data:
                 # look for a class_name match
                 if obj["class_name"] == class_name:
                     bbgt = [float(x) for x in obj["bbox"].split()]
-                    bi = [max(bb[0], bbgt[0]), max(bb[1], bbgt[1]),
-                          min(bb[2], bbgt[2]), min(bb[3], bbgt[3])]
-                    iw = bi[2] - bi[0] + 1
-                    ih = bi[3] - bi[1] + 1
+                    b1 = max(bbox[0],bbgt[0])
+                    b2 = max(bbox[1],bbgt[1])
+                    b3 = min(bbox[2],bbgt[2])
+                    b4 = min(bbox[3],bbgt[3])
+                    bi = [b1,b2,b3,b4]
+                    iw = b3 - b1+ 1
+                    ih = b4- b2+ 1
                     if iw > 0 and ih > 0:
                         # compute overlap (IoU)
-                        ua = (bb[2] - bb[0] + 1) * (bb[3] - bb[1] + 1) + \
+                        ua = (bbox[2] - bbox[0] + 1) * (bbox[3] - bbox[1] + 1) + \
                              (bbgt[2] - bbgt[0] + 1) * \
                              (bbgt[3] - bbgt[1] + 1) - iw * ih
                         ov = iw * ih / ua
@@ -370,7 +373,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('mAP calculate')
     parser.add_argument('-i', '--ignore', nargs='+', type=str,
                         help="ignore a list of classes.")
-    parser.add_argument('--label_path', default="./ground-truth", help='the path of the label files')
+    parser.add_argument('--label_path', default="./ground-truth1", help='the path of the label files')
     parser.add_argument('--npu_txt_path', default="./test_result", help='the path of the predict result')
     parser.add_argument('--output_file', default="./output.txt", help='save result file')
     parser.add_argument('--threshold', default=0.3, help='threshold of the object score')
