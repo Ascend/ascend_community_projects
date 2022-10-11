@@ -99,10 +99,6 @@
 查看文件 fire_detection/env/atc_env.txt 进行环境变量配置：
 
 ```bash
-
-# 执行ascend-toolkit的set_env.sh
-. /home/HwHiAiUser/Ascend/ascend-toolkit/set_env.sh
-
 # 导入SDK路径
 export MX_SDK_HOME=${SDK安装路径}
 
@@ -114,14 +110,15 @@ export LD_LIBRARY_PATH="${MX_SDK_HOME}/lib/modelpostprocessors":"${MX_SDK_HOME}/
 
 export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 
+# 执行昇腾310服务器上ascend-toolkit的set_env.sh
+. /usr/local/Ascend/ascend-toolkit/set_env.sh
+
 ```
 ### 3.2 densenet模型转换
 
-**步骤1**   下载densenet模型，下载地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Fire_identification/models.zip ，将*.pt模型放至 fire_detection/models/ 文件夹下。
+**步骤1**   下载densenet模型，下载地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Fire_identification/models.zip ，将*.onnx模型放至 fire_detection/models/ 文件夹下。
 
-**步骤2**   将*.pt模型转换为*.onnx模型,执行 fire_detection/models 下脚本 pth2onnx_310.py ，得到 densenet.onnx 模型。注意修改*.pt模型输入路径`MODEL_PATH = './models/firedetect-densenet121-pretrained.pt`，以及*.onnx模型输出路径`OUTPUT_MODEL_PATH = './models/densenet.onnx'`，将输出*.onnx模型保存在 ./models 文件夹下。
-
-**步骤3**   执行`cd ./models`到 models 文件加下，执行atc命令 `atc --model=densenet.onnx --framework=5 --output=densenet  --insert_op_conf=fire.cfg --soc_version=Ascend310` ，利用atc工具将 densenet.onnx 转换为 densenet.om 。atc转换模型时使用aipp预处理，aipp配置内容 ./models/fire.cfg 如下：
+**步骤2**   执行`cd ./models`到 models 文件加下，执行atc命令 `atc --model=densenet.onnx --framework=5 --output=densenet  --insert_op_conf=fire.cfg --soc_version=Ascend310` ，利用atc工具将 densenet.onnx 转换为 densenet.om 。atc转换模型时使用aipp预处理，aipp配置内容 ./models/fire.cfg 如下：
 
 ```json
 
@@ -159,7 +156,7 @@ aipp_op {
 ### 3.3 进行图像推理
 
 下载测试集data:https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Fire_identification/data.zip
-将data下的test和other文件夹放至 fire_detection/data 下，在 fire_detection 路径下下运行 main.py 脚本，从 fire.pipeline 流中得到推理结果。
+将data下的test和other文件夹放至 fire_detection/data 下，在 fire_detection 路径下运行 main.py 脚本，从 fire.pipeline 流中得到推理结果。
 
 ## 4 设置运行环境
 
@@ -186,6 +183,7 @@ Atlas200 DK环境依赖软件和版本表4所示（建议按顺序安装）：
 | Mindx SDK | 3.0.RC2 | 用于提供pipeline插件等工具 |
 | Python | 3.9.12 | 用于运行*.py文件 |
 | numpy | 1.21.5 | 用于处理数组运算 |
+| pillow | 9.2.0 | 用于读取图片数据 |
 | opencv-python | 4.6.0.66 | 用于图片处理 |
 
 
@@ -215,44 +213,49 @@ Atlas200 DK环境依赖软件和版本表4所示（建议按顺序安装）：
 
 注意：如果进行网络共享时主机无法上网可能是Windows版本问题，可以通过版本回退的方法解决。
 
-### 4.4 开发环境搭建
+### 4.4 运行环境搭建
 
-ssh连接Atlas200 DK成功后安装CANN和Mindx SDK，此时Atlas200 DK为davinci-mini环境，建议`su root`到root用户下进行安装和配置环境变量。
+ssh连接Atlas200 DK成功后安装CANN和Mindx SDK，此时Atlas200 DK为davinci-mini环境，`su root`到root用户下(默认密码：Mind@123)进行安装和配置环境变量。
 
 注意：CANN版本与Atlas200 DK环境匹配：https://gitee.com/ascend/tools/blob/master/makesd/Version_Mapping_CN.md
 
-1.下载并安装CANN：https://www.hiascend.com/document/detail/zh/Atlas200DKDeveloperKit/1013/environment/atlased_04_0017.html
+**步骤1** 下载并安装CANN：https://www.hiascend.com/document/detail/zh/Atlas200DKDeveloperKit/1013/environment/atlased_04_0017.html
+※注意要将`. {ascend-toolkit安装路径}/set_env.sh`的命令加入`~/.bashrc`后执行`source ~/bashrc`
 
-2.下载并安装Mindx SDK：
-
-※ 安装CANN并且环境设置成功后再执行如下步骤
+**步骤2** 下载并安装Mindx SDK（执行步骤2前需安装CANN并且环境设置成功）：
     
-（1）下载与CANN版本匹配的 Mindx SDK：https://www.hiascend.com/zh/software/mindx-sdk/mxVision/community
+(1)下载与CANN版本匹配的 Mindx SDK：
+https://www.hiascend.com/zh/software/mindx-sdk/mxVision/community
     
-（2）将下载的 *.run 移至Atlas200 DK：执行 `cd /usr/local/` ，在local文件夹下执行 `mkdir Mindx_SDK` 创建 Mindx_SDK 文件夹，将下载的 Ascend-mindxsdk_{version}_linux-aarch64.run 移至 /usr/local/Mindx_SDK 下。
+(2)将下载的 `Ascend-mindxsdk_{version}_linux-aarch64.run` 移至Atlas200 DK：
+在Atlas上执行 `cd /usr/local/` ，在local文件夹下执行 `mkdir Mindx_SDK` 创建 Mindx_SDK 文件夹，将下载的 `Ascend-mindxsdk_{version}_linux-aarch64.run` 移至 `/usr/local/Mindx_SDK` 下。
 
-（3）安装 mxVision ：执行 `cd /usr/local/Mindx_SDK` 后为 Ascend-mindxsdk_{version}_linux-aarch64.run 添加执行权限 ，成功后再执行 `Ascend-mindxsdk_{version}_linux-aarch64.run --install`安装 mxVision 。
+(3)安装 mxVision ：
+执行 `cd /usr/local/Mindx_SDK` 后为 Ascend-mindxsdk_{version}_linux-aarch64.run 添加执行权限 ，成功后再执行 `Ascend-mindxsdk_{version}_linux-aarch64.run --install`安装 mxVision 。
 
-（4）配置环境变量：安装成功后在 mxVision 路径下存在 set_env.sh ,用户在任意目录下执行` vi ~/.bashrc` 命令，打开 .bashrc 文件，在文件最后一行后面添加 `. /usr/local/Mindx_SDK/mxVision` ，执行 :wq! 命令保存文件并退出。执行 `source ~/.bashrc` 命令使其立即生效。
+(4)配置环境变量：
+安装成功后在 mxVision 路径下存在 set_env.sh ,用户在任意目录下执行` vi ~/.bashrc` 命令，打开 .bashrc 文件，在文件最后一行后面添加 `. /usr/local/Mindx_SDK/mxVision` ，执行 :wq! 命令保存文件并退出。执行 `source ~/.bashrc` 命令使其立即生效。
 
 完成上述步骤后Atlas200 DK已成功安装CANN和Mindx SDK。
 
 
-3.安装python、pip、opencv等依赖（Atlas200 DK为mini环境，建议通过miniconda安装其他库）：
+**步骤3** 安装python、pip、opencv等依赖（Atlas200 DK为mini环境，建议通过miniconda安装其他库）：
 
-（1）下载与Atlas200 DK Ubuntu版本对应的miniconda：https://docs.conda.io/en/latest/miniconda.html#linux-installers
+(1)下载与Atlas200 DK Ubuntu版本对应的miniconda：
+https://docs.conda.io/en/latest/miniconda.html#linux-installers
 
-（2）执行`exit`切换到HwHiAiUser用户下，为下载的 Miniconda3-latest-Linux-x86_64.sh 添加执行权限。
+(2)执行`exit`切换到HwHiAiUser用户下，为下载的 Miniconda3-latest-Linux-x86_64.sh 添加执行权限。
 
-（3）HwHiAiUser用户下安装miniconda：`sh ./Miniconda3-latest-Linux-x86_64.sh`
+(3)HwHiAiUser用户下安装miniconda：`sh ./Miniconda3-latest-Linux-x86_64.sh`
 
-（4）为root用户添加conda环境：`su root`后进入root用户，执行 `cat /home/HwHiAiUser/.bashrc` ，查看HwHiAiUser用户的 .bashrc , 复制 >>> conda initialize >>> 至 <<< conda initialize <<< 的内容，将复制内容粘贴至 ~/.bashrc ，执行 `source ~/.bashrc` 为root添加conda环境。
+(4)为root用户添加conda环境：
+`su root`后进入root用户，执行 `cat /home/HwHiAiUser/.bashrc` ，查看HwHiAiUser用户的 .bashrc , 复制 >>> conda initialize >>> 至 <<< conda initialize <<< 的内容，将复制内容粘贴至root用户下的 `~/.bashrc` ，执行 `source ~/.bashrc` 为root添加conda环境。
 
-（5）将Atlas200 DK重启reset，再次进入root用户即可看到conda环境。
+(5)将Atlas200 DK重启reset，再次进入root用户即可看到conda环境。
 
-（6）利用conda在root用户下用`conda install`安装numpy、opencv-python等库。
+(6)利用conda在root用户下用`conda install`安装numpy、opencv-python等库。
 
-Atlas200 DK已经成功安装相关依赖。
+至此Atlas200 DK已经成功安装相关依赖。
 
 
 ## 5 部署与运行
