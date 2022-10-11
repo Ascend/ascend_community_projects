@@ -70,22 +70,7 @@
 └── README.md
 
 ```
-onnx模型下载地址：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/best.onnx
 
-om模型下载地址： https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Xray_detect/yolox_pre_post.om
-
-### 1.5 技术实现流程图
-
-YOLOX 的后处理插件接收模型推理插件输出的特征图，该特征图为三张不同分辨率的特征图拼接而成，形状大小为1 x n x 17,其中 n 为三张网络模型输出特征图的像素点数总和，17 为 12 （数据集分类数）+ 4 （目标框回归坐标点）+ 1 （正类置信度）。
-
-<center>
-    <img src="./images/pipeline_pre.png">
-    <br>
-</center>
-
-### 1.6 特性及适用场景
-
-该项目适用于x光安检图象的监测，对单个清晰目标图像、高分辨率图像、大量目标图像、存在部分遮挡图象有较好的检测效果，对于存在大量遮挡的图象有轻微漏检现象，只支持jpg格式图象。
 
 
 
