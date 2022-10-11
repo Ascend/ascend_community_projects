@@ -14,9 +14,9 @@
 import json
 import os
 import time
+import stat
 import cv2
 import numpy as np
-import stat
 
 import MxpiDataType_pb2 as MxpiDataType
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector

@@ -4,7 +4,7 @@
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-
+ 
         http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
@@ -18,6 +18,7 @@
 import glob
 import os
 import sys
+import stat
 import argparse
 import collections
 """
@@ -34,16 +35,16 @@ import collections
 
 
 MINOVERLAP = 0.5  # default value (defined in the PASCAL VOC2012 challenge)
-top_margin = 0.15  # in percentage of the figure height
-bottom_margin = 0.05  # in percentage of the figure height
+MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 def file_lines_to_list(path):
+    
     """
     Convert the lines of a file to a list
     """
     # open txt file lines to a list
-    with open(path) as f:
+    with os.fdopen(os.open(path, os.O_RDONLY, MODES), 'rb') as f:
         content = f.readlines()
     # remove whitespace characters like `\n` at the end of each line
     content = [x.strip() for x in content]
@@ -246,16 +247,16 @@ def get_predict_list(file_path, gt_classes):
     return class_bbox
 
 
-def calculate_PR(sum_AP, fp, tp, counter_per_class, class_name):
+def calculate_pr(sum_ap, fp, tp, counter_per_class, class_name):
     """
        @description: calculate PR
-       @param sum_AP
+       @param sum_ap
        @param fp
        @param tp
        @param counter_per_class
        @param class_name
        @return ret
-                map, include sum_AP, text, prec, rec
+                map, include sum_ap, text, prec, rec
     """
     cumsum = 0
     for idx, val in enumerate(fp):
@@ -273,17 +274,17 @@ def calculate_PR(sum_AP, fp, tp, counter_per_class, class_name):
         prec[idx] = float(tp[idx]) / (fp[idx] + tp[idx])
     
     ap, mrec, mprec = voc_ap(rec[:], prec[:])
-    sum_AP += ap
+    sum_ap += ap
     text = "{0:.2f}%".format(ap * 100) + " = " + class_name + " AP "
     ret = dict()
-    ret['sum_AP'] = sum_AP
+    ret['sum_ap'] = sum_ap
     ret['text'] = text
     ret['prec'] = prec
     ret['rec'] = rec
     return ret
 
 
-def calculate_AP(output_file, gt_classes, labels, class_bbox, counter_per_class):
+def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class):
     """
     Calculate the AP for each class
     :param output_file:
@@ -293,8 +294,8 @@ def calculate_AP(output_file, gt_classes, labels, class_bbox, counter_per_class)
                         "file_id": file_id, "bbox": bbox}]}
     :return:
     """
-    sum_AP = 0.0
-    writer = open(output_file, 'w')
+    sum_ap = 0.0
+    writer = os.fdopen(os.open(output_file, os.O_RDWR | os.O_CREAT, MODES), 'w') 
     writer.write("# AP and precision/recall per class\n")
     count_true_positives = {}
     n_classes = len(gt_classes)
@@ -350,18 +351,18 @@ def calculate_AP(output_file, gt_classes, labels, class_bbox, counter_per_class)
                 # false positive
                 fp[idx] = 1
         # compute precision / recall
-        ret = calculate_PR(sum_AP, fp, tp, counter_per_class, class_name)
-        sum_AP = ret['sum_AP']
-        text = ret['text']
-        prec = ret['prec']
-        rec = ret['rec']
+        ret = calculate_pr(sum_ap, fp, tp, counter_per_class, class_name)
+        sum_ap = ret.get('sum_ap')
+        text = ret.get('text')
+        prec = ret.get('prec')
+        rec = ret.get('rec')
         rounded_prec = ['%.2f' % elem for elem in prec]
         rounded_rec = ['%.2f' % elem for elem in rec]
         writer.write(text + "\n Precision: " + str(rounded_prec) +
                      "\n Recall :" + str(rounded_rec) + "\n\n")
     writer.write("\n# mAP of all classes\n")
-    mAP = sum_AP / n_classes
-    text = "mAP = {0:.2f}%".format(mAP * 100)
+    m_ap = sum_ap / n_classes
+    text = "mAP = {0:.2f}%".format(m_ap * 100)
     writer.write(text + "\n")
 
 
@@ -369,7 +370,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('mAP calculate')
     parser.add_argument('-i', '--ignore', nargs='+', type=str,
                         help="ignore a list of classes.")
-    parser.add_argument('--label_path', default="./ground-truth1", help='the path of the label files')
+    parser.add_argument('--label_path', default="./ground-truth", help='the path of the label files')
     parser.add_argument('--npu_txt_path', default="./test_result", help='the path of the predict result')
     parser.add_argument('--output_file', default="./output.txt", help='save result file')
     parser.add_argument('--threshold', default=0.3, help='threshold of the object score')
@@ -378,9 +379,9 @@ if __name__ == '__main__':
     arg = check_args(arg)
 
     label_list = get_label_list(arg.label_path)
-    gt_file_bbox = label_list['file_bbox']
-    get_classes = label_list['classes']
-    gt_n_classes = label_list['n_classes']
-    count_per_class = label_list['counter_per_class']
+    gt_file_bbox = label_list.get('file_bbox')
+    get_classes = label_list.get('classes')
+    gt_n_classes = label_list.get('n_classes')
+    count_per_class = label_list.get('counter_per_class')
     predict_bbox = get_predict_list(arg.npu_txt_path, get_classes)
-    calculate_AP(arg.output_file, get_classes, gt_file_bbox, predict_bbox, count_per_class)
+    calculate_ap(arg.output_file, get_classes, gt_file_bbox, predict_bbox, count_per_class)
