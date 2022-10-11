@@ -71,7 +71,7 @@
 └── README.md
 
 ```
-onnx模型[下载地址](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects//best.onnx) om模型[下载地址](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects//yolox_pre_post.om)
+onnx模型[下载地址](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/laser_detect/best.onnx) om模型[下载地址](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/laser_detect/yolox_pre_post.om)
 
 ### 1.5 技术实现流程图
 
@@ -124,7 +124,7 @@ ascend-toolkit-path: CANN 安装路径
 ```  
 ## 3. 模型转换
 
-本项目中采用的模型是 YOLOX-m 模型，参考实现[代码](https://github.com/Megvii-BaseDetection/YOLOX)，通过对[训练数据集](https://github.com/bywang2018/security-dataset) 中29458张图片数据训练得到模型，通过export_onnx.py文件得到[onnx模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects//best.onnx)。使用模型转换工具 ATC 将 onnx 模型转换为 [om模型](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects//yolox_pre_post.om)，模型转换工具相关介绍参考[链接](https://support.huawei.com/enterprise/zh/doc/EDOC1100234054/6dfa6beb)
+本项目中采用的模型是 YOLOX-m 模型，参考实现[代码](https://github.com/Megvii-BaseDetection/YOLOX)，通过对[训练数据集](https://github.com/bywang2018/security-dataset) 中29458张图片数据训练得到模型，通过export_onnx.py文件得到[onnx模型](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/laser_detect/best.onnx)。使用模型转换工具 ATC 将 onnx 模型转换为 [om模型](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/laser_detect/yolox_pre_post.om)，模型转换工具相关介绍参考[链接](https://support.huawei.com/enterprise/zh/doc/EDOC1100234054/6dfa6beb)
 
 1. 从链接中下载 onnx 模型 best.onnx 至 ``python/models`` 文件夹下。
 
