@@ -34,7 +34,7 @@
 │      visualize.py
 │      main.py
 │
-├─dataset (自行创建，存放测试图片)
+├─data (自行创建，存放测试图片)
 │
 ├─img   
 │      test_output.png 
@@ -84,6 +84,9 @@ webcolors|1.12
 <br>
 
 ## 3.模型转换
+
+模型转换是将onnx文件转成MindX_SDK可以使用的om模型，om模型的链接已上传至 https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Insulator_detection/insulator.om
+。用户可以直接下载使用，如需将onnx转化成om，请按下列步骤进行操作。
 
 #### 步骤1 下载onnx模型文件
 本工程原型是pytorch模型，需要使用atc工具转换为om模型，模型权重文件已上传至
