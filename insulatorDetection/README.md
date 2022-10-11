@@ -180,7 +180,10 @@ python main.py
 
 ## 5.评估精度
 <br>
-首先在test目录下创建dataset文件夹，把要测试的coco数据集的JPGIMAGES和json放到该文件夹下。运行如下代码
+
+数据集链接 https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/Insulator_detection/dataset.zip
+
+在test目录下创建dataset文件夹，把下载的coco数据集的JPGIMAGES和json放到该文件夹下。运行如下代码
 
 ```bash
 python parse_coco.py

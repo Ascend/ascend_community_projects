@@ -123,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument("--img_path", default="dataset/JPEGImages", help='The image path')
     parser.add_argument("--classes", default="coco2017.names", help='The file of record the category')
     parser.add_argument("--info", default="coco2017.info", help='The file of record image info')
-    parser.add_argument("--gtp", default="ground-truth1/", help='The ground true file path')
+    parser.add_argument("--gtp", default="ground-truth/", help='The ground true file path')
     arg = parser.parse_args()
     arg = check_args(arg)
     main(arg)
