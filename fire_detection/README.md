@@ -45,8 +45,6 @@
 
 表2.1 项目方案架构中各模块功能：
 
-<center>
-
 <div style="color:orange; border-bottom: 1px #d9d9d9;
     display: inline-block;
     color: #999;
@@ -59,9 +57,6 @@
 |3| 图像放缩 | 调用Mindx SDK的mxpi_imageresize，放缩到224*224大小 |
 |4| 火灾识别 | 调用Mindx SDK的mxpi_tensorinfer，选取torch框架下densenet模型对图像进行火灾预测 |
 |5| 结果输出 | 调用Mindx SDK的appsink，提供端口从流中获取数据，用于输出结果 |
-
-
-</center>
 
 ### 2.2 代码目录结构与说明
 
@@ -169,8 +164,6 @@ aipp_op {
 
 Atlas200 DK环境依赖软件和版本表4所示（建议按顺序安装）：
 
-<center>
-
 <div style="color:orange; border-bottom: 1px #d9d9d9;
     display: inline-block;
     color: #999;
@@ -185,10 +178,6 @@ Atlas200 DK环境依赖软件和版本表4所示（建议按顺序安装）：
 | numpy | 1.21.5 | 用于处理数组运算 |
 | pillow | 9.2.0 | 用于读取图片数据 |
 | opencv-python | 4.6.0.66 | 用于图片处理 |
-
-
-
-</center>
 
 ### 4.2 进行SD制卡
 
