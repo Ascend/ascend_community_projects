@@ -321,13 +321,13 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
                 # look for a class_name match
                 if obj["class_name"] == class_name:
                     bbgt = [float(x) for x in obj["bbox"].split()]
-                    b1 = max(bbox[0],bbgt[0])
-                    b2 = max(bbox[1],bbgt[1])
-                    b3 = min(bbox[2],bbgt[2])
-                    b4 = min(bbox[3],bbgt[3])
-                    bi = [b1,b2,b3,b4]
-                    iw = b3 - b1+ 1
-                    ih = b4- b2+ 1
+                    b1 = max(bbox[0], bbgt[0])
+                    b2 = max(bbox[1], bbgt[1])
+                    b3 = min(bbox[2], bbgt[2])
+                    b4 = min(bbox[3], bbgt[3])
+                    bi = [b1, b2, b3, b4]
+                    iw = b3 - b1 + 1
+                    ih = b4 - b2 + 1
                     if iw > 0 and ih > 0:
                         # compute overlap (IoU)
                         ua = (bbox[2] - bbox[0] + 1) * (bbox[3] - bbox[1] + 1) + \
