@@ -155,7 +155,7 @@ bash run.sh
 
 **步骤5** 精度测试：
 
-下载[VisDrone2021数据集](http://aiskyeye.com/download/crowd-counting_/)，将数据集中`RGB`和`GT_`目录放置在VisDrone2021目录中，在主目录下执行命令：
+下载[VisDrone2021数据集](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/VisDrone2021.zip)，将数据集中`RGB`和`GT_`目录放置在VisDrone2021目录中，在主目录下执行命令：
 ```bash
 # 更改脚本命令中${sdk安装路径}
 bash eval.sh
