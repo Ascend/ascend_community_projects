@@ -183,10 +183,10 @@ def get_label_list(file_path):
     file_bbox = {}
 
     for txt_file in files_list:
-        f_id = txt_file.split(".txt", 1)[0]
-        f_id = os.path.basename(os.path.normpath(f_id))
+        file_id = txt_file.split(".txt", 1)[0]
+        file_id = os.path.basename(os.path.normpath(file_id))
         # check if there is a correspondent detection-results file
-        txt_path = os.path.join(file_path, (f_id + ".txt"))
+        txt_path = os.path.join(file_path, (file_id + ".txt"))
         if not os.path.exists(txt_path):
             error_msg = "Error. File not found: {}\n".format(txt_path)
             error(error_msg)
@@ -196,7 +196,7 @@ def get_label_list(file_path):
         already_seen_classes = []
         boxes, counter_per_class = parse_line(txt_file, lines_list, bounding_boxes, counter_per_class,
                                               already_seen_classes)
-        file_bbox[f_id] = boxes
+        file_bbox[file_id] = boxes
     
     classes = list(counter_per_class.keys())
     # let's sort the classes alphabetically
@@ -224,8 +224,8 @@ def get_predict_list(file_path, gt_classes):
         for txt_file in dr_files_list:
             # the first time it checks
             # if all the corresponding ground-truth files exist
-            f_id = txt_file.split(".txt", 1)[0]
-            f_id = os.path.basename(os.path.normpath(f_id))
+            file_id = txt_file.split(".txt", 1)[0]
+            file_id = os.path.basename(os.path.normpath(file_id))
             lines = file_lines_to_list(txt_file)
             for line in lines:
                 try:
@@ -240,7 +240,7 @@ def get_predict_list(file_path, gt_classes):
                     error(error_msg)
                 if tmp_class_name == class_name:
                     bbox = left + " " + top + " " + right + " " + bottom
-                    bounding_boxes.append({"confidence": confidence, "f_id": f_id, "bbox": bbox})
+                    bounding_boxes.append({"confidence": confidence, "file_id": file_id, "bbox": bbox})
         # sort detection-results by decreasing confidence
         bounding_boxes.sort(key=lambda x: float(x['confidence']), reverse=True)
         class_bbox[class_name] = bounding_boxes
@@ -291,7 +291,7 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
     :param gt_classes: [80]
     :param labels: {file_index:[{"class_name": class_name, "bbox": bbox, "used": False}]}
     :param class_bbox: {class_name:[{"confidence": confidence,
-                        "f_id": f_id, "bbox": bbox}]}
+                        "file_id": file_id, "bbox": bbox}]}
     :return:
     """
     sum_ap = 0.0
@@ -310,8 +310,8 @@ def calculate_ap(output_file, gt_classes, labels, class_bbox, counter_per_class)
         fp = [0] * nd        
         tp = [0] * nd  # creates an array of zeros of size nd
         for idx, detection in enumerate(dr_data):
-            f_id = detection["f_id"]
-            ground_truth_data = labels[f_id]
+            file_id = detection["file_id"]
+            ground_truth_data = labels[file_id]
 
             ovmax = -1
             gt_match = -1
