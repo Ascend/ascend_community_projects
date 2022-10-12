@@ -15,6 +15,7 @@ import json
 import os
 import time
 import stat
+from PIL import Image
 import cv2
 import numpy as np
 
@@ -51,6 +52,14 @@ if os.path.exists(RESULTPATH) != 1:
 for item in os.listdir(PATH):
     img_path = os.path.join(PATH, item)
     img_name = item.split(".")[0]
+    try :
+        image = Image.open(img_path)
+    except Exception as e :
+        print("the image is not JPG format")
+        exit()
+    if image.format != "JPEG" and image.format != "JPG":
+        print("the image is not JPG format")
+        exit()       
     img_txt = "./test_result/" + img_name + ".txt"
     if os.path.exists(img_txt):
         os.remove(img_txt)
