@@ -138,7 +138,7 @@ paddle2onnx --model_dir model/ch_ppocr_server_v2.0_rec_infer/ --model_filename i
 atc --model=./ch_ppocr_server_v2.0_rec_bs1.onnx --framework=5 --output_type=FP32 --output=ch_ppocr_server_v2.0_rec_infer_bs1 --input_format=NCHW --input_shape="x:1,3,32,100" --soc_version=Ascend310 
 ```
 
-由于笔者下载的paddle模型在转换后出现图片识别精度大幅下降的问题，所以尽量使用官方已经转化完成的[OM模型进行识别](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/OCR/model/models_ocr.zip)
+由于笔者下载的paddle模型在[转换后](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/chineseOcr/ch_ppocr_server_v2.0_rec_bs1_private.om)出现图片识别精度大幅下降的问题，所以尽量使用官方已经转化完成的[OM模型进行识别](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/OCR/model/models_ocr.zip)
 
 
 
