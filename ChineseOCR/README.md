@@ -148,19 +148,22 @@ atc --model=./ch_ppocr_server_v2.0_rec_bs1.onnx --framework=5 --output_type=FP32
 
 **步骤2** 运行main.py文件后，中文识别结果将打印到控制台中并会将每张图片的结果分别以txt格式写入到output文件里
 
+```python
+python main.py
+```
 
 
 ## 5 精度测试
 
 #### 5.1使用官方paddle模型在GPU上测试
 
-**步骤1** 此步骤需要读者自己手写识别文件，在docker容器内通过paddleocr包内的paddleocr函数将手写图片数据集进行识别，并分别将每张图片的结果以txt格式写入到output文件里。
+**步骤1** 此步骤需要读者自己手写识别文件，主要是在docker容器内通过paddleocr包内的paddleocr函数将手写图片数据集进行识别，并分别将每张图片的结果以txt格式写入到output文件里。
 
 ```python
 ocr = paddleocr.PaddleOCR()
 ocr.ocr(img_path,rec=True,det=False,cls=False)
 ```
-**步骤2** 将识别结果和标签分别进行比对输出平均相似度
+**步骤2** 将output文件夹内的每张图片识别结果和标签文件进行逐字比对，输出平均相似度
 
 #### 5.2使用经过转化的om模型在NPU上测试
 
