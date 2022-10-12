@@ -67,7 +67,7 @@ if __name__ == '__main__':
     SCORE = 0
     NUM = 0
     for index, img_path in enumerate(paths):
-        text_label = img_path.replace('jpg', 'txt')
+        text_label = img_path.replace('jpg', 'txt').replace('png', 'txt')
         with open(img_path, 'rb') as fp:
             data_input.data = fp.read()
         unique_id = stream_manager_api.SendData(STREAMNAME, b'appsrc0', data_input)
