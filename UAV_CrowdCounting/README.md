@@ -94,8 +94,8 @@ npu-smi info
 - 环境变量介绍
 
 ```bash
-bash ${sdk_path}/set_env.sh
-bash ${ascend_toolkit_path}/set_env.sh
+. ${sdk_path}/set_env.sh
+. ${ascend_toolkit_path}/set_env.sh
 ```
 
 ## 3 模型转换
@@ -147,8 +147,7 @@ aipp_op {
 **步骤4** 图像测试，在主目录下执行命令：
 
 ```bash
-# 更改脚本命令中${sdk安装路径}
-bash run.sh
+. run.sh
 ```
 
 运行成功后会在当前目录下生成`vis_img.jpg`，即测试图片的人群密度图
@@ -157,8 +156,7 @@ bash run.sh
 
 下载[VisDrone2021数据集](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/VisDrone2021.zip)，将数据集中`RGB`和`GT_`目录放置在VisDrone2021目录中，在主目录下执行命令：
 ```bash
-# 更改脚本命令中${sdk安装路径}
-bash eval.sh
+. eval.sh
 ```
 ## 5 常见问题
 
