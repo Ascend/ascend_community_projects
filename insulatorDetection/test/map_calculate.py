@@ -373,7 +373,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('mAP calculate')
     parser.add_argument('-i', '--ignore', nargs='+', type=str,
                         help="ignore a list of classes.")
-    parser.add_argument('--label_path', default="./ground-truth1", help='the path of the label files')
+    parser.add_argument('--label_path', default="./ground-truth", help='the path of the label files')
     parser.add_argument('--npu_txt_path', default="./test_result", help='the path of the predict result')
     parser.add_argument('--output_file', default="./output.txt", help='save result file')
     parser.add_argument('--threshold', default=0.3, help='threshold of the object score')
