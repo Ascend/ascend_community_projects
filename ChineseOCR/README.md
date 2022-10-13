@@ -41,7 +41,7 @@ npu-smi info
 
 ### 1.4 代码目录结构与说明
 
-本Sample工程名称为ChineseOCR，工程目录如下图1.2所示：
+本Sample工程名称为ChineseOCR，工程目录如下图所示：
 
 ```
 ├── main.py
@@ -144,7 +144,7 @@ atc --model=./ch_ppocr_server_v2.0_rec_bs1.onnx --framework=5 --output_type=FP32
 
 ## 4 运行
 
-**步骤1** 将准备好的包含标签和图片的[数据集](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/chineseOcr/6.rar)放入`dataset`文件夹内
+**步骤1** 将准备好的包含标签和图片的[手写汉字数据集](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/chineseOcr/6.rar)放入`dataset`文件夹内
 
 **步骤2** 运行main.py文件后，中文识别结果将打印到控制台中并会将每张图片的结果分别以txt格式写入到output文件里
 
@@ -167,7 +167,7 @@ ocr.ocr(img_path,rec=True,det=False,cls=False)
 
 #### 5.2使用经过转化的om模型在NPU上测试
 
-**步骤1** 将官方数据库的[手写数据集](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/chineseOcr/6.rar)放入`dataset`
+**步骤1** 将官方数据库的[手写汉字数据集](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/chineseOcr/6.rar)放入`dataset`
 
 **步骤2** 在项目主目录下执行检测命令：
 ```python
