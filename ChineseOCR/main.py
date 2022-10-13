@@ -18,7 +18,7 @@ import MxpiDataType_pb2 as MxpiDataType
 import textdistance
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 
-FILE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.JPG', '*.PNG', '*.png', '*.JPEG']
+FILE_EXTENSIONS = ['*.jpg', '*.JPG', '*.PNG', '*.png']
 LABEL_EXTENSIONS = ['*.TXT', '*.txt']
 
 
