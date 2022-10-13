@@ -14,7 +14,7 @@
 from xmlrpc.client import boolean
 import os
 import math
-from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
+from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector, MxProtobufIn, InProtobufVector
 import MxpiDataType_pb2 as MxpiDataType
 import numpy as np
 import cv2
