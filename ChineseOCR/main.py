@@ -47,7 +47,7 @@ if __name__ == '__main__':
     output_path = os.path.dirname(os.path.realpath(__file__))
     output_exer = os.path.join(output_path, 'output')
     if os.path.exists(output_exer):
-        os.remove(output_exer)
+        os.system(f"rm -r {output_exer}")
     if not os.path.exists(output_exer):
         os.makedirs(output_exer)
 
