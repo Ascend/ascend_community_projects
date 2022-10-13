@@ -284,8 +284,20 @@ if __name__ == '__main__':
         print("The input picture cannot be found. Check the path.")
         streamManagerApi.DestroyAllStreams()
         exit()
-    with open(FILE_PATH, 'rb') as f:
-        dataInput.data = f.read()
+    else:
+        try:
+            image = Image.open(FILE_PATH)
+            if (image.format == 'JPEG' ) != 1:
+                print('The input of the model only support jpg, current format is {}.'.format(image.format))
+                streamManagerApi.DestroyAllStreams()
+                exit()
+            else:
+                with open(FILE_PATH, 'rb') as f:
+                    dataInput.data = f.read()
+        except IOError:
+            print('There is an IOError, maybe input is not a picture. Please check it!')
+            streamManagerApi.DestroyAllStreams()
+            exit()
 
     # Inputs data to a specified stream.
     STREAM_NAME1 = b'model1'

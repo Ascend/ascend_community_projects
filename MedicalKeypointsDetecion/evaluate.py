@@ -687,7 +687,7 @@ if __name__ == '__main__':
     coco = COCO(FILE_ANNO)
 
     # txt为cls 分类情况,在该路径下创建新txt并修改该路径
-    TXT = 'evaluate_result_0922_3.txt'
+    TXT = 'evaluate_result.txt'
 
     NUM_TEST = 3651
     all_preds_no_mask = np.zeros((NUM_TEST, 80, 3), dtype=np.float32)
