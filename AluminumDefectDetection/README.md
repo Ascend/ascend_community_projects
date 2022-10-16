@@ -90,27 +90,23 @@ eg：推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如�
 
 在编译运行项目前，需要设置环境变量：
 
-- 环境变量介绍
+MindSDK 环境变量：
 
 ```bash
-# 执行如下命令，打开.bashrc文件
-vim ~/.bashrc
-# 在.bashrc文件中添加以下环境变量
-export MX_SDK_HOME=${SDK安装路径}
+. ${SDK-path}/set_env.sh
+```
 
-export LD_LIBRARY_PATH=${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:${MX_SDK_HOME}/opensource/lib64:/usr/local/Ascend/ascend-toolkit/latest/acllib/lib64:/usr/local/Ascend/driver/lib64/
+CANN 环境变量：
 
-export GST_PLUGIN_SCANNER=${MX_SDK_HOME}/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
+```bash
+. ${ascend-toolkit-path}/set_env.sh
+```
 
-export GST_PLUGIN_PATH=${MX_SDK_HOME}/opensource/lib/gstreamer-1.0:${MX_SDK_HOME}/lib/plugins
+环境变量介绍
 
-export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
-# 保存退出.bashrc文件
-# 执行如下命令使环境变量生效
-source ~/.bashrc
-
-#查看环境变量
-env
+```
+SDK-path: SDK mxVision 安装路径
+ascend-toolkit-path: CANN 安装路径
 ```
 
 ## 3 模型转换
@@ -171,16 +167,10 @@ var_reci_chn_2 : 0.0039216
 
 **步骤5** 模型转换
 
-在项目目录下执行一下命令
+在项目根目录AluminumDefectDetection执行命令：
 
 ```bash
-# 执行前需确保环境变量正确配置
-# 执行，转换YOLOv5模型
-# Execute, transform YOLOv5 model.
-
 atc  --input_shape="images:1,3,640,640" --out_nodes="Transpose_286:0;Transpose_336:0;Transpose_386:0" --output_type=FP32 --input_format=NCHW --output="./models/yolov5/yolov5_add_bs1_fp16" --soc_version=Ascend310 --framework=5 --model="./models/yolov5/best.onnx" --insert_op_conf=./models/yolov5/insert_op.cfg
-"
-# 说明：out_nodes制定了输出节点的顺序，需要与模型后处理适配。
 ```
 
 执行完模型转换脚本后，会生成相应的yolov5_add_bs1_fp16.om模型文件。 
@@ -195,7 +185,7 @@ atc  --input_shape="images:1,3,640,640" --out_nodes="Transpose_286:0;Transpose_3
 
 **步骤2**
 
-在测试集中或自行选择一张jpg文件，放入项目根目录中，再执行
+在4.1中下载的测试集test文件夹下任意选择一张jpg图片，命名为test.jpg，放入项目根目录中，再执行
 
 ```bash
 python main.py
@@ -209,21 +199,21 @@ python main.py
 
 ![print_result](./images/print_result.png)
 
-### 精度测试
+## 5 精度测试
 
-**步骤1**：准备测试数据和om模型文件
+**步骤1**：准备测试数据和模型转换后的om模型文件
 
-	> 测试数据集链接:https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/testDatas.zip
-	
-	> om模型文件链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/yolov5_add_bs1_fp16.om
+	 测试数据集链接:https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/testDatas.zip
 
-**步骤2**：执行如下命令循环输入测试数据集图片
+**步骤2**：将测试数据放置在test/data/文件夹下
+
+**步骤3**：执行如下命令循环输入测试数据集图片
 
 ```bash
 python eval.py
 ```
 
-生成的位置信息和类别信息会以txt文件的形式保存在项目目录下的test/test_out_txt/
+生成的位置信息和类别信息会以txt文件的形式保存在项目根目录下的test/test_out_txt/
 
 执行如下命令输出结果
 
@@ -237,9 +227,9 @@ python map.py –gt ${ground_truth_path} –test_path ${test_path}
 
 ![precision](./images/precision.png)
 
-**步骤3**：由于数据集为非公开的数据集，训练集测试集为自行划分，在满足mAP>80%的基础上进一步测试与GPU精度上的差距。首先，下载YOLOv5官方源码6.1版本https://github.com/ultralytics/yolov5/releases/tag/v6.1
+**步骤4**：由于数据集为非公开的数据集，训练集测试集为自行划分，在满足mAP>80%的基础上进一步测试与GPU精度上的差距。首先，下载YOLOv5官方源码6.1版本https://github.com/ultralytics/yolov5/releases/tag/v6.1
 
-**步骤4**：在项目data目录下创建al.yaml数据配置文件(配置精度测试时数据加载路径以及类别信息)，复制coco128.yaml的内容，并做如下修改.
+**步骤5**：在项目data目录下创建al.yaml数据配置文件(配置精度测试时数据加载路径以及类别信息)，复制coco128.yaml的内容，并做如下修改.
 
 ![yolov5_data_cfg](./images/yolov5_data_cfg.png)
 
@@ -289,9 +279,9 @@ python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --sav
 
 其中mAP0.5误差为0.000770447，mAP0.5:0.95误差为0.00370027。
 
-## 5 常见问题
+## 6 常见问题
 
-### 5.1 尺寸不匹配
+### 6.1 尺寸不匹配
 
 **问题描述：**
 
@@ -303,7 +293,7 @@ python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --sav
 
 模型经过插件处理后的图像与模型输入不匹配，检查模型经过pipeline之后的尺寸大小是否和模型输入匹配。
 
-### 5.2 模型路径未进行正确配置
+### 6.2 模型路径未进行正确配置
 
 **问题描述：**
 
@@ -317,7 +307,7 @@ python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --sav
 
 检查模型存放路径，正确配置模型路径。
 
-### 5.3 未修改pipeline中后处理插件的postProcessLibPath属性
+### 6.3 未修改pipeline中后处理插件的postProcessLibPath属性
 
 **问题描述：**
 

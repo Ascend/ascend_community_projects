@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     # Construct the input of the stream
     dataInput = MxDataInput()
-    ORI_IMG_PATH = "test.png"
+    ORI_IMG_PATH = "test.jpg"
     is_legal(ORI_IMG_PATH)
 
     # read image
