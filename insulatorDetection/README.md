@@ -56,11 +56,19 @@
 │      detect.pipeline
 ```
 
+### 1.5 特性即适用场景
+项目适用于光照条件较好，背景简单，且图片较清晰的测试图片
+
+以下几种情况下，检测效果不够理想：1.图片中的绝缘子很小，使得检测置信度偏低或者检测不到。
+
+
+
 ## 2. 环境依赖
-<br>
+
 
 ### 2.1 环境变量
-<br>
+
+
 运行模型前要设置环境变量，命令如下,请自行修改bash脚本中的SDK_PATH和ascend_toolkit_path
 
 ```bash
@@ -174,13 +182,10 @@ ATC run success, welcome to the next use.
 ```
 python main.py
 ```
-图片结果保存在自己设置的RESULTFILE目录下，测试图片结果如下
+图片结果保存在自己设置的RESULTFILE目录下。
 
 
 <br>
-
-![pipeline](./img/test_output.png)
-
 
 
 ## 5.评估精度
@@ -189,7 +194,7 @@ python main.py
 数据集链接 https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/Insulator_detection/dataset.zip
 
 
-在test目录下创建dataset文件夹，把下载的coco数据集的JPGIMAGES和json放到该文件夹下。JPGIMAGES下有一个readme文件，将他删除，运行如下代码
+在test目录下创建dataset文件夹，把下载的coco数据集的JPGIMAGES和json放到该文件夹下。JPGIMAGES下有一个README文件，将他删除，运行如下代码
 
 ```bash
 python parse_coco.py
@@ -204,9 +209,11 @@ python map_calculate.py
 
 ![precision](./img/precision.png)
 
+精度与原模型精度相差0.5%，目标精度要求精度与原模型精度相差不超过1%，符合精度要求。
+
 
 ## 6.FPS测试
-选择一张1080P的图片放到dataset目录下，跳转至python目录
+选择一张1080P的图片放到data目录下，跳转至python目录
 
 ```
 python main.py
@@ -214,8 +221,7 @@ python main.py
 
 结果如下
 ![fps](./img/fps.png)
-
-
+目标要求是1080P的图片检测fps达到10以上，符合要求。
 
 
 
