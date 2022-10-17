@@ -171,7 +171,7 @@ python main.py
 数据集链接 https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/Insulator_detection/dataset.zip
 
 
-在test目录下创建dataset文件夹，把下载的coco数据集的JPGImages和test.json放到该文件夹下。JPGIMAGES下有一个README文件，将他删除，运行如下代码
+在test目录下创建dataset文件夹，把下载的coco数据集的JPEGImages和test.json放到该文件夹下。JPEGImages下有一个README文件，将他删除，运行如下代码
 
 ```bash
 python parse_coco.py
