@@ -180,18 +180,14 @@ python3 nopre_post.py
 ```
 pidray
 ├── annotations                                                                                 
-│    ├── test_easy2017.json
-│    ├── test_hard2017.json
+│    ├── instances_test2017.json
+│    ├── instances_hard2017.json
 │    ├── test_hidden2017.json
 │    └── train.json                                                                             
-├── easy
-├── hard
-├── hidden
-└── train                                                                                                                  
+└── test                                                                                                                  
 ```
-其中，easy,hard,hidden,train中存放的都是png格式的图片
 
-将easy文件夹和annotations中的test_easy.json文件保存在项目目录``python/test/data``下，并修改名称
+将test文件夹和annotations中的instances_test.json文件保存在项目目录``python/test/data``下，并修改名称
 此文件夹下的组织形式应如下图所示：
 
 ```
