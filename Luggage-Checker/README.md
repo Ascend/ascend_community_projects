@@ -222,7 +222,7 @@ python3 eval_nopre_post.py
 ```                      
 
 若运行成功，会在``python/test`` 路径下生成 test_nopre_post 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
-同时会得到fps为32，满足性能要求
+同时会得到fps为32 > 20，满足性能要求
 
 <center>
     <img src="./images/result_fps.JPG">
