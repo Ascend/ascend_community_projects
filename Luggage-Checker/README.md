@@ -90,7 +90,7 @@ YOLOX 的后处理插件接收模型推理插件输出的特征图，该特征�
 1.在对某些尖锐物品，如剪刀和刀具，形状重合度较高，容易出现重复鉴别的情况，但是不影响实际应用时对危险物品的判别。
 2.由于训练集中包含的隐蔽性较高的样例以及角度特殊的样例图片较少，对于此类物品进行辨识置信度较低。
 
-## 2 环境依赖
+## 2. 环境依赖
 
 推荐系统为ubuntu 18.04，环境依赖软件和版本如下表：
 
@@ -210,18 +210,10 @@ python3 parse_coco.py --json_file=data/annotations/instances_test2017.json --img
 
 ```
 vim ${MX_SDK_HOME}/config/sdk.conf
-i   #进入编辑模式
 
 ```   
 
-之后修改参数 enable_ps=true，开启日志记录,之后pipline运行时会在指定文件夹生成运行日志。
-
-```
-esc   #退出编辑模式
-：    #返回命令行
-wq    #返回原路径
-
-```  
+之后修改参数 enable_ps=true，开启日志记录,之后pipeline运行时会在指定文件夹生成运行日志。
 
 4. 修改完毕后，进入``python/Main``路径，运行命令：
 
@@ -253,15 +245,15 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
 注：使用不在pipeline中加预处理的方法验证精度的原因为：YOLOX的图像预处理中，Resize方式为按长边缩放，而Mindx SDK默认使用dvpp的图像解码方式，没有按长边缩放的方法，因此本项目将"resizeType"属性设置为 "Resizer_KeepAspectRatio_Fit"，这样会导致精度下降。
 所以我们选择不在pipeline中加图像预处理的推理流程，此时推理精度可与源项目对齐。
 
-## 6 fps性能计算
+## 6.fps性能计算
 
-如果要查看精确fps性能，在Mind SDK中会记录每次推理的用时，记录在运行日志中，查看方法是开启日志记录功能，之后进入Mind SDK日志记录页面，查看日志信息。
+如果要查看精确fps性能，进入Mind SDK日志记录页面，查看日志信息。
 ```                                                        
 ls -l ${MX_SDK_HOME}/logs   #获得所有日志文件信息
 
 ``` 
 
-找到最新的log.plugin日志文件，将文件名复制下来，并查看日志文件
+找到最新的log.plugin日志文件，查看日志文件
 
 ```                                                        
 vim ${MX_SDK_HOME}/logs/'performance-statistics.log.plugin.{yourdata}' #具体{yourdata}据你的日志文件填入。
@@ -275,9 +267,9 @@ vim ${MX_SDK_HOME}/logs/'performance-statistics.log.plugin.{yourdata}' #具体{y
 
 结果如图，可以看到最近的两次tensorinfer的average为41910、36563，选择较大的一次，postprocessor为2553，即推理用时41910微秒，后处理2553微秒，换算过后得出fps为22.49。同样满足性能要求。
 
-## 6 常见问题
+## 7. 常见问题
 
-### 6.1 模型转换时会警告缺slice算子
+### 7.1 模型转换时会警告缺slice算子
 
 YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样的算子，因此会报出如图所示的警告：
 
@@ -292,7 +284,7 @@ YOLOX在图像输入到模型前会进行slice操作，而ATC工具缺少这样�
 
 由于在本项目下是否修改算子并不影响检测结果，因此默认不做处理。
 
-### 6.2 单张图片测试时，图片无法识别
+### 7.2 单张图片测试时，图片无法识别
 
 **解决方案：**
 
