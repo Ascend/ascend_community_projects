@@ -175,7 +175,7 @@ python3 nopre_post.py
 
 ## 5. 精度测试
 
-1. 下载PIDray 2017[验证数据集和标注文件](https://github.com/bywang2018/security-dataset)，此数据集文件夹组织形式如下图所示
+1. 下载PIDray 2017[验证数据集和标注文件](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/laser_detect/pidray.zip)，共包含四个文件，解压后此数据集文件夹组织形式如下图所示
 
 ```
 pidray
