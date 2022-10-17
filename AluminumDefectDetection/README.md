@@ -185,7 +185,7 @@ atc  --input_shape="images:1,3,640,640" --out_nodes="Transpose_286:0;Transpose_3
 
 **步骤2**
 
-在4.1中下载的测试集test文件夹下任意选择一张jpg图片，命名为test.jpg，放入项目根目录中，再执行
+在第五章精度测试-步骤1中下载的测试集test文件夹下任意选择一张jpg图片，命名为test.jpg，放入项目根目录中，再执行
 
 ```bash
 python main.py
@@ -201,11 +201,11 @@ python main.py
 
 ## 5 精度测试
 
-**步骤1**：准备测试数据和模型转换后的om模型文件
+**步骤1**：准备测试数据和模型转换后的om模型文件：
 
 	 测试数据集链接:https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Aluminum_surface_defect_detection/testDatas.zip
 
-**步骤2**：将测试数据放置在test/data/文件夹下
+**步骤2**：将测试数据的两个文件夹放置在test/data/文件夹下
 
 **步骤3**：执行如下命令循环输入测试数据集图片
 
@@ -218,10 +218,10 @@ python eval.py
 执行如下命令输出结果
 
 ```bash
-python map.py –gt ${ground_truth_path} –test_path ${test_path}
+python map.py --gt ${ground_truth_path} --test_path ${test_path}
 ```
 
-其中${ground_truth_path}为测试集数据的标签路径，${test_path}为模型输出结果的路径（即上述test/test_out_txt/），包括分类结果、位置信息和置信度参数。
+其中${ground_truth_path}为测试集数据的标签路径(即test/data/gt/)，${test_path}为模型输出结果的路径（即上述test/test_out_txt/），包括分类结果、位置信息和置信度参数。
 
 结果如下图所示：
 
@@ -277,7 +277,7 @@ python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --sav
 
 ![precision_yolo](./images/precision_yolo.png)
 
-其中mAP0.5误差为0.000770447，mAP0.5:0.95误差为0.00370027。
+其中mAP0.5为0.8143182670599847，MindXSDK推理的mAP0.5为0.813547819849485，两者做差结果绝对值为0.000770447，满足与GPU精度下降不超过1%的要求，达到预期目标。
 
 ## 6 常见问题
 
