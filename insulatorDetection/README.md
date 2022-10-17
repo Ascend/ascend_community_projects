@@ -29,7 +29,6 @@
 项目名为insualtorDetection，项目目录如图所示
 
 ``` 
-│  README.md
 ├─python
 │      colorlist.txt
 │      visualize.py
