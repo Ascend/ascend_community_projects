@@ -107,7 +107,7 @@ def main(args):
 
     for index, image_id in enumerate(image_ids):
         indexs = get_all_index(annotation_ids, image_id)
-        with open('{}/{}.txt'.format(args.gtp, file_names[index].split('.')[0]), 'w') as f:
+        with os.fdopen(os.open('{}{}.txt'.format(args.gtp, file_names[index].split('.')[0]), os.O_RDWR| os.O_CREAT, modes), 'w') as f:
             for idx in indexs:
                 f.write(get_categroie_name(categroies, category_ids[idx]))
                 f.write(' ')
