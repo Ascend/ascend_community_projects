@@ -209,6 +209,7 @@ python map_calculate.py
 精度评估的结果会存放到output文件下，评估的结果如下图
 
 ![precision](./img/precision.png)
+![precision1](./img/precision_origin.png)
 
 精度与原模型精度相差0.5%，目标精度要求精度与原模型精度相差不超过1%，符合精度要求。
 

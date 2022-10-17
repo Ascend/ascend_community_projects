@@ -68,7 +68,7 @@ if __name__ == '__main__':
     if uniqueId < 0:
         print("Failed to send data to stream.")
         exit()
-    keys = [b"mxpi_tensorinfer0", b"mxpi_objectpostprocessor0"]
+    keys = [ b"mxpi_objectpostprocessor0"]
     keyVec = StringVector()
     for key in keys:
         keyVec.push_back(key)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         exit()
     # process data output from mxpi_objectpostprocessor plugin
     object_list = MxpiDataType.MxpiObjectList()
-    object_list.ParseFromString(result[1].messageBuf)
+    object_list.ParseFromString(result[0].messageBuf)
     bounding_boxes = []
     for obj in object_list.objectVec:
         print(obj)
