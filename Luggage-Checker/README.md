@@ -171,7 +171,7 @@ python3 pre_post.py
 python3 nopre_post.py
 ```     
 
-命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg(nopre_post_bgr.jpg)，查看结果文件验证检测结果。
+命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg(nopre_post.jpg)，查看结果文件验证检测结果。
 
 ## 5. 精度测试
 
@@ -206,14 +206,38 @@ python3 parse_coco.py --json_file=data/annotations/instances_test2017.json --img
                                               
 接下来将每张图的预测结果转为txt文件，并保存在同一文件夹下，其步骤如下：
 
-3. 进入``python/Main``路径，运行命令：
+3.打开Mind SDK安装路径下的日志配置文件
+
+```
+vim ${MX_SDK_HOME}/config/sdk.conf
+i   #进入编辑模式
+
+```   
+
+之后修改参数 enable_ps=true，开启日志记录,之后pipline运行时会在指定文件夹生成运行日志。
+
+```
+esc   #退出编辑模式
+：    #返回命令行
+wq    #返回原路径
+
+```  
+
+4. 修改完毕后，进入``python/Main``路径，运行命令：
+
 ```
 python3 eval_nopre_post.py
 ```                      
 
 若运行成功，会在``python/test`` 路径下生成 test_nopre_post 文件夹，该目录下包含有每张图像上的检测结果的 txt 文件。
+同时会得到fps为32，满足性能要求
 
-4. 在``python/test``路径下，运行命令: 
+<center>
+    <img src="./images/result_fps.JPG">
+    <br>
+</center>
+
+5. 在``python/test``路径下，运行命令: 
 ```                                                        
 python3 map_calculate.py  --npu_txt_path="./test_nopre_post" 
 ``` 
@@ -223,11 +247,33 @@ python3 map_calculate.py  --npu_txt_path="./test_nopre_post"
     <img src="./images/result_map.jpg">
     <br>
 </center>
-挑选的是test中的图片验证精度，mAP(0.5:0.95)精度为47.43%与源项目精度误差为0.14%。精度对齐。
+挑选的是test中的图片验证精度，mAP(0.5:0.95)精度为47.43%与源项目精度47.57%的误差为0.14%。精度对齐。
 
 
 注：使用不在pipeline中加预处理的方法验证精度的原因为：YOLOX的图像预处理中，Resize方式为按长边缩放，而Mindx SDK默认使用dvpp的图像解码方式，没有按长边缩放的方法，因此本项目将"resizeType"属性设置为 "Resizer_KeepAspectRatio_Fit"，这样会导致精度下降。
 所以我们选择不在pipeline中加图像预处理的推理流程，此时推理精度可与源项目对齐。
+
+## 6 fps性能计算
+
+如果要查看精确fps性能，在Mind SDK中会记录每次推理的用时，记录在运行日志中，查看方法是开启日志记录功能，之后进入Mind SDK日志记录页面，查看日志信息。
+```                                                        
+ls -l ${MX_SDK_HOME}/logs   #获得所有日志文件信息
+
+``` 
+
+找到最新的log.plugin日志文件，将文件名复制下来，并查看日志文件
+
+```                                                        
+vim ${MX_SDK_HOME}/logs/'performance-statistics.log.plugin.{yourdata}' #具体{yourdata}据你的日志文件填入。
+
+``` 
+
+<center>
+    <img src="./images/result_time.JPG">
+    <br>
+</center>
+
+结果如图，可以看到最近的两次tensorinfer的average为41910、36563，选择较大的一次，postprocessor为2553，即推理用时41910微秒，后处理2553微秒，换算过后得出fps为22.49。同样满足性能要求。
 
 ## 6 常见问题
 

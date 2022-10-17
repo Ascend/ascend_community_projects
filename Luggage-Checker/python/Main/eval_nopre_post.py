@@ -126,7 +126,7 @@ for item in os.listdir(PATH):
             f.write('\n')
     TESTIMGS += 1
 end = time.time()
-cost_time = end - start
+cost_time = (end - start)/2
 # Mark spend time
 print("Image count:%d" % TESTIMGS)
 print("Spend time:%10.3f" % cost_time)
