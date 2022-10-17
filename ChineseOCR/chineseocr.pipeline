@@ -1,0 +1,68 @@
+{
+  "chineseocr": {
+    "stream_config": {
+      "deviceId": "0"
+    },
+    "appsrc0": {
+      "props": {
+        "blocksize": "4096000"
+      },
+      "factory": "appsrc",
+      "next": "mxpi_imagedecoder0"
+    },
+    "mxpi_imagedecoder0": {
+      "props": {
+        "dataSource": "appsrc0",
+        "deviceId": "0",
+        "cvProcessor": "opencv",
+        "dataType": "uint8",
+        "outputDataFormat": "RGB"
+      },
+      "factory": "mxpi_imagedecoder",
+      "next": "mxpi_imageresize0"
+    },
+    "mxpi_imageresize0": {
+      "props": {
+        "dataSource": "mxpi_imagedecoder0",
+        "resizeType": "Resizer_Stretch",
+        "cvProcessor": "opencv",
+        "resizeHeight": "32",
+        "resizeWidth": "320"
+      },
+      "factory": "mxpi_imageresize",
+      "next": "crnn_recognition"
+    },
+    "crnn_recognition": {
+      "props": {
+        "dataSource": "mxpi_imageresize0",
+        "modelPath": "./model/ch_ppocr_server_v2.0_rec_infer_bs1.om"
+      },
+      "factory": "mxpi_tensorinfer",
+      "next": "mxpi_textgenerationpostprocessor0"
+    },
+    "mxpi_textgenerationpostprocessor0": {
+      "props": {
+        "dataSource": "crnn_recognition",
+        "postProcessConfigPath": "./cfg/crnn.cfg",
+        "labelPath": "./cfg/ppocr_keys_v1.txt",
+        "postProcessLibPath": "libcrnnpostprocess.so"
+      },
+      "factory": "mxpi_textgenerationpostprocessor",
+      "next": "mxpi_dataserialize0"
+    },
+    "mxpi_dataserialize0": {
+      "props": {
+        "outputDataKeys": "mxpi_textgenerationpostprocessor0",
+        "deviceId": "0"
+      },
+      "factory": "mxpi_dataserialize",
+      "next": "appsink0"
+    },
+    "appsink0": {
+      "props": {
+        "blocksize": "4096000"
+      },
+      "factory": "appsink"
+    }
+  }
+}
