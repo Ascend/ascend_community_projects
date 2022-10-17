@@ -72,7 +72,7 @@ def main(args):
         @return none
     """
     flags = os.O_WRONLY
-    modes = stat.S_IWUSR| stat.S_IRUSR
+    modes = stat.S_IWUSR|stat.S_IRUSR
     with open(args.json_file, 'r') as file:
         content = file.read()
     content = json.loads(content)
@@ -107,7 +107,7 @@ def main(args):
 
     for index, image_id in enumerate(image_ids):
         indexs = get_all_index(annotation_ids, image_id)
-        with os.fdopen(os.open('{}{}.txt'.format(args.gtp, file_names[index].split('.')[0]), os.O_RDWR| os.O_CREAT, modes), 'w') as f:
+        with os.fdopen(os.open('{}{}.txt'.format(args.gtp, file_names[index].split('.')[0]), os.O_RDWR|os.O_CREAT, modes), 'w') as f:
             for idx in indexs:
                 f.write(get_categroie_name(categroies, category_ids[idx]))
                 f.write(' ')
