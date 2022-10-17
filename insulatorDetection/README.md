@@ -170,7 +170,7 @@ ATC run success, welcome to the next use.
                 "dataSource": "mxpi_tensorinfer0",
                 "postProcessConfigPath":"../models/yolo.cfg",
                 "labelPath": "../models/label.names",
-                "postProcessLibPath":  "${MX_SDK_HOME}/lib/modelpostprocessors/libyolov3postprocess.so"
+                "postProcessLibPath":  "libyolov3postprocess.so"
             },
             "factory": "mxpi_objectpostprocessor",
             "next": "appsink0"
