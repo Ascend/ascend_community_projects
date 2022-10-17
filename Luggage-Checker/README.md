@@ -171,7 +171,7 @@ python3 pre_post.py
 python3 nopre_post.py
 ```     
 
-命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg，查看结果文件验证检测结果。
+命令执行成功后在目录``python/test_img``下生成检测结果文件 pre_post_bgr.jpg(nopre_post_bgr.jpg)，查看结果文件验证检测结果。
 
 ## 5. 精度测试
 
