@@ -207,7 +207,7 @@ python main.py
 
 **步骤2**：将测试数据的两个文件夹放置在test/data/文件夹下
 
-**步骤3**：执行如下命令循环输入测试数据集图片
+**步骤3**：修改yolov5_add_bs1_fp16.cfg中的SCORE_THRESH=0.001，执行如下命令循环输入测试数据集图片
 
 ```bash
 python eval.py
