@@ -139,7 +139,7 @@ ascend-toolkit-path: CANN 安装路径
 
 由于yolov5模型的输入为rgb格式，pipeline中的图像解码为yuv格式，且数据类型不同，需要在atc转换模型时使用aipp预处理，aipp配置内容如下：
 
-```json
+```python
 aipp_op { 
 aipp_mode : static
 related_input_rank : 0
