@@ -72,6 +72,7 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 项目适用于光照条件较好，背景简单，且图片较清晰的测试图片
 
 以下几种情况下，检测效果不够理想：
+
 1.在进行脏点检测时，由于脏点过小，模型不易检测到铝材表面的脏点缺陷，导致脏点缺陷检测置信度偏低
 2.在进行喷流检测时，由于喷流痕迹不明显，检测置信度偏低，影响最终精度
 
@@ -218,10 +219,10 @@ python eval.py
 执行如下命令输出结果
 
 ```bash
-python map.py --gt ${ground_truth_path} --test_path ${test_path}
+python map.py --gt ${gt} --test_path ${test}
 ```
 
-其中${ground_truth_path}为测试集数据的标签路径(即test/data/gt/)，${test_path}为模型输出结果的路径（即上述test/test_out_txt/），包括分类结果、位置信息和置信度参数。
+其中${gt}为测试集数据的标签路径(即test/data/gt/)，${test}为模型输出结果的路径（即上述test/test_out_txt/），包括分类结果、位置信息和置信度参数。
 
 结果如下图所示：
 
