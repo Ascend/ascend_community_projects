@@ -222,7 +222,7 @@ python eval.py
 python map.py --gt ${gt} --test_path ${test}
 ```
 
-其中${gt}为测试集数据的标签路径(即test/data/gt/)，${test}为模型输出结果的路径（即上述test/test_out_txt/），包括分类结果、位置信息和置信度参数。
+其中$ {gt}为测试集数据的标签路径(即test/data/gt/)，$ {test}为模型输出结果的路径（即上述test/test_out_txt/），包括分类结果、位置信息和置信度参数。
 
 结果如下图所示：
 
