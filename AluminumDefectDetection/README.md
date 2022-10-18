@@ -90,7 +90,7 @@ eg：推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如�
 
 在编译运行项目前，需要设置环境变量：
 
-MindSDK 环境变量：
+MindX SDK 环境变量：
 
 ```bash
 . ${SDK-path}/set_env.sh
@@ -319,5 +319,11 @@ python val.py --data al.yaml --weights best.onnx --save-txt --batch-size 1 --sav
 
 **解决方案：**
 
-修改pipeline文件中**mxpi_objectpostprocessor0**插件的`postProcessLibPath`属性，修改为`libyolov3postprocess.so`
+环境变量配置存在问题，重新执行如下命令：
+
+```bash
+. ${SDK-path}/set_env.sh
+```
+
+
 
