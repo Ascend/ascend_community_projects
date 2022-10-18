@@ -1,0 +1,40 @@
+{
+    "detection": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "appsrc0": {
+            "props": {
+                "blocksize": "409600"
+            },
+            "factory": "appsrc",
+            "next": "mxpi_tensorinfer0"
+        },
+     
+        "mxpi_tensorinfer0": {
+            "props": {
+                "dataSource": "appsrc0",
+                "modelPath": "../models/yolox_nopre_post.om"
+            },
+            "factory": "mxpi_tensorinfer",
+            "next": "mxpi_objectpostprocessor0"
+        },
+        "mxpi_objectpostprocessor0": {
+            "props": {
+                "dataSource": "mxpi_tensorinfer0",
+                "postProcessConfigPath":"../models/yolox_eval.cfg",
+                "labelPath": "../models/coco.names",
+                "postProcessLibPath": "../../postprocess/build/libYoloxPostProcess.so"
+            },
+            "factory": "mxpi_objectpostprocessor",
+            "next": "appsink0"
+        },
+        "appsink0": {
+            "props": {
+                "blocksize": "4096000"
+            },
+            "factory": "appsink"
+        }
+    }
+}
+
