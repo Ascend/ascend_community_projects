@@ -33,7 +33,7 @@ std::string ReadPipelineConfig(const std::string& pipelineConfigPath)
 {
     std::ifstream file(pipelineConfigPath.c_str(), std::ifstream::binary);
     if (!file) {
-        LogError << pipelineConfigPath << " file dose not exist.";
+        LogError << pipelineConfigPath << " file dose not exist!";
         return "";
     }
     file.seekg(0, std::ifstream::end);
