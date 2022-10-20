@@ -1,0 +1,63 @@
+{
+  "classification+detection": {
+    "stream_config": {
+      "deviceId": "0"
+    },
+    "appsrc0": {
+      "props": {
+        "blocksize": "409600"
+      },
+      "factory": "appsrc",
+      "next": "mxpi_imagedecoder0"
+    },
+    "mxpi_imagedecoder0": {
+      "factory": "mxpi_imagedecoder",
+      "next": "mxpi_imageresize0"
+    },
+    "mxpi_imageresize0": {
+       "props": {
+                "dataSource": "mxpi_imagedecoder0",
+                "resizeType": "Resizer_KeepAspectRatio_Fit",
+                "resizeWidth":"640",
+                "resizeHeight":"640",
+                "paddingType":"Padding_NO",
+                "interpolation":"2"
+            },
+      "factory": "mxpi_imageresize",
+      "next": "mxpi_tensorinfer0"
+    },
+
+    "mxpi_tensorinfer0": {
+      "props": {
+        "dataSource": "mxpi_imageresize0",
+        "modelPath": "./models/yolov5/yolov5_add_bs1_fp16.om"
+      },
+      "factory": "mxpi_tensorinfer",
+      "next": "mxpi_objectpostprocessor0"
+    },
+    "mxpi_objectpostprocessor0": {
+      "props": {
+                "dataSource": "mxpi_tensorinfer0",
+                "postProcessConfigPath": "./models/yolov5/yolov5_add_bs1_fp16.cfg",
+                "labelPath": "./models/yolov5/aldefectdetection.names",
+                "postProcessLibPath": "libyolov3postprocess.so"
+            },
+      "factory": "mxpi_objectpostprocessor",
+      "next": "mxpi_dataserialize0"
+    },
+    "mxpi_dataserialize0": {
+      "props": {
+        "outputDataKeys": "mxpi_objectpostprocessor0"
+      },
+      "factory": "mxpi_dataserialize",
+      "next": "appsink0"
+    },
+
+    "appsink0": {
+      "props": {
+        "blocksize": "4096000"
+      },
+      "factory": "appsink"
+    }
+  }
+}
