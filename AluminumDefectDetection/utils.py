@@ -16,30 +16,26 @@ import os
 import numpy as np
 import cv2
 
+GRAY = 114
 
-def preprocess(im, new_shape, color=(114, 114, 114)):
-    # Resize and pad image while meeting stride-multiple constraints
-    shape = im.shape[:2]  # current shape [height, width]
-    if isinstance(new_shape, int):
-        new_shape = (new_shape, new_shape)
 
-    # Scale ratio (new / old)
-    r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
+def preproc(img, img_size, swap=(2, 0, 1)):
+    """Resize the input image."""
+    if len(img.shape) == 3:
+        padding_image = np.ones((img_size[0], img_size[1], 3), dtype=np.uint8) * GRAY
+    else:
+        padding_image = np.ones(img_size, dtype=np.uint8) * GRAY
 
-    # Compute padding
-    ratio = r, r  # width, height ratios
-    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
-    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
+    ratio = min(img_size[0] / img.shape[0], img_size[1] / img.shape[1])
+    resized_img = cv2.resize(
+        img,
+        (int(img.shape[1] * ratio), int(img.shape[0] * ratio)),
+        interpolation=cv2.INTER_AREA,
+    ).astype(np.uint8)
+    top = int((int(img.shape[1] * ratio) - int(img.shape[0] * ratio)) / 2)
+    padding_image[top: top + int(img.shape[0] * ratio), :int(img.shape[1] * ratio)] = resized_img
 
-    dw /= 2  # divide padding into 2 sides
-    dh /= 2
-
-    if shape[::-1] != new_unpad:  # resize
-        im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_AREA)
-    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
-    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    im = cv2.copyMakeBorder(im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
-    return im, ratio, (dw, dh)
+    return padding_image, ratio
 
 
 def clip_coords(boxes, shape):
@@ -48,13 +44,9 @@ def clip_coords(boxes, shape):
 
 
 def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
-    # Rescale coords (xyxy) from img1_shape to img0_shape
-    if ratio_pad is None:  # calculate from img0_shape
-        gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
-        pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
-    else:
-        gain = ratio_pad[0][0]
-        pad = ratio_pad[1]
+
+    gain = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # gain  = old / new
+    pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
 
     coords[0] -= pad[0]  # x padding
     coords[2] -= pad[0]  # x padding

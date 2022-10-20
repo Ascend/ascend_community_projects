@@ -19,7 +19,7 @@ import glob
 import cv2
 from StreamManagerApi import StreamManagerApi, MxDataInput
 import numpy as np
-from utils import preprocess, scale_coords, xyxy2xywh, is_legal
+from utils import preproc, scale_coords, xyxy2xywh, is_legal
 from plots import box_label, colors
 
 names = ['non_conduct', 'abrasion_mark', 'corner_leak', 'orange_peel', 'leak', 'jet_flow', 'paint_bubble', 'pit',
@@ -77,7 +77,7 @@ if __name__ == '__main__':
         r = 640 / max(h0, w0)  # ratio
 
         input_shape = (640, 640)
-        pre_img = preprocess(ori_img, input_shape)[0]
+        pre_img = preproc(ori_img, input_shape)[0]
 
         pre_img = np.ascontiguousarray(pre_img)
         pre_img_path = PRE_IMG_PATH + item
