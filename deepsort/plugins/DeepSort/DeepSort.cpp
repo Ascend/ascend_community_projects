@@ -72,62 +72,23 @@ APP_ERROR DeepSort::GenerateSampleOutput (const MxpiObjectList srcMxpiObjectList
     return APP_ERR_OK;
 }
 
-APP_ERROR DeepSort::Process(
-    std::vector<MxpiBuffer*>& mxpiBuffer) {
-        LogInfo << "DeepSort::Process start";
-        frame_id ++;
-  
-        MxpiBuffer* buffer = mxpiBuffer[0];
-        MxpiMetadataManager mxpiMetadataManager(*buffer);
-        MxpiErrorInfo mxpiErrorInfo;
-        ErrorInfo_.str("");
-        auto errorInfoPtr = mxpiMetadataManager.GetErrorInfo();
-        if (errorInfoPtr != nullptr) {
-            ErrorInfo_ << GetError (APP_ERR_COMM_FAILURE, pluginName_) << "DeepSort process is not implemented";
-            mxpiErrorInfo.ret = APP_ERR_COMM_FAILURE;
-            mxpiErrorInfo.errorInfo = ErrorInfo_.str();
-            SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
-            LogError << "DeepSort process is not implemented";
-            return APP_ERR_COMM_FAILURE;
-    }
- 
-        shared_ptr<void> objectMetadata = mxpiMetadataManager.GetMetadata(objectName_);
-        if (objectMetadata == nullptr) {
-            ErrorInfo_ << GetError(APP_ERR_METADATA_IS_NULL, pluginName_) << "objectMetadata is NULL, failed";
-            mxpiErrorInfo.ret = APP_ERR_METADATA_IS_NULL;
-            mxpiErrorInfo.errorInfo = ErrorInfo_.str();
-            SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
-            return APP_ERR_METADATA_IS_NULL;
-        }
-  
-    shared_ptr<void> featureMetadata = mxpiMetadataManager.GetMetadata(featureName_);
-    if (featureMetadata == nullptr) {
-        ErrorInfo_ << GetError(APP_ERR_METADATA_IS_NULL, pluginName_) << "featureMetadata is NULL, failed";
-        mxpiErrorInfo.ret = APP_ERR_METADATA_IS_NULL;
-        mxpiErrorInfo.errorInfo = ErrorInfo_.str();
-        SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
-        return APP_ERR_METADATA_IS_NULL;
-    }
-
-    std::shared_ptr<MxpiObjectList> objectList = std::static_pointer_cast<MxpiObjectList>(
-        mxpiMetadataManager.GetMetadata(objectName_));
-    std::shared_ptr<MxpiFeatureVectorList> featureList;
-    std::vector<DetectObject> detectObjectList;
+APP_ERROR DeepSort::getPostProcessResult(std::shared_ptr<MxpiFeatureVectorList> &featureList,
+                                        std::vector<DetectObject> &detectObjectList,
+                                        std::shared_ptr<MxpiObjectList> &objectList,
+                                        MxpiMetadataManager &mxpiMetadataManager) {
 
     if (objectList->objectvec_size() == 0) {
         LogDebug << "Object detection result of model infer is null.";
-        return APP_ERR_OK;
+        return APP_ERR_COMM_FAILURE;
     }
     LogInfo << "object size : " << objectList->objectvec_size();
 
-    featureList = std::static_pointer_cast<MxpiFeatureVectorList>(
-        mxpiMetadataManager.GetMetadata(featureName_));
+    featureList = std::static_pointer_cast<MxpiFeatureVectorList>(mxpiMetadataManager.GetMetadata(featureName_));
     if (featureList->featurevec_size() == 0) {
-        APP_ERROR ret = APP_ERR_COMM_FAILURE;
-        errorInfo_ << GetError(ret, featureName_) << "Face short feature result of model infer is null.";
-        return ret;
+        errorInfo_ << GetError(APP_ERR_COMM_FAILURE, featureName_) << "Face short feature result of model infer is null.";
+        return APP_ERR_COMM_FAILURE;
     }
- 
+
     for (int i = 0; i < objectList->objectvec_size(); ++i) {
         DetectObject detectObject {};
         detectObject.detectInfo = objectList->objectvec(i);
@@ -137,7 +98,10 @@ APP_ERROR DeepSort::Process(
         detectObjectList.push_back(detectObject);
     }
 
-    DETECTIONS detections;
+    return APP_ERR_OK;
+}
+
+void DeepSort::getDetections(DETECTIONS &detections, std::vector<DetectObject> &detectObjectList) {
     for (int i = 0; i < detectObjectList.size(); ++i)
     {
         DETECTION_ROW detection;
@@ -162,33 +126,34 @@ APP_ERROR DeepSort::Process(
         }
         detections.push_back(detection);
     }
+}
 
-    LogInfo << "predict ------";
-    mytracker.predict();
-    std::vector<std::pair<int, int>> det_track_idxs = mytracker.update(detections);
-    sort (det_track_idxs.begin(), det_track_idxs.end(),
+void DeepSort::getTrackerInfo(std::vector<TrackerInfo> &tracker_infos,
+                    std::vector<std::pair<int, int>> &det_track_idxs,
+                    tracker &mytracker, 
+                    DETECTIONS &detections) {
+
+    sort(det_track_idxs.begin(), det_track_idxs.end(),
         [](std::pair<int, int>& d1, std::pair<int, int>& d2)
         {
             return d1.first < d2.first;
         });
 
-    for (auto& track : mytracker.tracks)
-    {
+    for (auto& track : mytracker.tracks) {
         LogInfo << "track id: " << track.track_id << ", age: " << track.age << ", hits: " << track.hits << ", state: " << track.state;
     }
     ofstream dataFile;
-	  dataFile.open("gt.txt", ofstream::app);
-	  fstream file("gt.txt", ios::app);
-    std::vector<TrackerInfo> tracker_infos;
-    for (const auto& det_track_idx : det_track_idxs)
-    {
+    dataFile.open("gt.txt", ofstream::app);
+    fstream file("gt.txt", ios::app);
+    
+    for (const auto& det_track_idx : det_track_idxs) {
         int det_id = det_track_idx.first;
         int track_idx = det_track_idx.second;
         Track& track = mytracker.tracks[track_idx];
         LogInfo << track.track_id << ",";
-   if (frame_id <= control) {
-          dataFile<<frame_id<<","<< track.track_id<<","<<int(detections[det_id].tlwh(0, 1))<<","<<int(detections[det_id].tlwh(0, 0))<<","<<int(detections[det_id].tlwh(0, TWO))<<","<<int(detections[det_id].tlwh(0, THREE))<<","<<1<<","<< 1 <<","<< 1 <<","<<endl;
-     }
+        if (frame_id <= control) {
+            dataFile<<frame_id<<","<< track.track_id<<","<<int(detections[det_id].tlwh(0, 1))<<","<<int(detections[det_id].tlwh(0, 0))<<","<<int(detections[det_id].tlwh(0, TWO))<<","<<int(detections[det_id].tlwh(0, THREE))<<","<<1<<","<< 1 <<","<< 1 <<","<<endl;
+        }
           
         TrackerInfo tracker_info;
         tracker_info.trackId   = track.track_id;
@@ -197,27 +162,65 @@ APP_ERROR DeepSort::Process(
         tracker_info.trackFlag = track.state == Track::Tentative ? 0 : track.state == Track::Confirmed ? 1 : track.state == Track::Deleted ? TWO : 0;
         tracker_infos.push_back(tracker_info);
     }
-    shared_ptr<MxpiTrackLetList> dstMxpiTrackLetListSptr = make_shared<MxpiTrackLetList>();
-    APP_ERROR ret = GenerateSampleOutput(*objectList, tracker_infos, *dstMxpiTrackLetListSptr);
-    if (ret != APP_ERR_OK) {
-        LogError << GetError(ret, pluginName_) << "DeepSort gets inference information failed.";
-        mxpiErrorInfo.ret = ret;
-        mxpiErrorInfo.errorInfo = ErrorInfo_.str();
-        SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
-        return ret;
+}
+
+APP_ERROR DeepSort::Process(std::vector<MxpiBuffer*>& mxpiBuffer) {
+    LogInfo << "DeepSort::Process start";
+    frame_id++;
+
+    MxpiBuffer* buffer = mxpiBuffer[0];
+    MxpiMetadataManager mxpiMetadataManager(*buffer);
+    MxpiErrorInfo mxpiErrorInfo;
+    ErrorInfo_.str("");
+    auto errorInfoPtr = mxpiMetadataManager.GetErrorInfo();
+    if (errorInfoPtr != nullptr) {
+        return ErrorOperate(APP_ERR_COMM_FAILURE, mxpiErrorInfo, buffer, "DeepSort process is not implemented");
     }
-    
+    shared_ptr<void> objectMetadata = mxpiMetadataManager.GetMetadata(objectName_);
+    if (objectMetadata == nullptr) {
+        return ErrorOperate(APP_ERR_METADATA_IS_NULL, mxpiErrorInfo, buffer, "objectMetadata is NULL, failed");
+    }
+    shared_ptr<void> featureMetadata = mxpiMetadataManager.GetMetadata(featureName_);
+    if (featureMetadata == nullptr) {
+        return ErrorOperate(APP_ERR_METADATA_IS_NULL, mxpiErrorInfo, buffer, "featureMetadata is NULL, failed");
+    }
+    std::shared_ptr<MxpiObjectList> objectList = std::static_pointer_cast<MxpiObjectList>(
+            mxpiMetadataManager.GetMetadata(objectName_));
+    std::shared_ptr<MxpiFeatureVectorList> featureList;
+    std::vector<DetectObject> detectObjectList;
+    APP_ERROR ret = getPostProcessResult(featureList, detectObjectList, objectList, mxpiMetadataManager);
+    if (ret != APP_ERR_OK) {
+        return ErrorOperate(ret, mxpiErrorInfo, buffer, "DeepSort get PostProcess Result failure.");
+    }
+    DETECTIONS detections;
+    getDetections(detections, detectObjectList);
+
+    LogInfo << "predict ------";
+    mytracker.predict();
+    std::vector<std::pair<int, int>> det_track_idxs = mytracker.update(detections);
+    std::vector<TrackerInfo> tracker_infos;
+    getTrackerInfo(tracker_infos, det_track_idxs, mytracker, detections);
+
+    shared_ptr<MxpiTrackLetList> dstMxpiTrackLetListSptr = make_shared<MxpiTrackLetList>();
+    ret = GenerateSampleOutput(*objectList, tracker_infos, *dstMxpiTrackLetListSptr);
+    if (ret != APP_ERR_OK) {
+        return ErrorOperate(ret, mxpiErrorInfo, buffer, "DeepSort gets inference information failed.");
+    }
     ret = mxpiMetadataManager.AddProtoMetadata(pluginName_, static_pointer_cast<void>(dstMxpiTrackLetListSptr));
     if (ret != APP_ERR_OK) {
-        ErrorInfo_ << GetError(ret, pluginName_) << "DeepSort add metadata failed.";
-        mxpiErrorInfo.ret = ret;
-        mxpiErrorInfo.errorInfo = ErrorInfo_.str();
-        SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
-        return ret;
+        return ErrorOperate(ret, mxpiErrorInfo, buffer, "DeepSort add metadata failed.");
     }
     SendData(0, *buffer);
     LogInfo << "DeepSort::Process end";
     return APP_ERR_OK;
+}
+
+APP_ERROR DeepSort::ErrorOperate(APP_ERROR ret, MxpiErrorInfo &mxpiErrorInfo, MxpiBuffer* buffer, string errMessage) {
+    LogError << GetError(ret, pluginName_) << errMessage;
+    mxpiErrorInfo.ret = ret;
+    mxpiErrorInfo.errorInfo = ErrorInfo_.str();
+    SetMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo);
+    return ret;
 }
 
 void DeepSort::GetFeatureVector(const std::shared_ptr<MxTools::MxpiFeatureVectorList> &featureList,

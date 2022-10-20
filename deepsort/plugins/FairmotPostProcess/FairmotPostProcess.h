@@ -91,6 +91,43 @@ private:
     const MxTools::MxpiErrorInfo mxpiErrorInfo);
     APP_ERROR PrintMxpiErrorInfo(MxTools::MxpiBuffer& buffer, const std::string pluginName,
     const MxTools::MxpiErrorInfo mxpiErrorInfo, APP_ERROR app_error, std::string errorName);
+
+    void ObjectDetectionGetFeatLayer(const std::vector <MxBase::TensorBase> &tensors,
+                                     std::vector <std::shared_ptr<void>> &featLayerData,
+                                     std::vector <std::vector<size_t>> &featLayerShapes,
+                                     std::vector<uint32_t> &shape);
+
+    int ObjectDetectionGetDets(std::vector <std::shared_ptr<void>> &featLayerData,
+                               std::vector <std::vector<size_t>> &featLayerShapes,
+                               std::vector<std::vector<float>> &dets,
+                               std::vector<std::vector<float>> &ID_feature);
+
+    void ObjectDetectionGetTrans(const std::vector <MxBase::ResizedImageInfo> &resizedImageInfos,
+                                                     float (* Trans)[3]);
+
+    void ObjectDetectionGetTransTail(cv::Mat &trans,
+                            std::vector<float> &src_point,
+                            int &dst_w,
+                            int &dst_h,
+                            std::vector<float> &center,
+                            std::vector<float> &scale_tmp,
+                            std::vector<float> &shift,
+                            float &sn,
+                            float &cs,
+                            int &inv);
+
+    void initXY(std::vector<std::vector<int>> &XY, std::vector <std::vector<size_t>> &featLayerShapes, std::shared_ptr<void> &hm_addr);
+
+    void initScoresWHREGidAddr(std::vector<float> &scores,
+                               std::vector<std::vector<float>> &WH,
+                               std::vector<std::vector<float>> &REG,
+                               std::vector<std::vector<float>> &ID_feature,
+                               std::vector <std::shared_ptr<void>> &featLayerData,
+                               std::vector <std::vector<size_t>> &featLayerShapes,
+                               std::vector<std::vector<int>> &XY);
+
+    void generateObjectList(std::vector<std::vector<MxBase::ObjectInfo>> &objectInfos, MxTools::MxpiObjectList& dstMxpiObjectList);
+
     std::string parentName_;
     std::string descriptionMessage_;
     std::ostringstream ErrorInfo_;

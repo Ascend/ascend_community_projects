@@ -97,6 +97,22 @@ private:
     // const MxTools::MxpiErrorInfo mxpiErrorInfo, APP_ERROR app_error, std::string errorName);
     void GetFeatureVector(const std::shared_ptr<MxTools::MxpiFeatureVectorList> &featureList,
         const int32_t &memberId, DetectObject &detectObject);
+
+    void GenerateTrackerInfo(const DETECTIONS& detections, std::vector<TrackerInfo>& tracker_infos);
+
+    APP_ERROR getPostProcessResult(std::shared_ptr<MxTools::MxpiFeatureVectorList> &featureList,
+                                    std::vector<DetectObject> &detectObjectList,
+                                    std::shared_ptr<MxTools::MxpiObjectList> &objectList,
+                                    MxTools::MxpiMetadataManager &mxpiMetadataManager);
+
+    void getDetections(DETECTIONS &detections, std::vector<DetectObject> &detectObjectList);
+
+    void getTrackerInfo(std::vector<TrackerInfo> &tracker_infos,
+                        std::vector<std::pair<int, int>> &det_track_idxs,
+                        tracker &mytracker,
+                        DETECTIONS &detections);
+    APP_ERROR ErrorOperate(APP_ERROR ret, MxTools::MxpiErrorInfo &mxpiErrorInfo, MxTools::MxpiBuffer* buffer, std::string errMessage);
+
     std::string parentName_;
     std::string objectName_;
     std::string featureName_;
