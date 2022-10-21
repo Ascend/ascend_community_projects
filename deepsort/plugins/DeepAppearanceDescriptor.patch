@@ -1,0 +1,596 @@
+diff --git a/DeepAppearanceDescriptor/FeatureTensor.cpp b/DeepAppearanceDescriptor2/FeatureTensor.cpp
+index 8512fdc..bcbc419 100644
+--- a/DeepAppearanceDescriptor/FeatureTensor.cpp
++++ b/DeepAppearanceDescriptor2/FeatureTensor.cpp
+@@ -1,189 +1,146 @@
+-/*!
+-    @Description : https://github.com/shaoshengsong/
+-    @Author      : shaoshengsong
+-    @Date        : 2022-09-21 04:32:26
+-*/
+-
+-//#include "globalconfig.h"
++/*
++ * Copyright (c) 2022.Huawei Technologies Co., Ltd. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ #include "FeatureTensor.h"
+ #include <iostream>
++using namespace tensorflow;
++#define FEATURE_NUM 128
++#define REDUCE 0.5
++#define MATTMP_ROW 64
++#define MATTMP_COL 128
++#define TENSORFLOW_MODEL_META "mars-small128.meta"
++#define TENSORFLOW_MODEL "mars-small128.ckpt-68577"
+ 
+ FeatureTensor *FeatureTensor::instance = NULL;
+ 
+-FeatureTensor *FeatureTensor::getInstance()
+-{
+-    if (instance == NULL)
+-    {
+-        instance = new FeatureTensor();
+-    }
+-    return instance;
+-}
+-
+-FeatureTensor::FeatureTensor()
+-{
+-    // prepare model:
+-    bool status = init();
+-    if (status == false)
+-    {
+-        std::cout << "init failed" << std::endl;
+-        exit(1);
+-    }
+-    else
+-    {
+-        std::cout << "init succeed" << std::endl;
+-    }
++bool FeatureTensor::init() {
++	tensorflow::SessionOptions sessOptions;
++	sessOptions.config.mutable_gpu_options()->set_allow_growth(true);
++	session = NewSession(sessOptions);
++	if (session == nullptr) return false;
++
++	const tensorflow::string pathToGraph = TENSORFLOW_MODEL_META;
++	Status status;
++	MetaGraphDef graph_def;
++	status = ReadBinaryProto(tensorflow::Env::Default(), pathToGraph, &graph_def);
++	if (status.ok() == false) return false;
++
++	status = session->Create(graph_def.graph_def());
++	if (status.ok() == false) return false;
++	std::vector<std::string> node_names;
++	for (const auto &node : graph_def.graph_def().node()) {
++		printf("node name:%s\n", node.name().c_str());
++	}
++	const tensorflow::string checkpointPath = TENSORFLOW_MODEL;
++	Tensor checkpointTensor(DT_STRING, TensorShape());
++	checkpointTensor.scalar<std::string>()() = checkpointPath;
++
++	status = session->Run(
++     { {graph_def.saver_def().filename_tensor_name(), checkpointTensor}, },
++     {}, {graph_def.saver_def().restore_op_name()}, nullptr);
++	if (status.ok() == false) return false;
++
++	input_layer = "Placeholder:0";
++	outnames.push_back("truediv:0");
++	feature_dim = FEATURE_NUM;
++
++	return true;
+ }
+ 
+-FeatureTensor::~FeatureTensor()
+-{
++FeatureTensor::FeatureTensor() {
++	bool status = init();
++	if (status == false) {
++	    std::cout<<"init failed"<<std::endl;
++	  exit(1);
++	  }
++	else {
++	    std::cout<<"init succeed"<<std::endl;
++	  }
+ }
+ 
+-bool FeatureTensor::init()
+-{
+-
+-    Ort::TypeInfo inputTypeInfo = session_.GetInputTypeInfo(0);
+-    auto inputTensorInfo = inputTypeInfo.GetTensorTypeAndShapeInfo();
+-
+-    ONNXTensorElementDataType inputType = inputTensorInfo.GetElementType();
+-    std::cout << "Input Type: " << inputType << std::endl;
+-
+-    inputDims_ = inputTensorInfo.GetShape();
+-    std::cout << "Input Dimensions: " << inputDims_ << std::endl; // [-1, 3, 128, 64]
+-    inputDims_[0] = 1;
+-    std::cout << "FeatureTensor::init() " << std::endl;
+-
+-
+-    return true;
++FeatureTensor::~FeatureTensor() {
++	session->Close();
++	delete session;
++	output_tensors.clear();
++	outnames.clear();
+ }
+ 
+-void FeatureTensor::preprocess(cv::Mat &imageBGR, std::vector<float> &inputTensorValues, size_t &inputTensorSize)
+-{
+-
+-    // pre-processing the Image
+-    //  step 1: Read an image in HWC BGR UINT8 format.
+-    //  cv::Mat imageBGR = cv::imread(imageFilepath, cv::ImreadModes::IMREAD_COLOR);
+-
+-    // step 2: Resize the image.
+-    cv::Mat resizedImageBGR, resizedImageRGB, resizedImage, preprocessedImage;
+-       cv::resize(imageBGR, resizedImageBGR,
+-                  cv::Size(inputDims_.at(3), inputDims_.at(2)),
+-                  cv::InterpolationFlags::INTER_CUBIC);
+-
+-    // cv::resize(imageBGR, resizedImageBGR,
+-    //            cv::Size(64, 128));
+-
+-    // step 3: Convert the image to HWC RGB UINT8 format.
+-    cv::cvtColor(resizedImageBGR, resizedImageRGB,
+-                 cv::ColorConversionCodes::COLOR_BGR2RGB);
+-    // step 4: Convert the image to HWC RGB float format by dividing each pixel by 255.
+-    resizedImageRGB.convertTo(resizedImage, CV_32F, 1.0 / 255);
+-
+-    // step 5: Split the RGB channels from the image.
+-    cv::Mat channels[3];
+-    cv::split(resizedImage, channels);
+-
+-    // step 6: Normalize each channel.
+-    //  Normalization per channel
+-    //  Normalization parameters obtained from your custom model
+-
+-    channels[0] = (channels[0] - 0.485) / 0.229;
+-    channels[1] = (channels[1] - 0.456) / 0.224;
+-    channels[2] = (channels[2] - 0.406) / 0.225;
+-
+-    // step 7: Merge the RGB channels back to the image.
+-    cv::merge(channels, 3, resizedImage);
+-
+-    // step 8: Convert the image to CHW RGB float format.
+-    // HWC to CHW
+-    cv::dnn::blobFromImage(resizedImage, preprocessedImage);
+-    inputTensorSize = vectorProduct(inputDims_);
+-    inputTensorValues.assign(preprocessedImage.begin<float>(),
+-                             preprocessedImage.end<float>());
+-
+-    std::cout << "inputTensorSize:" << inputTensorValues.size() << std::endl;
++FeatureTensor *FeatureTensor::getInstance() {
++	if (instance == NULL) {
++		instance = new FeatureTensor();
++	}
++	return instance;
+ }
+ 
+-bool FeatureTensor::getRectsFeature(const cv::Mat &img, DETECTIONS &d)
+-{
+-
+-    for (DETECTION_ROW &dbox : d)
+-    {
+-        cv::Rect rc = cv::Rect(int(dbox.tlwh(0)), int(dbox.tlwh(1)),
+-                               int(dbox.tlwh(2)), int(dbox.tlwh(3)));
+-        rc.x -= (rc.height * 0.5 - rc.width) * 0.5;
+-        rc.width = rc.height * 0.5;
+-        rc.x = (rc.x >= 0 ? rc.x : 0);
+-        rc.y = (rc.y >= 0 ? rc.y : 0);
+-        rc.width = (rc.x + rc.width <= img.cols ? rc.width : (img.cols - rc.x));
+-        rc.height = (rc.y + rc.height <= img.rows ? rc.height : (img.rows - rc.y));
+-
+-        cv::Mat mattmp = img(rc).clone();
+-
+-        std::vector<float> inputTensorValues;
+-        size_t inputTensorSize;
+-        preprocess(mattmp, inputTensorValues, inputTensorSize);
+-
+-        const char *input_names[] = {"input"};   //输入节点名
+-        const char *output_names[] = {"output"}; //输出节点名
+-
+-        auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeDefault);
+-        output_tensor_ = Ort::Value::CreateTensor<float>(memory_info, results_.data(), results_.size(), output_shape_.data(), output_shape_.size());
+-
+-        std::vector<Ort::Value> inputTensors;
+-        inputTensors.push_back(Ort::Value::CreateTensor<float>(
+-            memory_info, inputTensorValues.data(), inputTensorSize, inputDims_.data(),
+-            inputDims_.size()));
+-
+-
+-        session_.Run(Ort::RunOptions{nullptr}, input_names, inputTensors.data(), 1, output_names, &output_tensor_, 1);
+-     
+-        Ort::TensorTypeAndShapeInfo shape_info = output_tensor_.GetTensorTypeAndShapeInfo();
+-
+-
+-        size_t dim_count = shape_info.GetDimensionsCount();
+-        std::cout << "dim_count:" << dim_count << std::endl;
+-
+-  
+-        int64_t dims[2];
+-        shape_info.GetDimensions(dims, sizeof(dims) / sizeof(dims[0]));
+-        std::cout << "output shape:" << dims[0] << "," << dims[1] << std::endl;
+-
+-
+-        float *f = output_tensor_.GetTensorMutableData<float>();
+-        for (int i = 0; i < dims[1]; i++) //sisyphus
+-        {
+-            dbox.feature[i] = f[i];
+-        }
+-    }
+-
+-    return true;
++bool FeatureTensor::getRectsFeature(const cv::Mat& img, DETECTIONS& d) {
++	std::vector<cv::Mat> mats;
++	for (DETECTION_ROW& dbox : d) {
++       cv::Rect rc = cv::Rect(int(dbox.tlwh(0)), int(dbox.tlwh(1)),
++           int(dbox.tlwh(2)), int(dbox.tlwh(3)));
++		rc.x -= (rc.height * REDUCE - rc.width) * REDUCE;
++		rc.width = rc.height * REDUCE;
++		rc.x = (rc.x >= 0 ? rc.x : 0);
++		rc.y = (rc.y >= 0 ? rc.y : 0);
++		rc.width = (rc.x + rc.width <= img.cols? rc.width: (img.cols-rc.x));
++		rc.height = (rc.y + rc.height <= img.rows? rc.height:(img.rows - rc.y));
++
++		cv::Mat mattmp = img(rc).clone();
++		cv::resize(mattmp, mattmp, cv::Size(MATTMP_ROW, MATTMP_COL));
++		mats.push_back(mattmp);
++	}
++	int count = mats.size();
++
++	Tensor input_tensor (DT_UINT8, TensorShape(
++     { count, 128, 64, 3 }));
++	tobuffer(mats, input_tensor.flat<uint8>().data());
++	std::vector<std::pair<tensorflow::string, Tensor>> feed_dict = {
++			{input_layer, input_tensor},
++	};
++
++	Status status = session->Run(feed_dict, outnames, {}, &output_tensors);
++	if (status.ok() == false)
++	  return false;
++	float* tensor_buffer = output_tensors[0].flat<float>().data();
++	int i = 0;
++	for (DETECTION_ROW& dbox : d) {
++		for (int j = 0; j < feature_dim; j++)
++			dbox.feature[j] = tensor_buffer[i*feature_dim+j];
++		i++;
++	}
++	return true;
+ }
+ 
+-void FeatureTensor::tobuffer(const std::vector<cv::Mat> &imgs, uint8 *buf)
+-{
+-    int pos = 0;
+-    for (const cv::Mat &img : imgs)
+-    {
+-        int Lenth = img.rows * img.cols * 3;
+-        int nr = img.rows;
+-        int nc = img.cols;
+-        if (img.isContinuous())
+-        {
+-            nr = 1;
+-            nc = Lenth;
+-        }
+-        for (int i = 0; i < nr; i++)
+-        {
+-            const uchar *inData = img.ptr<uchar>(i);
+-            for (int j = 0; j < nc; j++)
+-            {
+-                buf[pos] = *inData++;
+-                pos++;
+-            }
+-        } // end for
+-    }     // end imgs;
++void FeatureTensor::tobuffer(const std::vector<cv::Mat> &imgs, uint8 *buf) {
++	int pos = 0;
++	for (const cv::Mat& img : imgs) {
++		int Lenth = img.rows * img.cols * 3;
++		int nr = img.rows;
++		int nc = img.cols;
++		if (img.isContinuous()) {
++			nr = 1;
++			nc = Lenth;
++		}
++		for (int i = 0; i < nr; i++) {
++			const uchar* inData = img.ptr<uchar>(i);
++			for (int j = 0; j < nc; j++) {
++				buf[pos] = *inData++;
++				pos++;
++			}
++		}
++	}
+ }
+-void FeatureTensor::test()
+-{
+-    return;
++void FeatureTensor::test() {
++	return;
+ }
+diff --git a/DeepAppearanceDescriptor/FeatureTensor.h b/DeepAppearanceDescriptor2/FeatureTensor.h
+index 72c2058..5f92642 100644
+--- a/DeepAppearanceDescriptor/FeatureTensor.h
++++ b/DeepAppearanceDescriptor2/FeatureTensor.h
+@@ -1,85 +1,33 @@
+-
+-/*!
+-    @Description : https://github.com/shaoshengsong/
+-    @Author      : shaoshengsong
+-    @Date        : 2022-09-21 02:39:47
+-*/
+-#include "model.h"
+-#include "dataType.h"
+-#include <chrono>
+-#include <cmath>
+-#include <exception>
+-#include <fstream>
+-#include <iostream>
+-#include <limits>
+-#include <numeric>
+-#include <string>
+-#include <vector>
+-#include <stdexcept> 
+-#include <onnxruntime_cxx_api.h>
+ #include "opencv2/opencv.hpp"
+ #include "opencv2/core/core.hpp"
+-#include <opencv2/dnn/dnn.hpp>
+-#include <opencv2/imgcodecs.hpp>
+-#include <opencv2/imgproc.hpp>
+-typedef unsigned char uint8;
+-
+-template <typename T>
+-T vectorProduct(const std::vector<T> &v)
+-{
+-    return std::accumulate(v.begin(), v.end(), 1, std::multiplies<T>());
+-}
++#include "opencv2/highgui/highgui.hpp"
++#include "tensorflow/core/public/session.h"
++#include "tensorflow/core/protobuf/meta_graph.pb.h"
+ 
+-template <typename T>
+-std::ostream &operator<<(std::ostream &os, const std::vector<T> &v)
+-{
+-    os << "[";
+-    for (int i = 0; i < v.size(); ++i)
+-    {
+-        os << v[i];
+-        if (i != v.size() - 1)
+-        {
+-            os << ", ";
+-        }
+-    }
+-    os << "]";
+-    return os;
+-}
++#include "model.h"
++#include "dataType.h"
++using uint8 = unsigned char;
+ class FeatureTensor
+ {
+ public:
+-    static FeatureTensor *getInstance();
+-    bool getRectsFeature(const cv::Mat &img, DETECTIONS &d);
+-    void preprocess(cv::Mat &imageBGR, std::vector<float> &inputTensorValues, size_t &inputTensorSize);
++	static FeatureTensor* getInstance();
++	bool getRectsFeature(const cv::Mat& img, DETECTIONS& d);
++	void tobuffer(const std::vector<cv::Mat> &imgs, uint8 *buf);
++	void test();
+ 
+-private:
+-    FeatureTensor();
+-    FeatureTensor(const FeatureTensor &);
+-    FeatureTensor &operator=(const FeatureTensor &);
+-    static FeatureTensor *instance;
+-    bool init();
+-    ~FeatureTensor();
++	std::vector<tensorflow::Tensor> output_tensors;
++	std::vector<tensorflow::string> outnames;
+ 
+-    void tobuffer(const std::vector<cv::Mat> &imgs, uint8 *buf);
+-
+-public:
+-    void test();
+-
+-    static constexpr const int width_ = 64;
+-    static constexpr const int height_ = 128;
+-
+-    std::array<float, width_ * height_> input_image_{};
+-
+-    std::array<float, k_feature_dim> results_{};
+-
+-    Ort::Env env;
+-    Ort::Session session_{env, k_feature_model_path.c_str(), Ort::SessionOptions{nullptr}};
+-
+-    Ort::Value input_tensor_{nullptr};
+-    std::array<int64_t, 4> input_shape_{1, 3, width_, height_};
++	int feature_dim;
++	tensorflow::Session* session;
++	tensorflow::string input_layer;
++private:
++	static FeatureTensor* instance;
++	bool init();
+ 
+-    Ort::Value output_tensor_{nullptr};
+-    std::array<int64_t, 2> output_shape_{1, k_feature_dim};
++	FeatureTensor();
++	~FeatureTensor();
+ 
+-    std::vector<int64_t> inputDims_;
++	FeatureTensor(const FeatureTensor&);
++	FeatureTensor& operator = (const FeatureTensor&);
+ };
+diff --git a/DeepAppearanceDescriptor/dataType.h b/DeepAppearanceDescriptor2/dataType.h
+index dea1d55..2530428 100644
+--- a/DeepAppearanceDescriptor/dataType.h
++++ b/DeepAppearanceDescriptor2/dataType.h
+@@ -1,53 +1,43 @@
+-/*!
+-    @Description : https://github.com/shaoshengsong/
+-    @Author      : shaoshengsong
+-    @Date        : 2022-09-21 05:49:06
+-*/
+ #pragma once
+-
+-
++#ifndef DATATYPE_H
++#define DATATYPEH
+ #include <cstddef>
+ #include <vector>
+-
+ #include <Eigen/Core>
+ #include <Eigen/Dense>
+-
+-
+-const int k_feature_dim=512;//feature dim
+-
+-const std::string  k_feature_model_path ="./feature.onnx";
+-const std::string  k_detect_model_path ="./yolov5s.onnx";
+-
+-
+-typedef Eigen::Matrix<float, 1, 4, Eigen::RowMajor> DETECTBOX;
+-typedef Eigen::Matrix<float, -1, 4, Eigen::RowMajor> DETECTBOXSS;
+-typedef Eigen::Matrix<float, 1, k_feature_dim, Eigen::RowMajor> FEATURE;
+-typedef Eigen::Matrix<float, Eigen::Dynamic, k_feature_dim, Eigen::RowMajor> FEATURESS;
+-//typedef std::vector<FEATURE> FEATURESS;
+-
+-//Kalmanfilter
+-//typedef Eigen::Matrix<float, 8, 8, Eigen::RowMajor> KAL_FILTER;
+-typedef Eigen::Matrix<float, 1, 8, Eigen::RowMajor> KAL_MEAN;
+-typedef Eigen::Matrix<float, 8, 8, Eigen::RowMajor> KAL_COVA;
+-typedef Eigen::Matrix<float, 1, 4, Eigen::RowMajor> KAL_HMEAN;
+-typedef Eigen::Matrix<float, 4, 4, Eigen::RowMajor> KAL_HCOVA;
++#define DETECTBOX_ROW 1
++#define DETECTBOX_COL 4
++#define DETECTBOXSS_ROW (-1)
++#define DETECTBOXSS_COL 4
++#define FEATURE_ROW 1
++#define FEATURE_COL 128
++#define FEATURESS_COL 128
++#define KAL_MEAN_ROW 1
++#define KAL_MEAN_COL 8
++#define KAL_COVA_ROW 8
++#define KAL_COVA_COL 8
++#define KAL_HMEAN_ROW 1
++#define KAL_HMEAN_COL 4
++#define KAL_HCOVA_ROW 4
++#define KAL_HCOVA_COL 4
++using DETECTBOX = Eigen::Matrix<float, DETECTBOX_ROW, DETECTBOX_COL, Eigen::RowMajor>;
++using DETECTBOXSS = Eigen::Matrix<float, DETECTBOXSS_ROW, DETECTBOXSS_COL, Eigen::RowMajor>;
++using FEATURE = Eigen::Matrix<float, FEATURE_ROW, FEATURE_COL, Eigen::RowMajor>;
++using FEATURESS = Eigen::Matrix<float, Eigen::Dynamic, FEATURESS_COL, Eigen::RowMajor>;
++using KAL_MEAN = Eigen::Matrix<float, KAL_MEAN_ROW, KAL_MEAN_COL, Eigen::RowMajor>;
++using KAL_COVA = Eigen::Matrix<float, KAL_COVA_ROW, KAL_COVA_COL, Eigen::RowMajor>;
++using KAL_HMEAN = Eigen::Matrix<float, KAL_HMEAN_ROW, KAL_HMEAN_COL, Eigen::RowMajor>;
++using KAL_HCOVA = Eigen::Matrix<float, KAL_HCOVA_ROW, KAL_HCOVA_COL, Eigen::RowMajor>;
+ using KAL_DATA = std::pair<KAL_MEAN, KAL_COVA>;
+ using KAL_HDATA = std::pair<KAL_HMEAN, KAL_HCOVA>;
+-
+-//main
+ using RESULT_DATA = std::pair<int, DETECTBOX>;
+ 
+-//tracker:
+ using TRACKER_DATA = std::pair<int, FEATURESS>;
+ using MATCH_DATA = std::pair<int, int>;
+-typedef struct t{
++using TRACHER_MATCHD = struct t {
+     std::vector<MATCH_DATA> matches;
+     std::vector<int> unmatched_tracks;
+     std::vector<int> unmatched_detections;
+-}TRACHER_MATCHD;
+-
+-//linear_assignment:
+-typedef Eigen::Matrix<float, -1, -1, Eigen::RowMajor> DYNAMICM;
+-
+-
+-
++};
++using DYNAMICM = Eigen::Matrix<float, -1, -1, Eigen::RowMajor>;
++#endif
+\ No newline at end of file
+diff --git a/DeepAppearanceDescriptor/model.cpp b/DeepAppearanceDescriptor2/model.cpp
+index 8734e36..0f6db5a 100644
+--- a/DeepAppearanceDescriptor/model.cpp
++++ b/DeepAppearanceDescriptor2/model.cpp
+@@ -1,20 +1,35 @@
++/*
++ * Copyright (c) 2022.Huawei Technologies Co., Ltd. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ #include "model.h"
+ #include <algorithm>
+ 
+-const float kRatio=0.5;
++const float kRatio = 0.5;
+ enum DETECTBOX_IDX {IDX_X = 0, IDX_Y, IDX_W, IDX_H };
+ 
+ DETECTBOX DETECTION_ROW::to_xyah() const
+-{//(centerx, centery, ration, h)
++{
+ 	DETECTBOX ret = tlwh;
+-	ret(0,IDX_X) += (ret(0, IDX_W)*kRatio);
++	ret(0, IDX_X) += (ret(0, IDX_W)*kRatio);
+ 	ret(0, IDX_Y) += (ret(0, IDX_H)*kRatio);
+ 	ret(0, IDX_W) /= ret(0, IDX_H);
+ 	return ret;
+ }
+ 
+ DETECTBOX DETECTION_ROW::to_tlbr() const
+-{//(x,y,xx,yy)
++{
+ 	DETECTBOX ret = tlwh;
+ 	ret(0, IDX_X) += ret(0, IDX_W);
+ 	ret(0, IDX_Y) += ret(0, IDX_H);
+diff --git a/DeepAppearanceDescriptor/model.h b/DeepAppearanceDescriptor2/model.h
+index 8677bae..366b9f2 100644
+--- a/DeepAppearanceDescriptor/model.h
++++ b/DeepAppearanceDescriptor2/model.h
+@@ -2,12 +2,6 @@
+ #define MODEL_H
+ #include "dataType.h"
+ 
+-
+-// * Each rect's data structure.
+-// * tlwh: topleft point & (w,h)
+-// * confidence: detection confidence.
+-// * feature: the rect's 128d feature.
+-// */
+ class DETECTION_ROW
+ {
+ public:
+@@ -17,9 +11,5 @@ public:
+     DETECTBOX to_xyah() const;
+     DETECTBOX to_tlbr() const;
+ };
+-
+-typedef std::vector<DETECTION_ROW> DETECTIONS;
+-
+-
+-
+-#endif // MODEL_H
++using DETECTIONS = std::vector<DETECTION_ROW>;
++#endif

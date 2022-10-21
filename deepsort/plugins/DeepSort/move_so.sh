@@ -24,10 +24,10 @@ function move_so() {
     else
         echo "file $build_path is not exist."
     fi
-    chmod +w /home/wangshengke1/MindX_SDK/mxVision/lib/plugins/libdeepsort.so
+    chmod +w ${MX_SDK_HOME}/lib/plugins/libdeepsort.so
     cd "$build_path"
-    cp libdeepsort.so /home/wangshengke1/MindX_SDK/mxVision/lib/plugins/
-    chmod 440 /home/wangshengke1/MindX_SDK/mxVision/lib/plugins/libdeepsort.so
+    cp libdeepsort.so ${MX_SDK_HOME}/lib/plugins/
+    chmod 440 ${MX_SDK_HOME}/lib/plugins/libdeepsort.so
     cd ..
     exit 0
 }

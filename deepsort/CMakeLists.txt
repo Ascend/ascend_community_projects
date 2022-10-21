@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.5.0)
 # project information
 project(FairMOT)   
 
-set(MX_SDK_HOME "/home/wangshengke1/MindX_SDK/mxVision")   
+set(MX_SDK_HOME "${MX_SDK_HOME}")   
 
 if (NOT DEFINED ENV{MX_SDK_HOME})      
     string(REGEX REPLACE "(.*)/(.*)/(.*)/(.*)" "\\1" MX_SDK_HOME  ${CMAKE_CURRENT_SOURCE_DIR})

@@ -20,8 +20,9 @@
 #include <fstream>
 #include <stdlib.h>
 #include <iomanip>
-#define TWO 2
-#define THREE 3
+#define TRACKFLAG_JUDGE 2
+#define TLWH_W 2
+#define TLWH_H 3
 using namespace MxPlugins;
 using namespace MxTools;
 using namespace std;
@@ -112,8 +113,8 @@ void DeepSort::getDetections(DETECTIONS &detections, std::vector<DetectObject> &
         float y1 = detect_info.y1();
         detection. tlwh(0, 0) = y0;
         detection. tlwh(0, 1) = x0;
-        detection. tlwh(0, TWO) = x1-x0;
-        detection. tlwh(0, THREE) = y1-y0;
+        detection. tlwh(0, TLWH_W) = x1-x0;
+        detection. tlwh(0, TLWH_H) = y1-y0;
         const auto& class_info = detect_info.classvec();
         float confi = class_info[0].confidence();
         detection. confidence = confi;
@@ -129,7 +130,7 @@ void DeepSort::getDetections(DETECTIONS &detections, std::vector<DetectObject> &
 
 void DeepSort::getTrackerInfo(std::vector<TrackerInfo> &tracker_infos,
     std::vector<std::pair<int, int>> &det_track_idxs,
-    tracker &mytracker, 
+    tracker &mytracker,
     DETECTIONS &detections) {
     sort(det_track_idxs.begin(), det_track_idxs.end(),
         [](std::pair<int, int>& d1, std::pair<int, int>& d2)
@@ -142,7 +143,6 @@ void DeepSort::getTrackerInfo(std::vector<TrackerInfo> &tracker_infos,
     }
     ofstream dataFile;
     dataFile.open("gt.txt", ofstream::app);
-    fstream file("gt.txt", ios::app);
     
     for (const auto& det_track_idx : det_track_idxs) {
         int det_id = det_track_idx.first;
@@ -150,14 +150,14 @@ void DeepSort::getTrackerInfo(std::vector<TrackerInfo> &tracker_infos,
         Track& track = mytracker.tracks[track_idx];
         LogInfo << track.track_id << ",";
         if (frame_id <= control) {
-            dataFile<<frame_id<<","<< track.track_id<<","<<int(detections[det_id].tlwh(0, 1))<<","<<int(detections[det_id].tlwh(0, 0))<<","<<int(detections[det_id].tlwh(0, TWO))<<","<<int(detections[det_id].tlwh(0, THREE))<<","<<1<<","<< 1 <<","<< 1 <<","<<endl;
+            dataFile<<frame_id<<","<< track.track_id<<","<<int(detections[det_id].tlwh(0, 1))<<","<<int(detections[det_id].tlwh(0, 0))<<","<<int(detections[det_id].tlwh(0, TLWH_W))<<","<<int(detections[det_id].tlwh(0, TLWH_H))<<","<<1<<","<< 1 <<","<< 1 <<","<<endl;
         }
           
         TrackerInfo tracker_info;
         tracker_info.trackId   = track.track_id;
         tracker_info.age       = track.age;
         tracker_info.hits      = track.hits;
-        tracker_info.trackFlag = track.state == Track::Tentative ? 0 : track.state == Track::Confirmed ? 1 : track.state == Track::Deleted ? TWO : 0;
+        tracker_info.trackFlag = track.state == Track::Tentative ? 0 : track.state == Track::Confirmed ? 1 : track.state == Track::Deleted ? TRACKFLAG_JUDG : 0;
         tracker_infos.push_back(tracker_info);
     }
 }

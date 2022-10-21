@@ -7,7 +7,7 @@ add_definitions(-Dgoogle=mindxsdk_private)
 set(PLUGIN_NAME "deepsort")
 set(TARGET_LIBRARY ${PLUGIN_NAME})
 
-set(MX_SDK_HOME "/home/wangshengke1/MindX_SDK/mxVision")
+set(MX_SDK_HOME "${MX_SDK_HOME}")
 
 include_directories(/usr/include/eigen3)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -17,7 +17,7 @@ include_directories(${MX_SDK_HOME}/opensource/include/gstreamer-1.0)
 include_directories(${MX_SDK_HOME}/opensource/include/glib-2.0)
 include_directories(${MX_SDK_HOME}/opensource/lib/glib-2.0/include)
 
-include_directories(/home/wangshengke1/MindX_SDK/mxVision/opensource/include/opencv4)
+include_directories(${MX_SDK_HOME}/opensource/include/opencv4)
 
 
 link_directories(${MX_SDK_HOME}/lib)

@@ -41,53 +41,23 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 
 ```
 ├── models
-│   ├── aipp_FairMOT.config            # 模型转换aipp配置文件
-│   ├── mot_v2.onnx      # onnx模型
-│   └── mot_v2.om               # om模型
+│   └── aipp_FairMOT.config            # 模型转换aipp配置文件
 ├── pipeline
 │   └── deepsort.pipeline        # pipeline文件
 ├── plugins
 │   ├── FairmotPostProcess     #DeepSORT后处理插件
-│   │   ├── CMakeLists.txt        
-│   │   ├── FairmotPostProcess.cpp  
-│   │   ├── FairmotPostProcess.h
-│   │   └── build.sh
-│   ├── Deeosort     # DeepSORT的Tracking
+│       └── move_so.sh
+│   ├── Deepsort     # DeepSORT的Tracking
 │   │   ├── CMakeLists.txt        
 │   │   ├── DeepSort.cpp  
 │   │   ├── DeepSort.h
-│   │   ├── kalmanfilter.cpp
-│   │   ├── kalmanfilter.h
-│   │   ├── linear_assignment.cpp
-│   │   ├── linear_assignment.h
-│   │   ├── nn_matching.cpp
-│   │   ├── nn_matching.h
-│   │   ├── track.cpp
-│   │   ├── track.h
-│   │   ├── tracker.cpp
-│   │   ├── tracker.h
-│   │   ├── temp.cpp
 │   │   ├── move_so.sh
 │   │   └── build.sh
-│   ├── DeepAppearanceDescriptor    #特征
-│   │   ├── FeatureTensor.cpp
-│   │   ├── FeatureTensor.h
-│   │   ├── model.cpp
-│   │   ├── model.h
-│   │   └── dataType.h
-│   ├── MunkresAssignment   
-│   │   ├── hungarianoper.cpp
-│   │   ├── hungarianoper.h
-│   │   └── munkres
-│   │        ├── munkres.cpp
-│   │        ├── munkres.h
-│   │        └── matrix.h
+│   ├── Deepsort .patch  
+│   ├── DeepAppearanceDescriptor.patch
+│   ├── MunkresAssignment.patch  
 │   └── MxpiTrackIdReplaceClassName  # 跟踪编号取代类名插件
-│       ├── CMakeLists.txt
-│       ├── MxpiTrackIdReplaceClassName.cpp
-│       ├── MxpiTrackIdReplaceClassName.h
-│       ├── move_so.sh
-│       └── build.sh
+│       └── move_so.sh
 ├── CMakeLists.txt
 ├── build.sh
 ├── main.cpp
@@ -108,7 +78,7 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 在编译运行项目前，需要设置环境变量：
 
 ```
-export MX_SDK_HOME=/home/wangshengke0/MindX_SDK/mxVision
+export MX_SDK_HOME=${MX_SDK_HOME}
 export install_path=/usr/local/Ascend/ascend-toolkit/latest
 export PATH=/usr/local/python3.9.2/bin:${install_path}/atc/ccec_compiler/bin:${install_path}/atc/bin:$PATH
 export ASCEND_OPP_PATH=${install_path}/opp
@@ -176,17 +146,76 @@ ATC run success, welcome to the next use.
 
 ## 6 编译与运行
 
-**步骤1** 按照第2小结**环境依赖**中的步骤设置环境变量。
+**步骤1** 按照第2小结**环境依赖**中的步骤设置环境变量。按照第5小结**准备**完成相关安装和修改。
 
 **步骤2** 按照第 4 小节 **模型转换** 中的步骤获得 om 模型文件，放置在 `deepsort/models` 目录下。
 
-**步骤3** 编译。进入 `deepsort` 目录，在 `deepsort` 目录下执行命令：
+**步骤3** 进入plugins目录，将FairmotPostProcess和MxpiTrackIdReplaceClassName插件以如下结构放在 `plugins` 目录下。[链接]https://gitee.com/ascend/mindxsdk-referenceapps/tree/master/contrib/FairMOT。
+将DeepSort开源代码的DeepSort、DeepAppearanceDescriptor和MunkresAssignment以如下结构放在 `plugins` 目录下。[链接]https://github.com/shaoshengsong/DeepSORT 。
+├── plugins
+│   ├── FairmotPostProcess     #DeepSORT后处理插件
+│   │   ├── CMakeLists.txt        
+│   │   ├── FairmotPostProcess.cpp  
+│   │   ├── FairmotPostProcess.h
+│   │   ├── move_so.sh
+│   │   └── build.sh
+│   └── MxpiTrackIdReplaceClassName  # 跟踪编号取代类名插件
+│       ├── CMakeLists.txt
+│       ├── MxpiTrackIdReplaceClassName.cpp
+│       ├── MxpiTrackIdReplaceClassName.h
+│       ├── move_so.sh
+│       └── build.sh
+│   ├── DeepSort     # DeepSORT的Tracking
+│   │   ├── CMakeLists.txt        
+│   │   ├── DeepSort.cpp  
+│   │   ├── DeepSort.h
+│   │   ├── kalmanfilter.cpp 
+│   │   ├── kalmanfilter.h
+│   │   ├── linear_assignment.cpp
+│   │   ├── linear_assignment.h
+│   │   ├── nn_matching.cpp
+│   │   ├── nn_matching.h
+│   │   ├── tracker.cpp 
+│   │   ├── tracker.h
+│   │   ├── track.cpp
+│   │   ├── track.h
+│   │   ├── move_so.sh
+│   │   └── build.sh
+│   ├── DeepAppearanceDescriptor    #特征
+│   │   ├── FeatureTensor.cpp
+│   │   ├── FeatureTensor.h
+│   │   ├── model.cpp
+│   │   ├── model.h
+│   │   └── dataType.h
+│   ├── MunkresAssignment
+│   │   ├── hungarianoper.cpp
+│   │   ├── hungarianoper.h
+│   │   └── munkres
+│   │        ├── munkres.cpp
+│   │        ├── munkres.h
+│   │        └── matrix.h
+在 `plugins` 目录下执行命令：
+```
+patch -p1 < MxpiTrackIdReplaceClassName.patch 
+patch -p1 < FairmotPostProcess.patch 
+patch -p1 < MunkresAssignment.patch  
+patch -p1 < DeepAppearanceDescriptor.patch  
+patch -p1 < DeepSort.patch  
+```
+注：如果Fairmot文件有更新，则需要回退历史版本。
+```
+git clone https://gitee.com/ascend/mindxsdk-referenceapps.git
+cd /contrib/FairMOT
+git reset c2e5c1a51eff4214563d3993a742183e1ff9e55c --hard
+```
+**步骤4** 编译。进入 `deepsort` 目录，在 `deepsort` 目录下执行命令：
 
 ```
 bash build.sh
 ```
+注：执行bash步骤前，需要将plugins中所有插件里CMakeLists.txt、move_so.sh文件和主目录下的CMakeLists.txt文件的SDK安装路径${MX_SDK_HOME}替换为用户的SDK安装路径
 
-**步骤4** 运行。回到deepsort目录下，在deepsort目录下执行命令：
+**步骤5** 运行。回到deepsort目录下，在deepsort目录下执行命令：
 
 ```
 bash run.sh
