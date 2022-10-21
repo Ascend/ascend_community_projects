@@ -73,10 +73,9 @@ APP_ERROR DeepSort::GenerateSampleOutput (const MxpiObjectList srcMxpiObjectList
 }
 
 APP_ERROR DeepSort::getPostProcessResult(std::shared_ptr<MxpiFeatureVectorList> &featureList,
-                                        std::vector<DetectObject> &detectObjectList,
-                                        std::shared_ptr<MxpiObjectList> &objectList,
-                                        MxpiMetadataManager &mxpiMetadataManager) {
-
+    std::vector<DetectObject> &detectObjectList,
+    std::shared_ptr<MxpiObjectList> &objectList,
+    MxpiMetadataManager &mxpiMetadataManager) {
     if (objectList->objectvec_size() == 0) {
         LogDebug << "Object detection result of model infer is null.";
         return APP_ERR_COMM_FAILURE;
@@ -129,10 +128,9 @@ void DeepSort::getDetections(DETECTIONS &detections, std::vector<DetectObject> &
 }
 
 void DeepSort::getTrackerInfo(std::vector<TrackerInfo> &tracker_infos,
-                    std::vector<std::pair<int, int>> &det_track_idxs,
-                    tracker &mytracker, 
-                    DETECTIONS &detections) {
-
+    std::vector<std::pair<int, int>> &det_track_idxs,
+    tracker &mytracker, 
+    DETECTIONS &detections) {
     sort(det_track_idxs.begin(), det_track_idxs.end(),
         [](std::pair<int, int>& d1, std::pair<int, int>& d2)
         {

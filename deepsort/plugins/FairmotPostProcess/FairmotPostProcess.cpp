@@ -183,7 +183,6 @@ void FairmotPostProcess::ObjectDetectionGetFeatLayer(
     std::vector <std::shared_ptr<void>> &featLayerData,
     std::vector <std::vector<size_t>> &featLayerShapes,
     std::vector<uint32_t> &shape) {
-
     for (uint32_t j = 0; j < tensors.size(); j++) {
         auto dataPtr = (uint8_t *)tensors[j].GetBuffer();
         std::shared_ptr<void> tmpPointer;
@@ -200,10 +199,9 @@ void FairmotPostProcess::ObjectDetectionGetFeatLayer(
     }
 }
 
-void FairmotPostProcess::initXY(
-        std::vector<std::vector<int>> &XY, 
-        std::vector <std::vector<size_t>> &featLayerShapes,
-        std::shared_ptr<void> &hm_addr) {
+void FairmotPostProcess::initXY(std::vector<std::vector<int>> &XY,
+    std::vector <std::vector<size_t>> &featLayerShapes,
+    std::shared_ptr<void> &hm_addr) {
     for (uint32_t i = 0; i < featLayerShapes[0][1] * featLayerShapes[0][TWO]; i++) {
         if (static_cast<float *>(hm_addr.get())[i] > CONF_THRES) {
             std::vector<int>xy;
@@ -224,7 +222,6 @@ void FairmotPostProcess::initScoresWHREGidAddr(std::vector<float> &scores,
     std::vector <std::shared_ptr<void>> &featLayerData,
     std::vector <std::vector<size_t>> &featLayerShapes,
     std::vector<std::vector<int>> &XY) {
-
     std::shared_ptr<void> hm_addr = featLayerData[0];
     for (uint32_t i = 0; i < XY.size(); i++) {
         scores.push_back(static_cast<float *>(hm_addr.get())[XY[i][0] * featLayerShapes[0][TWO] + XY[i][1]]);
@@ -312,7 +309,6 @@ void FairmotPostProcess::ObjectDetectionGetTransTail(
     float &sn,
     float &cs,
     int &inv) {
-
     std::vector<float>src_dir(TWO, 0);
     src_dir[0] = src_point[0] * cs - src_point[1] * sn ;
     src_dir[1] = src_point[0] * sn + src_point[1] * cs ;
@@ -359,7 +355,6 @@ void FairmotPostProcess::ObjectDetectionGetTransTail(
 void FairmotPostProcess::ObjectDetectionGetTrans(
     const vector <ResizedImageInfo> &resizedImageInfos,
     float (* Trans)[3]) {
-
     int width = resizedImageInfos[0].widthOriginal;
     int height = resizedImageInfos[0].heightOriginal;
     int inp_height = resizedImageInfos[0].heightResize;
@@ -412,7 +407,6 @@ int FairmotPostProcess::ObjectDetectionOutput(
     vector <vector<ObjectInfo>> &objectInfos,
     vector<vector<float>> &ID_feature,
     const vector <ResizedImageInfo> &resizedImageInfos) {
-
     LogDebug << "FairmotPostProcess start to write results.";
     if (tensors.size() == 0) { return 0; }
     auto shape = tensors[0].GetShape();
