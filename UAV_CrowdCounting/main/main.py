@@ -43,11 +43,11 @@ if __name__ == '__main__':
     if os.path.exists('./data/test.jpg') == 1:
         with open("./data/test.jpg", 'rb') as f:
             dataInput.data = f.read()
-            testName = "'./data/test.jpg'"
+            TEST_NAME = "'./data/test.jpg'"
     elif os.path.exists('./data/test.png') == 1:
         with open("./data/test.png", 'rb') as f:
             dataInput.data = f.read()
-            testName = "'./data/test.png'"
+            TEST_NAME = "'./data/test.png'"
     else:
         print("The test image does not exist.")
 
@@ -70,12 +70,12 @@ if __name__ == '__main__':
     result.ParseFromString(infer_result.serializedMetadata)
     result_list = np.frombuffer(result.tensorPackageVec[0].tensorVec[0].dataStr
                                 , dtype=np.float32)
-    print("Current Test: {}, Predicted Count: {}".format(testName, int(np.sum(result_list))))
+    print("Current Test: {}, Predicted Count: {}".format(TEST_NAME, int(np.sum(result_list))))
     # reshape the result to a density map with a fixed size of 64*80
     vis_img = np.array(result_list).reshape(64, 80)
     vis_img = (vis_img - vis_img.min()) / (vis_img.max() - vis_img.min() + 1e-5)
     vis_img = (vis_img * 255).astype(np.uint8)
-    # expand the width and height of the predicted density map by 10 times
+    # Expand the width and height of the predicted density map by 10 times
     vis_img = cv2.resize(vis_img, (int(vis_img.shape[1] * 10), int(vis_img.shape[0] * 10)), cv2.INTER_LINEAR)
     vis_img = cv2.applyColorMap(vis_img, cv2.COLORMAP_JET)
     cv2.imwrite("vis_img.jpg", vis_img)
