@@ -44,12 +44,9 @@ if __name__ == '__main__':
         with open("./data/test.jpg", 'rb') as f:
             dataInput.data = f.read()
             TEST_NAME = "'./data/test.jpg'"
-    elif os.path.exists('./data/test.png') == 1:
-        with open("./data/test.png", 'rb') as f:
-            dataInput.data = f.read()
-            TEST_NAME = "'./data/test.png'"
     else:
         print("The test image does not exist.")
+        exit()
 
     STREAM_NAME = b'uav_crowdcounting'
     IN_PLUGIN_ID = 0
