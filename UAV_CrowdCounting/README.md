@@ -105,7 +105,7 @@ npu-smi info
 下载或转换成onnx模型之后，将onnx文件移至models目录下,并在终端执行如下命令：
 
 ```bash
-# 可直接用如下命令下载onn模型，在完成转换
+# 可直接在models目录用如下命令下载onnx模型，完成转换
 wget https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/UAV_CrowdCounting.onnx  --no-check-certificate
 atc  --model=./UAV_CrowdCounting.onnx  --framework=5  --output=./uav_crowdcounting_norm   --soc_version=Ascend310   --input_shape="input:1,3,512,640"  --input_format=NCHW   --insert_op_conf=./aipp.cfg
 ```
