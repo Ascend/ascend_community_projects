@@ -94,6 +94,8 @@ npu-smi info
 - 环境变量介绍
 
 ```bash
+# sdk_path: mxVision SDK 安装路径
+# ascend_toolkit_path：CANN安装路径
 . ${sdk_path}/set_env.sh
 . ${ascend_toolkit_path}/set_env.sh
 ```
