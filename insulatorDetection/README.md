@@ -89,6 +89,7 @@ MINDX_SDK|2.0.4
 opencv-python|4.5.3
 numpy|1.21.2
 webcolors|1.12
+Pillow | 9.0.1
 
 
 ## 3.模型转换
