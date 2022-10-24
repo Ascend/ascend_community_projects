@@ -96,6 +96,7 @@ if __name__ == '__main__':
                'class_name': obj.classVec[0].className,
                'confidence': round(obj.classVec[0].confidence, 4)}
         bounding_boxes.append(box)  
+    print("fps:", 1/(time.time()-t1)) 
     img = cv2.imread(FILENAME)  
     # draw each bounding box on the original image
     for box in bounding_boxes:
@@ -110,7 +111,6 @@ if __name__ == '__main__':
                      cls_id=class_id,
                      label=class_name,
                      box_score=score)
-    print("fps:", 1/(time.time()-t1))
     cv2.imwrite(RESULTFILE, img)
     # destroy streams
     steammanager_api.DestroyAllStreams()
