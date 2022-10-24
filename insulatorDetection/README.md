@@ -188,7 +188,7 @@ python map_calculate.py
 ![precision](./img/precision.png)
 ![precision1](./img/precision_origin.png)
 
-该模型AP为49.5%,原模型精度为50.6%，两者相差为0.5%，目标精度要求精度与原模型精度相差不超过1%，符合精度要求。
+该模型AP为49.46%,原模型精度为50.06%，两者相差约为0.5%，目标精度要求精度与原模型精度相差不超过1%，符合精度要求。
 
 
 ## 6.FPS测试
@@ -198,9 +198,9 @@ python map_calculate.py
 python main.py
 ```
 
-结果如下
+结果如下,目标要求是1080P的图片检测fps达到10以上，符合要求。
 ![fps](./img/fps.png)
-目标要求是1080P的图片检测fps达到10以上，符合要求。
+
 
 
 
