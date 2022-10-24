@@ -52,6 +52,7 @@ if os.path.exists(RESULTPATH) != 1:
 for item in os.listdir(PATH):
     img_path = os.path.join(PATH, item)
     img_name = item.split(".")[0]
+    print(img_name)
     try :
         image = Image.open(img_path)
     except Exception as e :
