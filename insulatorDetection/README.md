@@ -188,7 +188,7 @@ python map_calculate.py
 ![precision](./img/precision.png)
 ![precision1](./img/precision_origin.png)
 
-该模型AP为49.46%,原模型精度为50.06%，两者相差约为0.5%，目标精度要求精度与原模型精度相差不超过1%，符合精度要求。
+该模型AP为49.46%,原模型精度为50.06%，两者相差约为0.6%，目标精度要求精度与原模型精度相差不超过1%，符合精度要求。
 
 
 ## 6.FPS测试
