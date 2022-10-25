@@ -172,14 +172,14 @@ python main.py
 数据集链接 https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/Insulator_detection/dataset.zip
 
 
-在test目录下创建dataset文件夹，把下载的coco数据集的JPEGImages和test.json放到该文件夹下。JPEGImages下有一个README文件，将他删除，运行如下代码
+在test目录下创建dataset文件夹，把下载的coco数据集的JPEGImages和test.json放到该文件夹下,运行如下代码。
 
 ```bash
-python parse_coco.py
+python parse_coco.py   # 将coco数据集转换为可以进行精度评估的文件
 
-python testmain.py
+python testmain.py     # 运行自己的模型得到数据集的测试结果
 
-python map_calculate.py
+python map_calculate.py  # 计算AP
 
 ```
 
