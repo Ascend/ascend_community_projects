@@ -168,9 +168,10 @@ aipp_op{
 
 **步骤5** 精度测试：
 
-在`./data`目录下载[VisDrone2021测试数据集](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/VisDrone2021.zip)（满足均方误差（MSE）不大于35，绝对误差（MAE）不大于20，且FPS不低于20最低实时检测帧数。），并解压，最后在主目录下执行命令：
+在`./data`目录下载[VisDrone2021测试数据集](https://mindx.sdk.obs.myhuaweicloud.com/ascend_community_projects/UAV_CrowdCounting/VisDrone2021.zip)，并解压，最后在主目录下执行命令：
 ```bash
 . eval.sh
+# 满足均方误差（MSE）不大于35，绝对误差（MAE）不大于20，且FPS不低于20最低实时检测帧数。
 ```
 ## 5 常见问题
 
