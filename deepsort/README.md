@@ -217,7 +217,7 @@ bash build.sh
 ```
 注：执行bash步骤前，需要将plugins中所有插件里CMakeLists.txt、move_so.sh文件和主目录下的CMakeLists.txt文件的SDK安装路径${MX_SDK_HOME}替换为用户的SDK安装路径。
  第一次运行时候，需要将deepsort/plugins/FairmotPostProcess/里move_so.sh文件中的如下命令注释掉，以后的运行不需要注释。
-//chmod +w ${MX_SDK_HOME}/lib/plugins/libdeepsort.so
+chmod 777 ${MX_SDK_HOME}/lib/plugins/libdeepsort.so
   
 **步骤5** 运行。回到deepsort目录下，在deepsort目录下执行命令：
 
