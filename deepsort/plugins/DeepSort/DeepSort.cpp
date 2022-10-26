@@ -157,7 +157,7 @@ void DeepSort::getTrackerInfo(std::vector<TrackerInfo> &tracker_infos,
         tracker_info.trackId   = track.track_id;
         tracker_info.age       = track.age;
         tracker_info.hits      = track.hits;
-        tracker_info.trackFlag = track.state == Track::Tentative ? 0 : track.state == Track::Confirmed ? 1 : track.state == Track::Deleted ? TRACKFLAG_JUDG : 0;
+        tracker_info.trackFlag = track.state == Track::Tentative ? 0 : track.state == Track::Confirmed ? 1 : track.state == Track::Deleted ? TRACKFLAG_JUDGE : 0;
         tracker_infos.push_back(tracker_info);
     }
 }
