@@ -152,6 +152,7 @@ ATC run success, welcome to the next use.
 
 **步骤3** 进入plugins目录，将FairmotPostProcess和MxpiTrackIdReplaceClassName插件以如下结构放在 `plugins` 目录下。[链接]https://gitee.com/ascend/mindxsdk-referenceapps/tree/master/contrib/FairMOT。
 将DeepSort开源代码的DeepSort、DeepAppearanceDescriptor和MunkresAssignment以如下结构放在 `plugins` 目录下。[链接]https://github.com/shaoshengsong/DeepSORT 。
+```
 ├── plugins
 │   ├── FairmotPostProcess     #DeepSORT后处理插件
 │   │   ├── CMakeLists.txt        
