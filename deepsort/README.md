@@ -195,11 +195,12 @@ ATC run success, welcome to the next use.
 │   │        ├── munkres.cpp
 │   │        ├── munkres.h
 │   │        └── matrix.h
+```
 在 `plugins` 目录下执行命令：
 ```
-patch -p1 < MxpiTrackIdReplaceClassName.patch 
-patch -p1 < FairmotPostProcess.patch 
-patch -p1 < MunkresAssignment.patch  
+patch -p1 < MxpiTrackIdReplaceClassName.patch
+patch -p1 < FairmotPostProcess.patch
+patch -p1 < MunkresAssignment.patch
 patch -p1 < DeepAppearanceDescriptor.patch  
 patch -p1 < DeepSort.patch  
 ```
@@ -214,8 +215,12 @@ git reset c2e5c1a51eff4214563d3993a742183e1ff9e55c --hard
 ```
 bash build.sh
 ```
-注：执行bash步骤前，需要将plugins中所有插件里CMakeLists.txt、move_so.sh文件和主目录下的CMakeLists.txt文件的SDK安装路径${MX_SDK_HOME}替换为用户的SDK安装路径
-
+注：执行bash步骤前，需要将plugins中所有插件里CMakeLists.txt、move_so.sh文件和主目录下的CMakeLists.txt文件的SDK安装路径${MX_SDK_HOME}替换为用户的SDK安装路径。
+ 第一次运行时候，需要将deepsort/plugins/FairmotPostProcess/里move_so.sh文件中的如下命令注释掉，以后的运行不需要注释。
+```
+chmod +w /home/wangshengke1/MindX_SDK/mxVision/lib/plugins/libfairmotpostprocess.so
+```
+  
 **步骤5** 运行。回到deepsort目录下，在deepsort目录下执行命令：
 
 ```
@@ -231,15 +236,18 @@ bash run.sh
 按照第6小结编译与运行中的步骤进行编译运行，服务器会输出运行到该帧的平均帧率。
 
 
-注：输入视频帧率应高于25，否则无法发挥全部性能。
+注：输入视频帧率为20，才能发挥全部性能。
 
 ## 8 精度测试
 
 **测试性能：**
 以MOT16 数据集为基准测试模型的 MOTA 值。 
 执行步骤：
-**步骤1** 下载 MOT16数据集，下载链接https://motchallenge.net/。在deepsort 目录下创建 /py-motmetrics-develop/ 目录，下载py-motmetrics工具，下载链接https://github.com/cheind/py-motmetrics。
-将MOT16 数据集的gt文件放入/py-motmetrics-develop/motmetrics/data/train/gt/1/gt/。将自己运行得到的txt文件放入/py-motmetrics-develop/motmetrics/data/train/，并将命名改为1.txt.
+**步骤1** 下载MOT16数据集，下载官网https://motchallenge.net/。在deepsort目录下下载py-motmetrics工具，下载官网https://github.com/cheind/py-motmetrics。或者使用命令：
+```
+git clone https://github.com/cheind/py-motmetrics.git
+```
+将MOT16数据集的gt文件放入/py-motmetrics/motmetrics/data/train/gt/1/gt/。将自己运行得到的txt文件放入/py-motmetrics/motmetrics/data/train/，并将命名改为1.txt.
 注意：自己运行得到的txt文件是按照第一列（frame id）的数值进行排序的，需要先将其按照第二列（track id）的数值进行排序后放入。
 
 **步骤2** 安装 pycocotools 评测工具包。执行命令：
@@ -249,7 +257,7 @@ pip install motmetrics
 
 **步骤3** 在/py-motmetrics-develop/motmetrics/apps/目录下运行命令
 ```
-python eval_motchallenge.py .../deepsort/py-motmetrics-develop/motmetrics/data/train/gt/ ..../deepsort/py-motmetrics-develop/motmetrics/data/train
+python eval_motchallenge.py ../data/train/gt/ ../data/train
 
 ```
 注：每次运行得到的txt文件都需要删除并重新生成。
