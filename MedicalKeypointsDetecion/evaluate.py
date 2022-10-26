@@ -18,12 +18,11 @@ import stat
 import math
 import json
 import codecs
+import time
 from collections import defaultdict
 from collections import OrderedDict
 from PIL import Image
-import mindspore as ms
-import mindspore.ops as ops
-from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
+from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector, MxProtobufIn, InProtobufVector
 import MxpiDataType_pb2 as MxpiDataType
 import numpy as np
 import cv2
@@ -698,7 +697,7 @@ if __name__ == '__main__':
     filenames = []
     imgnums = []
     IDX = 0
-
+    INFER_TOTAL_TIME = 0
     for image_idx, image_info in enumerate(image_list):
         image_path = os.path.join(IMAGEFOLDER, image_info['file_name'])
         image_id = image_info['id']
@@ -889,7 +888,9 @@ if __name__ == '__main__':
         KEYS_2 = b"mxpi_tensorinfer0"
         for key in KEYS_2:
             keyVec.push_back(KEYS_2)
+        time1 = time.time()
         infer_result = streamManagerApi.GetProtobuf(STREAM_NAME_2, 0, keyVec)
+        INFER_TOTAL_TIME = time.time() - time1
         tensorList = MxpiDataType.MxpiTensorPackageList()
         tensorList.ParseFromString(infer_result[0].messageBuf)
         keypoint_outputs = np.frombuffer(
@@ -968,3 +969,5 @@ if __name__ == '__main__':
         print(name_values, MODEL_NAME)
 
     print(perf_indicator)
+    print('cls_Accuracy:{}'.format(top1.avg))
+    print("The total time of inference is {} s".format(INFER_TOTAL_TIME))

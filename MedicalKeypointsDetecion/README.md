@@ -120,6 +120,7 @@ model1.pipeline:
 			},
 			"factory": "mxpi_tensorinfer",
 			"next":"appsink0"
+}
 #修改om文件存放的路径
 ```
 
@@ -132,6 +133,7 @@ model2.pipeline:
 			},
 			"factory": "mxpi_tensorinfer",
 			"next":"appsink0"
+}
 #修改om文件存放的路径
 ```
 
@@ -142,8 +144,8 @@ model2.pipeline:
 【注】本模型定位场景为医学应用下的人体关键点检测，故只针对特定体态进行识别，建议从提供的测试图片或根据对应体态自行拍摄图片进行测试。
 
 ```
-filepath = '' #测试图片路径
-save_path = '' #测试结果保存路径
+FILE_PATH = '' #测试图片路径
+SAVEPATH = '' #测试结果保存路径
 ```
 
 然后执行run.sh文件：
@@ -164,9 +166,9 @@ save_path = '' #测试结果保存路径
 **步骤2** 修改evaluate.py中的测试集图片存放路径：
 
 ```
-image_folder = ' ' #修改为测试集的路径
-annotation_file = ' ' #修改为测试集的标注文件路径
-txt = '' #体位分类情况
+IMAGEFOLDER = ' ' #677行，修改为测试集的路径
+FILE_ANNO = ' ' #678行，修改为测试集的标注文件路径
+TXT = '' #689行，体位分类情况,请提前在文件夹对应位置创建同名文本文件
 ```
 
 **步骤3** 修改run.sh最后的执行文件名称：
@@ -181,5 +183,6 @@ python3.9 evaluate.py
 ./run.sh
 ```
 
+最终可以得到测试的精度结果及性能结果。
 
 

@@ -19,8 +19,6 @@ import MxpiDataType_pb2 as MxpiDataType
 import numpy as np
 import cv2
 from PIL import Image
-import mindspore as ms
-import mindspore.ops as ops
 
 color2 = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255), 
           (0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 0, 139), (0, 69, 255),
