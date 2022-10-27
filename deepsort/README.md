@@ -2,7 +2,7 @@
 
 ## 1 介绍
 
- DeepSOR目标跟踪后处理插件基于MindXSDK开发，在晟腾芯片上进行目标检测和跟踪，可以对行人进行画框和编号，将检测结果可视化并保存。项目主要流程为：通过live555服务器进行拉流输入视频，然后进行视频解码将264格式的视频解码为YUV格式的图片，图片缩放后经过模型推理进行行人识别，识别结果经过FairMOT后处理后得到识别框，对识别框进行跟踪并编号，用编号覆盖原有的类别信息，再将识别框和类别信息分别转绘到图片上，最后将图片编码成视频进行输出。 
+ DeepSORT目标跟踪后处理插件基于MindXSDK开发，在晟腾芯片上进行目标检测和跟踪，可以对行人进行画框和编号，将检测结果可视化并保存。项目主要流程为：通过live555服务器进行拉流输入视频，然后进行视频解码将264格式的视频解码为YUV格式的图片，图片缩放后经过模型推理进行行人识别，识别结果经过FairMOT后处理后得到识别框，对识别框进行跟踪并编号，用编号覆盖原有的类别信息，再将识别框和类别信息分别转绘到图片上，最后将图片编码成视频进行输出。 
 
 ### 1.1 支持的产品
 
@@ -78,17 +78,11 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 在编译运行项目前，需要设置环境变量：
 
 ```
-export MX_SDK_HOME=${MX_SDK_HOME}
-export install_path=/usr/local/Ascend/ascend-toolkit/latest
-export PATH=/usr/local/python3.9.2/bin:${install_path}/atc/ccec_compiler/bin:${install_path}/atc/bin:$PATH
-export ASCEND_OPP_PATH=${install_path}/opp
-export ASCEND_AICPU_PATH=${install_path}
-export LD_LIBRARY_PATH=${install_path}/atc/lib64:${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:$LD_LIBRARY_PATH
-export GST_PLUGIN_SCANNER=${MX_SDK_HOME}/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
-export GST_PLUGIN_PATH=${MX_SDK_HOME}/opensource/lib/gstreamer-1.0:${MX_SDK_HOME}/lib/plugins
+${ascend_toolkit_path}/set_env.sh
+${sdk_path}/set_env.sh
 ```
 
-注：其中SDK安装路径${MX_SDK_HOME}替换为用户的SDK安装路径;install_path替换为开发套件包所在路径。LD_LIBRARY_PATH用以加载开发套件包中lib库。
+注：其中ascend_toolkit_path是CANN的安装路径，sdk_path是mxVision SDK的安装路径。
 
 
 
@@ -231,7 +225,7 @@ bash run.sh
 **测试帧率：**
 
 按照第6小结编译与运行中的步骤进行编译运行，服务器会输出运行到该帧的平均帧率。
-
+性能要求：单帧推理时间小于100ms。
 
 注：输入视频帧率为20，才能发挥全部性能。
 
@@ -246,6 +240,8 @@ git clone https://github.com/cheind/py-motmetrics.git
 ```
 将MOT16数据集的gt文件放入/py-motmetrics/motmetrics/data/train/gt/1/gt/。将自己运行得到的txt文件放入/py-motmetrics/motmetrics/data/train/，并将命名改为1.txt.
 注意：自己运行得到的txt文件是按照第一列（frame id）的数值进行排序的，需要先将其按照第二列（track id）的数值进行排序后放入。
+
+精度要求：MOTA准确率大于40。
 
 **步骤2** 安装 pycocotools 评测工具包。执行命令：
 ```
