@@ -105,9 +105,10 @@ export LD_LIBRARY_PATH="${MX_SDK_HOME}/lib/modelpostprocessors":"${MX_SDK_HOME}/
 
 export PYTHONPATH=${MX_SDK_HOME}/python:$PYTHONPATH
 
-# 执行昇腾310服务器上ascend-toolkit的set_env.sh
-. /usr/local/Ascend/ascend-toolkit/set_env.sh
-
+# 执行CANN下ascend-toolkit的set_env.sh
+. ${ascend-toolkit-path}/set_env.sh
+# 执行MindX_SDK的set_env.sh
+. ${SDK−path}/setenv.sh
 ```
 ### 3.2 densenet模型转换
 
@@ -250,6 +251,16 @@ https://docs.conda.io/en/latest/miniconda.html#linux-installers
 ## 5 部署与运行
 
 **步骤1** 部署及环境设置：
+
+如果在4.4小节未将 `. set_env.sh` 加入到用户下的 `.bashrc` 中，在编译运行项目前需手动设置环境变量，执行如下命令添加环境变量：
+
+```bash
+# 执行CANN下ascend-toolkit的set_env.sh
+. ${ascend-toolkit-path}/set_env.sh
+# 执行MindX_SDK的set_env.sh
+. ${SDK−path}/setenv.sh
+
+```
 
 将 fire_detection 文件夹移植到Atlas200 DK的用户HwHiAiUser下，执行命令 `su root` 进入root用户下(默认密码：Mind@123)后，执行 `cd /home/HwHiAiUser/fire_detection` 进入fire_detection路径下。
 
