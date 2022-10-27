@@ -257,7 +257,7 @@ https://docs.conda.io/en/latest/miniconda.html#linux-installers
 ```bash
 # 执行CANN下ascend-toolkit的set_env.sh
 . ${ascend-toolkit-path}/set_env.sh
-# 执行MindX_SDK的set_env.sh
+# 执行MindX_SDK文件夹下的set_env.sh
 . ${SDK−path}/setenv.sh
 
 ```
