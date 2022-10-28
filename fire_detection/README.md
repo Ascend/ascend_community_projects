@@ -224,7 +224,7 @@ https://www.hiascend.com/zh/software/mindx-sdk/mxVision/community
 执行 `cd /usr/local/Mindx_SDK` 后为 Ascend-mindxsdk_{version}_linux-aarch64.run 添加执行权限 ，成功后再执行 `Ascend-mindxsdk_{version}_linux-aarch64.run --install`安装 mxVision 。
 
 (4)配置环境变量：
-安装成功后在 mxVision 路径下存在 set_env.sh ,用户在任意目录下执行` vi ~/.bashrc` 命令，打开 .bashrc 文件，在文件最后一行后面添加 `. /usr/local/Mindx_SDK/mxVision` ，执行 :wq! 命令保存文件并退出。执行 `source ~/.bashrc` 命令使其立即生效。
+安装成功后在 mxVision 路径下存在 set_env.sh ,用户在任意目录下执行` vi ~/.bashrc` 命令，打开 .bashrc 文件，在文件最后一行后面添加 `. /usr/local/Mindx_SDK/mxVision/set_env.sh` ，执行 :wq! 命令保存文件并退出。执行 `source ~/.bashrc` 命令使其立即生效。
 
 完成上述步骤后Atlas200 DK已成功安装CANN和Mindx SDK。
 
@@ -241,7 +241,7 @@ https://docs.conda.io/en/latest/miniconda.html#linux-installers
 (4)为root用户添加conda环境：
 `su root`后进入root用户，执行 `cat /home/HwHiAiUser/.bashrc` ，查看HwHiAiUser用户的 .bashrc , 复制 >>> conda initialize >>> 至 <<< conda initialize <<< 的内容，将复制内容粘贴至root用户下的 `~/.bashrc` ，执行 `source ~/.bashrc` 为root添加conda环境。
 
-(5)将Atlas200 DK重启reset，再次进入root用户即可看到conda环境。
+(5)将Atlas200 DK重启reboot，再次进入root用户即可看到conda环境。
 
 (6)利用conda在root用户下用`conda install`安装numpy、opencv-python等库。
 
