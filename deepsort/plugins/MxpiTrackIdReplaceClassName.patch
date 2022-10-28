@@ -1,0 +1,196 @@
+diff --git a/MxpiTrackIdReplaceClassName/CMakeLists.txt b/MxpiTrackIdReplaceClassName2/CMakeLists.txt
+index db54911..c1f1d1c 100644
+--- a/MxpiTrackIdReplaceClassName/CMakeLists.txt
++++ b/MxpiTrackIdReplaceClassName2/CMakeLists.txt
+@@ -7,7 +7,7 @@ add_definitions(-Dgoogle=mindxsdk_private)
+ set(PLUGIN_NAME "mxpi_trackidreplaceclassname")
+ set(TARGET_LIBRARY ${PLUGIN_NAME})
+ 
+-set(MX_SDK_HOME "$ENV{MX_SDK_HOME}")
++set(MX_SDK_HOME "${MX_SDK_HOME}")
+ 
+ include_directories(${CMAKE_CURRENT_BINARY_DIR})
+ include_directories(${MX_SDK_HOME}/include)
+diff --git a/MxpiTrackIdReplaceClassName/MxpiTrackIdReplaceClassName.cpp b/MxpiTrackIdReplaceClassName2/MxpiTrackIdReplaceClassName.cpp
+index 7c20f98..84265bf 100644
+--- a/MxpiTrackIdReplaceClassName/MxpiTrackIdReplaceClassName.cpp
++++ b/MxpiTrackIdReplaceClassName2/MxpiTrackIdReplaceClassName.cpp
+@@ -16,6 +16,7 @@
+ 
+ #include "MxpiTrackIdReplaceClassName.h"
+ #include "MxBase/Log/Log.h"
++#define TWO 2
+ using namespace MxPlugins;
+ using namespace MxTools;
+ using namespace std;
+@@ -24,24 +25,20 @@ namespace {
+     const string SAMPLE_KEY2 = "MxpiTrackLetList";
+ }
+ 
+-APP_ERROR MxpiTrackIdReplaceClassName::Init(std::map<std::string, std::shared_ptr<void>>& configParamMap)
+-{
++APP_ERROR MxpiTrackIdReplaceClassName::Init(std::map<std::string, std::shared_ptr<void>>& configParamMap) {
+     LogInfo << "MxpiTrackIdReplaceClassName::Init start.";
+     APP_ERROR ret = APP_ERR_OK;
+ 
+-    // Get the property values by key
+     std::shared_ptr<string> parentNamePropSptr = std::static_pointer_cast<string>(configParamMap["dataSource"]);
+     parentName_ = *parentNamePropSptr.get();
+     std::shared_ptr<string> motNamePropSptr = std::static_pointer_cast<string>(configParamMap["motSource"]);
+-    motName_ = *motNamePropSptr.get();   
+-    std::shared_ptr<string> descriptionMessageProSptr = 
+-        std::static_pointer_cast<string>(configParamMap["descriptionMessage"]);
++    motName_ = *motNamePropSptr.get();
++    std::shared_ptr<string> descriptionMessageProSptr = std::static_pointer_cast<string>(configParamMap["descriptionMessage"]);
+     descriptionMessage_ = *descriptionMessageProSptr.get();
+     return APP_ERR_OK;
+ }
+ 
+-APP_ERROR MxpiTrackIdReplaceClassName::DeInit()
+-{
++APP_ERROR MxpiTrackIdReplaceClassName::DeInit() {
+     LogInfo << "MxpiTrackIdReplaceClassName::DeInit end.";
+     return APP_ERR_OK;
+ }
+@@ -50,7 +47,6 @@ APP_ERROR MxpiTrackIdReplaceClassName::SetMxpiErrorInfo(MxpiBuffer& buffer, cons
+     const MxpiErrorInfo mxpiErrorInfo)
+ {
+     APP_ERROR ret = APP_ERR_OK;
+-    // Define an object of MxpiMetadataManager
+     MxpiMetadataManager mxpiMetadataManager(buffer);
+     ret = mxpiMetadataManager.AddErrorInfo(pluginName, mxpiErrorInfo);
+     if (ret != APP_ERR_OK) {
+@@ -72,30 +68,25 @@ APP_ERROR MxpiTrackIdReplaceClassName::PrintMxpiErrorInfo(MxpiBuffer& buffer, co
+     return app_error;
+ }
+ 
+-
+-
+-/*
+- * @description: Replace className with trackId 
+- */
+-APP_ERROR MxpiTrackIdReplaceClassName::GenerateSampleOutput(const MxpiObjectList srcMxpiObjectList, 
+-                                                            const MxpiTrackLetList srcMxpiTrackLetList, 
++APP_ERROR MxpiTrackIdReplaceClassName::GenerateSampleOutput(const MxpiObjectList srcMxpiObjectList,
++                                                            const MxpiTrackLetList srcMxpiTrackLetList,
+                                                             MxpiObjectList& dstMxpiObjectList)
+ {
+-    for (int i = 0; i < srcMxpiObjectList.objectvec_size(); i++){
+-        MxpiObject srcMxpiObject = srcMxpiObjectList.objectvec(i);       
+-        MxpiClass srcMxpiClass = srcMxpiObject.classvec(0);  
+-        MxpiObject* dstMxpiObject = dstMxpiObjectList.add_objectvec();    
++    for (int i = 0; i < srcMxpiObjectList.objectvec_size(); i++) {
++        MxpiObject srcMxpiObject = srcMxpiObjectList.objectvec(i);
++        MxpiClass srcMxpiClass = srcMxpiObject.classvec(0);
++        MxpiObject* dstMxpiObject = dstMxpiObjectList.add_objectvec();
+         dstMxpiObject->set_x0(srcMxpiObject.x0());
+         dstMxpiObject->set_y0(srcMxpiObject.y0());
+         dstMxpiObject->set_x1(srcMxpiObject.x1());
+         dstMxpiObject->set_y1(srcMxpiObject.y1());
+-        MxpiClass* dstMxpiClass = dstMxpiObject->add_classvec();   
++        MxpiClass* dstMxpiClass = dstMxpiObject->add_classvec();
+         dstMxpiClass->set_confidence(srcMxpiClass.confidence());
+-        for(int j = 0; j < srcMxpiTrackLetList.trackletvec_size(); j++){
+-            MxpiTrackLet srcMxpiTrackLet = srcMxpiTrackLetList.trackletvec(j);  
+-            if(srcMxpiTrackLet.trackflag() != 2){
+-                MxpiMetaHeader srcMxpiHeader = srcMxpiTrackLet.headervec(0);  
+-                if(srcMxpiHeader.memberid() == i){
++        for (int j = 0; j < srcMxpiTrackLetList.trackletvec_size(); j++) {
++            MxpiTrackLet srcMxpiTrackLet = srcMxpiTrackLetList.trackletvec(j);
++            if (srcMxpiTrackLet.trackflag() != TWO) {
++                MxpiMetaHeader srcMxpiHeader = srcMxpiTrackLet.headervec(0);
++                if (srcMxpiHeader.memberid() == i) {
+                     dstMxpiClass->set_classid(0);
+                     dstMxpiClass->set_classname(to_string(srcMxpiTrackLet.trackid()));
+                     continue;
+@@ -106,7 +97,7 @@ APP_ERROR MxpiTrackIdReplaceClassName::GenerateSampleOutput(const MxpiObjectList
+     return APP_ERR_OK;
+ }
+ 
+-APP_ERROR MxpiTrackIdReplaceClassName::Process(std::vector<MxpiBuffer*>& mxpiBuffer){
++APP_ERROR MxpiTrackIdReplaceClassName::Process(std::vector<MxpiBuffer*>& mxpiBuffer) {
+     LogInfo << "MxpiTrackIdReplaceClassName::Process start";
+     MxpiBuffer* buffer = mxpiBuffer[0];
+     MxpiMetadataManager mxpiMetadataManager(*buffer);
+@@ -116,17 +107,17 @@ APP_ERROR MxpiTrackIdReplaceClassName::Process(std::vector<MxpiBuffer*>& mxpiBuf
+     if (errorInfoPtr != nullptr) {
+         return PrintMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo, APP_ERR_COMM_FAILURE, "MxpiTrackIdReplaceClassName process is not implemented");
+     }
+-    shared_ptr<void> metadata = mxpiMetadataManager.GetMetadata(parentName_);  // Get the data from buffer
++    shared_ptr<void> metadata = mxpiMetadataManager.GetMetadata(parentName_);
+     shared_ptr<void> metadata2 = mxpiMetadataManager.GetMetadata(motName_);
+     if (metadata == nullptr) {
+-        shared_ptr<MxpiObjectList> dstMxpiObjectListSptr = make_shared<MxpiObjectList>(); 
+-        MxpiObject* dstMxpiObject = dstMxpiObjectListSptr->add_objectvec();   
+-        MxpiClass* dstMxpiClass = dstMxpiObject->add_classvec();    
++        shared_ptr<MxpiObjectList> dstMxpiObjectListSptr = make_shared<MxpiObjectList>();
++        MxpiObject* dstMxpiObject = dstMxpiObjectListSptr->add_objectvec();
++        MxpiClass* dstMxpiClass = dstMxpiObject->add_classvec();
+         APP_ERROR ret = mxpiMetadataManager.AddProtoMetadata(pluginName_, static_pointer_cast<void>(dstMxpiObjectListSptr));
+         if (ret != APP_ERR_OK) {
+             return PrintMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo, ret, "MxpiTrackIdReplaceClassName add metadata failed.");
+         }
+-        SendData(0, *buffer); // Send the data to downstream plugin
++        SendData(0, *buffer);
+         LogInfo << "MxpiTrackIdReplaceClassName::Process end";
+         return APP_ERR_OK;
+     }
+@@ -134,16 +125,16 @@ APP_ERROR MxpiTrackIdReplaceClassName::Process(std::vector<MxpiBuffer*>& mxpiBuf
+     const google::protobuf::Descriptor* desc = msg->GetDescriptor();
+     google::protobuf::Message* msg2 = (google::protobuf::Message*)metadata2.get();
+     const google::protobuf::Descriptor* desc2 = msg2->GetDescriptor();
+-    if (desc->name() != SAMPLE_KEY) {    // check whether the proto struct name is MxpiObjectList
++    if (desc->name() != SAMPLE_KEY) {
+         return PrintMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo, APP_ERR_PROTOBUF_NAME_MISMATCH, "Proto struct name is not MxpiObjectList, failed");
+     }
+-    if (desc2->name() != SAMPLE_KEY2) {   // check whether the proto struct name is MxpiTrackList
++    if (desc2->name() != SAMPLE_KEY2) {
+         return PrintMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo, APP_ERR_PROTOBUF_NAME_MISMATCH, "Proto struct name is not MxpiTrackLetList, failed");
+     }
+     shared_ptr<MxpiObjectList> srcMxpiObjectListSptr = static_pointer_cast<MxpiObjectList>(metadata);
+     shared_ptr<MxpiTrackLetList> srcMxpiTrackLetListSptr = static_pointer_cast<MxpiTrackLetList>(metadata2);
+-    shared_ptr<MxpiObjectList> dstMxpiObjectListSptr = make_shared<MxpiObjectList>();    
+-    APP_ERROR ret = GenerateSampleOutput(*srcMxpiObjectListSptr,*srcMxpiTrackLetListSptr,*dstMxpiObjectListSptr); // Generate sample output
++    shared_ptr<MxpiObjectList> dstMxpiObjectListSptr = make_shared<MxpiObjectList>();
++    APP_ERROR ret = GenerateSampleOutput(*srcMxpiObjectListSptr, *srcMxpiTrackLetListSptr, *dstMxpiObjectListSptr); // Generate sample output
+     if (ret != APP_ERR_OK) {
+         return PrintMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo, ret, "MxpiTrackIdReplaceClassName gets inference information failed.");
+     }
+@@ -151,23 +142,19 @@ APP_ERROR MxpiTrackIdReplaceClassName::Process(std::vector<MxpiBuffer*>& mxpiBuf
+     if (ret != APP_ERR_OK) {
+         return PrintMxpiErrorInfo(*buffer, pluginName_, mxpiErrorInfo, ret, "MxpiTrackIdReplaceClassName add metadata failed.");
+     }
+-    SendData(0, *buffer);  // Send the data to downstream plugin
++    SendData(0, *buffer);
+     LogInfo << "MxpiTrackIdReplaceClassName::Process end";
+     return APP_ERR_OK;
+ }
+ 
+-std::vector<std::shared_ptr<void>> MxpiTrackIdReplaceClassName::DefineProperties()
+-{
+-    // Define an A to store properties
++std::vector<std::shared_ptr<void>> MxpiTrackIdReplaceClassName::DefineProperties() {
+     std::vector<std::shared_ptr<void>> properties;
+-    // Set the type and related information of the properties, and the key is the name
+-   
+-    auto parentNameProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string>{
++    auto parentNameProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string> {
+         STRING, "dataSource", "inputName", "the name of fairmotpostprocessor", "mxpi_fairmot_obj", "NULL", "NULL"});
+-    auto motNameProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string>{
++    auto motNameProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string> {
+         STRING, "motSource", "parentName", "the name of previous plugin", "mxpi_motsimplesortV20", "NULL", "NULL"});
+ 
+-    auto descriptionMessageProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string>{
++    auto descriptionMessageProSptr = std::make_shared<ElementProperty<string>>(ElementProperty<string> {
+         STRING, "descriptionMessage", "message", "Description mesasge of plugin",  "This is MxpiTrackIdReplaceClassName", "NULL", "NULL"});
+ 
+     properties.push_back(parentNameProSptr);
+@@ -176,6 +163,4 @@ std::vector<std::shared_ptr<void>> MxpiTrackIdReplaceClassName::DefineProperties
+     return properties;
+ }
+ 
+-// Register the Sample plugin through macro
+-MX_PLUGIN_GENERATE(MxpiTrackIdReplaceClassName)
+-
++MX_PLUGIN_GENERATE(MxpiTrackIdReplaceClassName)
+\ No newline at end of file

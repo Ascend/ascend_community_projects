@@ -1,0 +1,1363 @@
+diff --git a/DeepSort/kalmanfilter.cpp b/DeepSort2/kalmanfilter.cpp
+index 93e3406..08a46f3 100644
+--- a/DeepSort/kalmanfilter.cpp
++++ b/DeepSort2/kalmanfilter.cpp
+@@ -1,6 +1,33 @@
++/*
++ * Copyright (c) 2022.Huawei Technologies Co., Ltd. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ #include "kalmanfilter.h"
+ #include <Eigen/Cholesky>
+-//sisyphus
++#define ZERO 0
++#define ONE 1
++#define TWO 2
++#define THREE 3
++#define FOUR 4
++#define FIVE 5
++#define SIX 6
++#define SEVEN 7
++#define EIGHT 8
++#define ONE_ZREO 1.0
++#define TEN 10
++#define TWENTY 20
++#define NUM_SIXTY 160
+ const double KalmanFilter::chi2inv95[10] = {
+     0,
+     3.8415,
+@@ -11,48 +38,44 @@ const double KalmanFilter::chi2inv95[10] = {
+     12.592,
+     14.067,
+     15.507,
+-    16.919};
++    16.919
++};
+ KalmanFilter::KalmanFilter()
+ {
+     int ndim = 4;
+     double dt = 1.;
+ 
+-    _motion_mat = Eigen::MatrixXf::Identity(8, 8);
+-    for (int i = 0; i < ndim; i++)
+-    {
+-        _motion_mat(i, ndim + i) = dt;
++    _motion_mat = Eigen::MatrixXf::Identity(EIGHT, EIGHT);
++    for (int i = 0; i < ndim; i++) {
++        _motion_mat(i, ndim+i) = dt;
+     }
+-    _update_mat = Eigen::MatrixXf::Identity(4, 8);
++    _update_mat = Eigen::MatrixXf::Identity(FOUR, EIGHT);
+ 
+-    this->_std_weight_position = 1. / 20;
+-    this->_std_weight_velocity = 1. / 160;
++    this->_std_weight_position = ONE_ZREO / TWENTY;
++    this->_std_weight_velocity = ONE_ZREO / NUM_SIXTY;
+ }
+ 
+ KAL_DATA KalmanFilter::initiate(const DETECTBOX &measurement)
+ {
+     DETECTBOX mean_pos = measurement;
+     DETECTBOX mean_vel;
+-    for (int i = 0; i < 4; i++)
+-        mean_vel(i) = 0;
++    for (int i = 0; i < FOUR; i++) mean_vel(i) = 0;
+ 
+     KAL_MEAN mean;
+-    for (int i = 0; i < 8; i++)
+-    {
+-        if (i < 4)
+-            mean(i) = mean_pos(i);
+-        else
+-            mean(i) = mean_vel(i - 4);
++    for (int i = 0; i < EIGHT ; i++) {
++        if (i < FOUR) mean(i) = mean_pos(i);
++        else mean(i) = mean_vel(i - FOUR);
+     }
+ 
+     KAL_MEAN std;
+-    std(0) = 2 * _std_weight_position * measurement[3];
+-    std(1) = 2 * _std_weight_position * measurement[3];
+-    std(2) = 1e-2;
+-    std(3) = 2 * _std_weight_position * measurement[3];
+-    std(4) = 10 * _std_weight_velocity * measurement[3];
+-    std(5) = 10 * _std_weight_velocity * measurement[3];
+-    std(6) = 1e-5;
+-    std(7) = 10 * _std_weight_velocity * measurement[3];
++    std(ZERO) = TWO * _std_weight_position * measurement[THREE];
++    std(ONE) = TWO * _std_weight_position * measurement[THREE];
++    std(TWO) = 1e-2;
++    std(THREE) = TWO * _std_weight_position * measurement[THREE];
++    std(FOUR) = TEN * _std_weight_velocity * measurement[THREE];
++    std(FIVE) = TEN * _std_weight_velocity * measurement[THREE];
++    std(SIX) = 1e-5;
++    std(SEVEN) = TEN * _std_weight_velocity * measurement[THREE];
+ 
+     KAL_MEAN tmp = std.array().square();
+     KAL_COVA var = tmp.asDiagonal();
+@@ -61,24 +84,23 @@ KAL_DATA KalmanFilter::initiate(const DETECTBOX &measurement)
+ 
+ void KalmanFilter::predict(KAL_MEAN &mean, KAL_COVA &covariance)
+ {
+-    // revise the data;
+     DETECTBOX std_pos;
+-    std_pos << _std_weight_position * mean(3),
+-        _std_weight_position * mean(3),
+-        1e-2,
+-        _std_weight_position * mean(3);
++    std_pos << _std_weight_position * mean(THREE),
++            _std_weight_position * mean(THREE),
++            1e-2,
++            _std_weight_position * mean(THREE);
+     DETECTBOX std_vel;
+-    std_vel << _std_weight_velocity * mean(3),
+-        _std_weight_velocity * mean(3),
+-        1e-5,
+-        _std_weight_velocity * mean(3);
++    std_vel << _std_weight_velocity * mean(THREE),
++            _std_weight_velocity * mean(THREE),
++            1e-5,
++            _std_weight_velocity * mean(THREE);
+     KAL_MEAN tmp;
+-    tmp.block<1, 4>(0, 0) = std_pos;
+-    tmp.block<1, 4>(0, 4) = std_vel;
++    tmp.block<1, FOUR>(0, 0) = std_pos;
++    tmp.block<1, FOUR>(0, FOUR) = std_vel;
+     tmp = tmp.array().square();
+     KAL_COVA motion_cov = tmp.asDiagonal();
+     KAL_MEAN mean1 = this->_motion_mat * mean.transpose();
+-    KAL_COVA covariance1 = this->_motion_mat * covariance * (_motion_mat.transpose());
++    KAL_COVA covariance1 = this->_motion_mat * covariance *(_motion_mat.transpose());
+     covariance1 += motion_cov;
+ 
+     mean = mean1;
+@@ -88,19 +110,17 @@ void KalmanFilter::predict(KAL_MEAN &mean, KAL_COVA &covariance)
+ KAL_HDATA KalmanFilter::project(const KAL_MEAN &mean, const KAL_COVA &covariance)
+ {
+     DETECTBOX std;
+-    std << _std_weight_position * mean(3), _std_weight_position * mean(3),
+-        1e-1, _std_weight_position * mean(3);
++    std << _std_weight_position * mean(THREE), _std_weight_position * mean(THREE),
++            1e-1, _std_weight_position * mean(THREE);
+     KAL_HMEAN mean1 = _update_mat * mean.transpose();
+     KAL_HCOVA covariance1 = _update_mat * covariance * (_update_mat.transpose());
+-    Eigen::Matrix<float, 4, 4> diag = std.asDiagonal();
++    Eigen::Matrix<float, FOUR, FOUR> diag = std.asDiagonal();
+     diag = diag.array().square().matrix();
+     covariance1 += diag;
+-    //    covariance1.diagonal() << diag;
+     return std::make_pair(mean1, covariance1);
+ }
+ 
+-KAL_DATA
+-KalmanFilter::update(
++KAL_DATA KalmanFilter::update(
+     const KAL_MEAN &mean,
+     const KAL_COVA &covariance,
+     const DETECTBOX &measurement)
+@@ -109,47 +129,38 @@ KalmanFilter::update(
+     KAL_HMEAN projected_mean = pa.first;
+     KAL_HCOVA projected_cov = pa.second;
+ 
+-    // chol_factor, lower =
+-    // scipy.linalg.cho_factor(projected_cov, lower=True, check_finite=False)
+-    // kalmain_gain =
+-    // scipy.linalg.cho_solve((cho_factor, lower),
+-    // np.dot(covariance, self._upadte_mat.T).T,
+-    // check_finite=False).T
+-    Eigen::Matrix<float, 4, 8> B = (covariance * (_update_mat.transpose())).transpose();
+-    Eigen::Matrix<float, 8, 4> kalman_gain = (projected_cov.llt().solve(B)).transpose(); // eg.8x4
+-    Eigen::Matrix<float, 1, 4> innovation = measurement - projected_mean;                // eg.1x4
+-    auto tmp = innovation * (kalman_gain.transpose());
++    Eigen::Matrix<float, FOUR, EIGHT> B = (covariance * (_update_mat.transpose())).transpose();
++    Eigen::Matrix<float, EIGHT, FOUR> kalman_gain = (projected_cov.llt().solve(B)).transpose();
++    Eigen::Matrix<float, ONE, FOUR> innovation = measurement - projected_mean;
++    auto tmp = innovation*(kalman_gain.transpose());
+     KAL_MEAN new_mean = (mean.array() + tmp.array()).matrix();
+-    KAL_COVA new_covariance = covariance - kalman_gain * projected_cov * (kalman_gain.transpose());
++    KAL_COVA new_covariance = covariance - kalman_gain*projected_cov*(kalman_gain.transpose());
+     return std::make_pair(new_mean, new_covariance);
+ }
+ 
+-Eigen::Matrix<float, 1, -1>
+-KalmanFilter::gating_distance(
++Eigen::Matrix<float, 1, -1> KalmanFilter::gating_distance(
+     const KAL_MEAN &mean,
+     const KAL_COVA &covariance,
+     const std::vector<DETECTBOX> &measurements,
+     bool only_position)
+ {
+     KAL_HDATA pa = this->project(mean, covariance);
+-    if (only_position)
+-    {
++    if (only_position) {
+         printf("not implement!");
+         exit(0);
+     }
+     KAL_HMEAN mean1 = pa.first;
+     KAL_HCOVA covariance1 = pa.second;
+ 
+-    //    Eigen::Matrix<float, -1, 4, Eigen::RowMajor> d(size, 4);
+-    DETECTBOXSS d(measurements.size(), 4);
++    DETECTBOXSS d(measurements.size(), FOUR);
+     int pos = 0;
+-    for (DETECTBOX box : measurements)
+-    {
++    for (DETECTBOX box:measurements) {
+         d.row(pos++) = box - mean1;
+     }
+     Eigen::Matrix<float, -1, -1, Eigen::RowMajor> factor = covariance1.llt().matrixL();
+     Eigen::Matrix<float, -1, -1> z = factor.triangularView<Eigen::Lower>().solve<Eigen::OnTheRight>(d).transpose();
+-    auto zz = ((z.array()) * (z.array())).matrix();
++    auto zz = ((z.array())*(z.array())).matrix();
+     auto square_maha = zz.colwise().sum();
+     return square_maha;
+ }
++
+diff --git a/DeepSort/kalmanfilter.h b/DeepSort2/kalmanfilter.h
+index 2324815..3c0fa4c 100644
+--- a/DeepSort/kalmanfilter.h
++++ b/DeepSort2/kalmanfilter.h
+@@ -1,8 +1,9 @@
+ #ifndef KALMANFILTER_H
+ #define KALMANFILTER_H
+ 
+-#include "dataType.h"
+-
++#include "../DeepAppearanceDescriptor/dataType.h"
++#define EIGHT 8
++#define FOUR 4
+ class KalmanFilter
+ {
+ public:
+@@ -16,14 +17,14 @@ public:
+                     const DETECTBOX& measurement);
+ 
+     Eigen::Matrix<float, 1, -1> gating_distance(
+-            const KAL_MEAN& mean,
+-            const KAL_COVA& covariance,
+-            const std::vector<DETECTBOX>& measurements,
+-            bool only_position = false);
++                                                const KAL_MEAN& mean,
++                                                const KAL_COVA& covariance,
++                                                const std::vector<DETECTBOX>& measurements,
++                                                bool only_position = false);
+ 
+ private:
+-    Eigen::Matrix<float, 8, 8, Eigen::RowMajor> _motion_mat;
+-    Eigen::Matrix<float, 4, 8, Eigen::RowMajor> _update_mat;
++    Eigen::Matrix<float, EIGHT, EIGHT, Eigen::RowMajor> _motion_mat;
++    Eigen::Matrix<float, FOUR, EIGHT, Eigen::RowMajor> _update_mat;
+     float _std_weight_position;
+     float _std_weight_velocity;
+ };
+diff --git a/DeepSort/linear_assignment.cpp b/DeepSort2/linear_assignment.cpp
+index af89645..06d100f 100644
+--- a/DeepSort/linear_assignment.cpp
++++ b/DeepSort2/linear_assignment.cpp
+@@ -1,39 +1,45 @@
++/*
++ * Copyright (c) 2022.Huawei Technologies Co., Ltd. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ #include "linear_assignment.h"
+-#include "hungarianoper.h"
++#include "../MunkresAssignment/hungarianoper.h"
+ #include <map>
++#define TWO 2
+ 
+-linear_assignment *linear_assignment::instance = NULL;
++linear_assignment *linear_assignment::instance = nullptr;
+ linear_assignment::linear_assignment()
+ {
+ }
+ 
+ linear_assignment *linear_assignment::getInstance()
+ {
+-    if(instance == NULL) instance = new linear_assignment();
++    if (instance == nullptr) { instance = new linear_assignment();}
+     return instance;
+ }
+ 
+-TRACHER_MATCHD
+-linear_assignment::matching_cascade(
+-        tracker *distance_metric,
+-        tracker::GATED_METRIC_FUNC distance_metric_func,
+-        float max_distance,
+-        int cascade_depth,
+-        std::vector<Track> &tracks,
+-        const DETECTIONS &detections,
+-        std::vector<int>& track_indices,
+-        std::vector<int> detection_indices)
++TRACHER_MATCHD linear_assignment::matching_cascade(tracker *distance_metric,
++                                                   tracker::GATED_METRIC_FUNC distance_metric_func,
++                                                   float max_distance,
++                                                   int cascade_depth,
++                                                   std::vector<Track> &tracks,
++                                                   const DETECTIONS &detections,
++                                                   std::vector<int>& track_indices,
++                                                   std::vector<int> detection_indices)
+ {
+     TRACHER_MATCHD res;
+-    //!!!python diff: track_indices will never be None.
+-    //    if(track_indices.empty() == true) {
+-    //        for(size_t i = 0; i < tracks.size(); i++) {
+-    //            track_indices.push_back(i);
+-    //        }
+-    //    }
+-
+-    //!!!python diff: detection_indices will always be None.
+-    for(size_t i = 0; i < detections.size(); i++) {
++    for (size_t i = 0; i < detections.size(); i++) {
+         detection_indices.push_back(int(i));
+     }
+ 
+@@ -43,58 +49,46 @@ linear_assignment::matching_cascade(
+     std::vector<int> track_indices_l;
+ 
+     std::map<int, int> matches_trackid;
+-    for(int level = 0; level < cascade_depth; level++) {
+-        if(unmatched_detections.size() == 0) break; //No detections left;
++    for (int level = 0; level < cascade_depth; level++) {
++        if (unmatched_detections.size() == 0) break;
+ 
+         track_indices_l.clear();
+-        for(int k:track_indices) {
+-            if(tracks[k].time_since_update == 1+level)
++        for (int k:track_indices) {
++            if (tracks[k].time_since_update == 1+level)
+                 track_indices_l.push_back(k);
+         }
+-        if(track_indices_l.size() == 0) continue; //Nothing to match at this level.
+-
++        if (track_indices_l.size() == 0) continue;
+         TRACHER_MATCHD tmp = min_cost_matching(
+-                    distance_metric, distance_metric_func,
+-                    max_distance, tracks, detections, track_indices_l,
+-                    unmatched_detections);
++            distance_metric, distance_metric_func,
++            max_distance, tracks, detections, track_indices_l,
++            unmatched_detections);
+         unmatched_detections.assign(tmp.unmatched_detections.begin(), tmp.unmatched_detections.end());
+-        for(size_t i = 0; i < tmp.matches.size(); i++) {
++        for (size_t i = 0; i < tmp.matches.size(); i++) {
+             MATCH_DATA pa = tmp.matches[i];
+             res.matches.push_back(pa);
+             matches_trackid.insert(pa);
+         }
+     }
+     res.unmatched_detections.assign(unmatched_detections.begin(), unmatched_detections.end());
+-    for(size_t i = 0; i < track_indices.size(); i++) {
++    for (size_t i = 0; i < track_indices.size(); i++) {
+         int tid = track_indices[i];
+-        if(matches_trackid.find(tid) == matches_trackid.end())
++        if (matches_trackid.find(tid) == matches_trackid.end())
+             res.unmatched_tracks.push_back(tid);
+     }
+     return res;
+ }
+ 
+-TRACHER_MATCHD
+-linear_assignment::min_cost_matching(tracker *distance_metric,
+-        tracker::GATED_METRIC_FUNC distance_metric_func,
+-        float max_distance,
+-        std::vector<Track> &tracks,
+-        const DETECTIONS &detections,
+-        std::vector<int> &track_indices,
+-        std::vector<int> &detection_indices)
++TRACHER_MATCHD linear_assignment::min_cost_matching(tracker *distance_metric,
++                                                    tracker::GATED_METRIC_FUNC distance_metric_func,
++                                                    float max_distance,
++                                                    std::vector<Track> &tracks,
++                                                    const DETECTIONS &detections,
++                                                    std::vector<int> &track_indices,
++                                                    std::vector<int> &detection_indices)
+ {
+     TRACHER_MATCHD res;
+-    //!!!python diff: track_indices && detection_indices will never be None.
+-    //    if(track_indices.empty() == true) {
+-    //        for(size_t i = 0; i < tracks.size(); i++) {
+-    //            track_indices.push_back(i);
+-    //        }
+-    //    }
+-    //    if(detection_indices.empty() == true) {
+-    //        for(size_t i = 0; i < detections.size(); i++) {
+-    //            detection_indices.push_back(int(i));
+-    //        }
+-    //    }
+-    if((detection_indices.size() == 0) || (track_indices.size() == 0)) {
++
++    if ((detection_indices.size() == 0) || (track_indices.size() == 0)) {
+         res.matches.clear();
+         res.unmatched_tracks.assign(track_indices.begin(), track_indices.end());
+         res.unmatched_detections.assign(detection_indices.begin(), detection_indices.end());
+@@ -102,35 +96,37 @@ linear_assignment::min_cost_matching(tracker *distance_metric,
+     }
+     DYNAMICM cost_matrix = (distance_metric->*(distance_metric_func))(
+                 tracks, detections, track_indices, detection_indices);
+-    for(int i = 0; i < cost_matrix.rows(); i++) {
+-        for(int j = 0; j < cost_matrix.cols(); j++) {
+-            float tmp = cost_matrix(i,j);
+-            if(tmp > max_distance) cost_matrix(i,j) = max_distance + 1e-5;
++    for (int i = 0; i < cost_matrix.rows(); i++) {
++        for (int j = 0; j < cost_matrix.cols(); j++) {
++            float tmp = cost_matrix(i, j);
++            if (tmp > max_distance) cost_matrix (i, j) = max_distance + 1e-5;
+         }
+     }
+-    Eigen::Matrix<float, -1, 2, Eigen::RowMajor> indices = HungarianOper::Solve(cost_matrix);
++    Eigen::Matrix<float, -1, TWO, Eigen::RowMajor> indices = HungarianOper::Solve(cost_matrix);
+     res.matches.clear();
+     res.unmatched_tracks.clear();
+     res.unmatched_detections.clear();
+-    for(size_t col = 0; col < detection_indices.size(); col++) {
++    for (size_t col = 0; col < detection_indices.size(); col++) {
+         bool flag = false;
+-        for(int i = 0; i < indices.rows(); i++)
+-            if(indices(i, 1) == col) { flag = true; break;}
+-        if(flag == false)res.unmatched_detections.push_back(detection_indices[col]);
++        for (int i = 0; i < indices.rows(); i++)
++            if (indices(i, 1) == col) { flag = true;
++                                        break;}
++        if (flag == false)res.unmatched_detections.push_back(detection_indices[col]);
+     }
+-    for(size_t row = 0; row < track_indices.size(); row++) {
++    for (size_t row = 0; row < track_indices.size(); row++) {
+         bool flag = false;
+-        for(int i = 0; i < indices.rows(); i++)
+-            if(indices(i, 0) == row) { flag = true; break; }
+-        if(flag == false) res.unmatched_tracks.push_back(track_indices[row]);
++        for (int i = 0; i < indices.rows(); i++)
++            if (indices(i, 0) == row) { flag = true;
++                                        break; }
++        if (flag == false) res.unmatched_tracks.push_back(track_indices[row]);
+     }
+-    for(int i = 0; i < indices.rows(); i++) {
++    for (int i = 0; i < indices.rows(); i++) {
+         int row = indices(i, 0);
+         int col = indices(i, 1);
+ 
+         int track_idx = track_indices[row];
+         int detection_idx = detection_indices[col];
+-        if(cost_matrix(row, col) > max_distance) {
++        if (cost_matrix(row, col) > max_distance) {
+             res.unmatched_tracks.push_back(track_idx);
+             res.unmatched_detections.push_back(detection_idx);
+         } else res.matches.push_back(std::make_pair(track_idx, detection_idx));
+@@ -138,27 +134,26 @@ linear_assignment::min_cost_matching(tracker *distance_metric,
+     return res;
+ }
+ 
+-DYNAMICM
+-linear_assignment::gate_cost_matrix(
+-        KalmanFilter *kf,
+-        DYNAMICM &cost_matrix,
+-        std::vector<Track> &tracks,
+-        const DETECTIONS &detections,
+-        const std::vector<int> &track_indices,
+-        const std::vector<int> &detection_indices,
+-        float gated_cost, bool only_position)
++DYNAMICM linear_assignment::gate_cost_matrix(
++    KalmanFilter *kf,
++    DYNAMICM &cost_matrix,
++    std::vector<Track> &tracks,
++    const DETECTIONS &detections,
++    const std::vector<int> &track_indices,
++    const std::vector<int> &detection_indices,
++    float gated_cost, bool only_position)
+ {
+     int gating_dim = (only_position == true?2:4);
+     double gating_threshold = KalmanFilter::chi2inv95[gating_dim];
+     std::vector<DETECTBOX> measurements;
+-    for(int i:detection_indices) {
++    for (int i:detection_indices) {
+         DETECTION_ROW t = detections[i];
+         measurements.push_back(t.to_xyah());
+     }
+-    for(size_t i  = 0; i < track_indices.size(); i++) {
++    for (size_t i  = 0; i < track_indices.size(); i++) {
+         Track& track = tracks[track_indices[i]];
+         Eigen::Matrix<float, 1, -1> gating_distance = kf->gating_distance(
+-                    track.mean, track.covariance, measurements, only_position);
++            track.mean, track.covariance, measurements, only_position);
+         for (int j = 0; j < gating_distance.cols(); j++) {
+             if (gating_distance(0, j) > gating_threshold)  cost_matrix(i, j) = gated_cost;
+         }
+diff --git a/DeepSort/linear_assignment.h b/DeepSort2/linear_assignment.h
+index 7fba2f8..b94294e 100644
+--- a/DeepSort/linear_assignment.h
++++ b/DeepSort2/linear_assignment.h
+@@ -1,15 +1,14 @@
+ #ifndef LINEAR_ASSIGNMENT_H
+ #define LINEAR_ASSIGNMENT_H
+-#include "dataType.h"
++#include "../DeepAppearanceDescriptor/dataType.h"
+ #include "tracker.h"
+-
+ #define INFTY_COST 1e5
+ class tracker;
+-//for matching;
++
+ class linear_assignment
+ {
+     linear_assignment();
+-    linear_assignment(const linear_assignment& );
++    linear_assignment(const linear_assignment&);
+     linear_assignment& operator=(const linear_assignment&);
+     static linear_assignment* instance;
+ 
+@@ -41,5 +40,4 @@ public:
+             float gated_cost = INFTY_COST,
+             bool only_position = false);
+ };
+-
+-#endif // LINEAR_ASSIGNMENT_H
++#endif
+\ No newline at end of file
+diff --git a/DeepSort/nn_matching.cpp b/DeepSort2/nn_matching.cpp
+index d7a8e94..f57b0bc 100644
+--- a/DeepSort/nn_matching.cpp
++++ b/DeepSort2/nn_matching.cpp
+@@ -1,13 +1,27 @@
++/*
++ * Copyright (c) 2022.Huawei Technologies Co., Ltd. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ #include "nn_matching.h"
+-
+-
++#define FEATURE_NUM 128
+ using namespace Eigen;
+ 
+ NearNeighborDisMetric::NearNeighborDisMetric(
+     NearNeighborDisMetric::METRIC_TYPE metric,
+     float matching_threshold, int budget)
+ {
+-  if(metric == euclidean)
++  if (metric == euclidean)
+     {
+       _metric = &NearNeighborDisMetric::_nneuclidean_distance;
+     } else if (metric == cosine)
+@@ -20,104 +34,93 @@ NearNeighborDisMetric::NearNeighborDisMetric(
+   this->samples.clear();
+ }
+ 
+-DYNAMICM
+-NearNeighborDisMetric::distance(
++DYNAMICM NearNeighborDisMetric::distance(
+     const FEATURESS &features,
+     const std::vector<int>& targets)
+ {
+   DYNAMICM cost_matrix = Eigen::MatrixXf::Zero(targets.size(), features.rows());
+   int idx = 0;
+-  for(int target:targets) {
++  for (int target:targets) {
+       cost_matrix.row(idx) = (this->*_metric)(this->samples[target], features);
+       idx++;
+     }
+   return cost_matrix;
+ }
+ 
+-void
+-NearNeighborDisMetric::partial_fit(
++void NearNeighborDisMetric::partial_fit(
+     std::vector<TRACKER_DATA> &tid_feats,
+     std::vector<int> &active_targets)
+ {
+-  /*python code:
+- * let feature(target_id) append to samples;
+- * && delete not comfirmed target_id from samples.
+- * update samples;
+-*/
+-
+-  for(TRACKER_DATA& data:tid_feats) {
++  for (TRACKER_DATA& data:tid_feats) {
+       int track_id = data.first;
+       FEATURESS newFeatOne = data.second;
+ 
+-      if(samples.find(track_id) != samples.end()) {//append
++      if (samples.find(track_id) != samples.end()) {
+           int oldSize = samples[track_id].rows();
+           int addSize = newFeatOne.rows();
+           int newSize = oldSize + addSize;
+ 
+-          if(newSize <= this->budget) {
+-              FEATURESS newSampleFeatures(newSize, k_feature_dim);
+-              newSampleFeatures.block(0,0, oldSize, k_feature_dim) = samples[track_id];
+-              newSampleFeatures.block(oldSize, 0, addSize, k_feature_dim) = newFeatOne;
++          if (newSize <= this->budget) {
++              FEATURESS newSampleFeatures(newSize, FEATURE_NUM);
++              newSampleFeatures.block(0, 0, oldSize, FEATURE_NUM) = samples[track_id];
++              newSampleFeatures.block(oldSize, 0, addSize, FEATURE_NUM) = newFeatOne;
+               samples[track_id] = newSampleFeatures;
+             } else {
+-              if(oldSize < this->budget) {//original space is not enough;
+-                  FEATURESS newSampleFeatures(this->budget, k_feature_dim);
+-                  if(addSize >= this->budget) {
+-                      newSampleFeatures = newFeatOne.block(0, 0, this->budget, k_feature_dim);
++              if (oldSize < this->budget) {
++                  FEATURESS newSampleFeatures(this->budget, FEATURE_NUM);
++                  if (addSize >= this->budget) {
++                      newSampleFeatures = newFeatOne.block(0, 0, this->budget, FEATURE_NUM);
+                     } else {
+-                      newSampleFeatures.block(0, 0, this->budget-addSize, k_feature_dim) =
+-                          samples[track_id].block(addSize-1, 0, this->budget-addSize, k_feature_dim).eval();
+-                      newSampleFeatures.block(this->budget-addSize, 0, addSize, k_feature_dim) = newFeatOne;
++                      newSampleFeatures.block(0, 0, this->budget-addSize, FEATURE_NUM) =
++                          samples[track_id].block(addSize-1, 0, this->budget-addSize, FEATURE_NUM).eval();
++                      newSampleFeatures.block(this->budget-addSize, 0, addSize, FEATURE_NUM) = newFeatOne;
+                     }
+                   samples[track_id] = newSampleFeatures;
+-                } else {//original space is ok;
+-                  if(addSize >= this->budget) {
+-                      samples[track_id] = newFeatOne.block(0,0, this->budget, k_feature_dim);
++                } else {
++                  if (addSize >= this->budget) {
++                      samples[track_id] = newFeatOne.block (0, 0, this->budget, FEATURE_NUM);
+                     } else {
+-                      samples[track_id].block(0, 0, this->budget-addSize, k_feature_dim) =
+-                          samples[track_id].block(addSize-1, 0, this->budget-addSize, k_feature_dim).eval();
+-                      samples[track_id].block(this->budget-addSize, 0, addSize, k_feature_dim) = newFeatOne;
++                      samples[track_id].block(0, 0, this->budget-addSize, FEATURE_NUM) =
++                          samples[track_id].block(addSize-1, 0, this->budget-addSize, FEATURE_NUM).eval();
++                      samples[track_id].block(this->budget-addSize, 0, addSize, FEATURE_NUM) = newFeatOne;
+                     }
+                 }
+             }
+-        } else {//not exit, create new one;
++        } else {
+           samples[track_id] = newFeatOne;
+         }
+-    }//add features;
+-
+-  //erase the samples which not in active_targets;
+-  for(std::map<int, FEATURESS>::iterator i = samples.begin(); i != samples.end();) {
++    }
++  for (std::map<int, FEATURESS>::iterator i = samples.begin(); i != samples.end();) {
+       bool flag = false;
+-      for(int j:active_targets) if(j == i->first) { flag=true; break; }
+-      if(flag == false)  samples.erase(i++);
++      for (int j:active_targets)
++          if (j == i->first) { flag=true;
++                               break; }
++      if (flag == false)  samples.erase(i++);
+       else i++;
+     }
+ }
+ 
+-Eigen::VectorXf
+-NearNeighborDisMetric::_nncosine_distance(
++Eigen::VectorXf NearNeighborDisMetric::_nncosine_distance(
+     const FEATURESS &x, const FEATURESS &y)
+ {
+-  MatrixXf distances = _cosine_distance(x,y);
++  MatrixXf distances = _cosine_distance (x, y);
+   VectorXf res = distances.colwise().minCoeff().transpose();
+   return res;
+ }
+ 
+-Eigen::VectorXf
+-NearNeighborDisMetric::_nneuclidean_distance(
++Eigen::VectorXf NearNeighborDisMetric::_nneuclidean_distance(
+     const FEATURESS &x, const FEATURESS &y)
+ {
+-  MatrixXf distances = _pdist(x,y);
++  MatrixXf distances = _pdist (x, y);
+   VectorXf res = distances.colwise().maxCoeff().transpose();
+   res = res.array().max(VectorXf::Zero(res.rows()).array());
+   return res;
+ }
+ 
+-Eigen::MatrixXf
+-NearNeighborDisMetric::_pdist(const FEATURESS &x, const FEATURESS &y)
++Eigen::MatrixXf NearNeighborDisMetric::_pdist(const FEATURESS &x, const FEATURESS &y)
+ {
+   int len1 = x.rows(), len2 = y.rows();
+-  if(len1 == 0 || len2 == 0) {
++  if (len1 == 0 || len2 == 0) {
+       return Eigen::MatrixXf::Zero(len1, len2);
+     }
+   MatrixXf res = x * y.transpose()* -2;
+@@ -127,12 +130,10 @@ NearNeighborDisMetric::_pdist(const FEATURESS &x, const FEATURESS &y)
+   return res;
+ }
+ 
+-Eigen::MatrixXf
+-NearNeighborDisMetric::_cosine_distance(
++Eigen::MatrixXf NearNeighborDisMetric::_cosine_distance(
+     const FEATURESS & a,
+     const FEATURESS& b, bool data_is_normalized) {
+-  if(data_is_normalized == true) {
+-      //undo:
++  if (data_is_normalized == true) {
+       assert(false);
+     }
+   MatrixXf res = 1. - (a*b.transpose()).array();
+diff --git a/DeepSort/nn_matching.h b/DeepSort2/nn_matching.h
+index 7fdcf38..7a55069 100644
+--- a/DeepSort/nn_matching.h
++++ b/DeepSort2/nn_matching.h
+@@ -1,24 +1,23 @@
+ #ifndef NN_MATCHING_H
+ #define NN_MATCHING_H
+-
+-#include "dataType.h"
+-
++#include "../DeepAppearanceDescriptor/dataType.h"
+ #include <map>
+ 
+-//A tool to calculate distance;
+-class NearNeighborDisMetric{
++
++class NearNeighborDisMetric {
+ public:
+-    enum METRIC_TYPE{euclidean=1, cosine};
++    enum METRIC_TYPE {euclidean = 1, cosine};
+     NearNeighborDisMetric(METRIC_TYPE metric,
+             float matching_threshold,
+             int budget);
+     DYNAMICM distance(const FEATURESS& features, const std::vector<int> &targets);
+-    //    void partial_fit(FEATURESS& features, std::vector<int> targets, std::vector<int> active_targets);
++    
+     void partial_fit(std::vector<TRACKER_DATA>& tid_feats, std::vector<int>& active_targets);
+     float mating_threshold;
+ 
+ private:
+-    typedef Eigen::VectorXf (NearNeighborDisMetric::*PTRFUN)(const FEATURESS&, const FEATURESS&);
++//    typedef Eigen::VectorXf (NearNeighborDisMetric::*PTRFUN)(const FEATURESS&, const FEATURESS&);
++    using PTRFUN = Eigen::VectorXf (NearNeighborDisMetric::*)(const FEATURESS&, const FEATURESS&);
+     Eigen::VectorXf _nncosine_distance(const FEATURESS& x, const FEATURESS& y);
+     Eigen::VectorXf _nneuclidean_distance(const FEATURESS& x, const FEATURESS& y);
+ 
+@@ -29,5 +28,4 @@ private:
+     int budget;
+     std::map<int, FEATURESS > samples;
+ };
+-
+-#endif // NN_MATCHING_H
++#endif
+\ No newline at end of file
+diff --git a/DeepSort/track.cpp b/DeepSort2/track.cpp
+index c8a7dc9..90a6a21 100644
+--- a/DeepSort/track.cpp
++++ b/DeepSort2/track.cpp
+@@ -1,6 +1,24 @@
++/*
++ * Copyright (c) 2022.Huawei Technologies Co., Ltd. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ #include "track.h"
+-
+-Track::Track(KAL_MEAN &mean, KAL_COVA &covariance, int track_id, int n_init, int max_age, const FEATURE &feature)
++#define TWO 2
++#define THREE 3
++#define FEATURE_NUM 128
++int a = 1;
++Track::Track(KAL_MEAN& mean, KAL_COVA& covariance, int track_id, int n_init, int max_age, const FEATURE& feature)
+ {
+     this->mean = mean;
+     this->covariance = covariance;
+@@ -9,8 +27,8 @@ Track::Track(KAL_MEAN &mean, KAL_COVA &covariance, int track_id, int n_init, int
+     this->age = 1;
+     this->time_since_update = 0;
+     this->state = TrackState::Tentative;
+-    features = FEATURESS(1, k_feature_dim);
+-    features.row(0) = feature; // features.rows() must = 0;
++    features = FEATURESS(a, FEATURE_NUM);
++    features.row(0) = feature;
+ 
+     this->_n_init = n_init;
+     this->_max_age = max_age;
+@@ -18,44 +36,31 @@ Track::Track(KAL_MEAN &mean, KAL_COVA &covariance, int track_id, int n_init, int
+ 
+ void Track::predit(KalmanFilter *kf)
+ {
+-    /*Propagate the state distribution to the current time step using a
+-        Kalman filter prediction step.
+-
+-        Parameters
+-        ----------
+-        kf : kalman_filter.KalmanFilter
+-            The Kalman filter.
+-        */
+-
+     kf->predict(this->mean, this->covariance);
+     this->age += 1;
+     this->time_since_update += 1;
+ }
+ 
+-void Track::update(KalmanFilter *const kf, const DETECTION_ROW &detection)
++void Track::update(KalmanFilter * const kf, const DETECTION_ROW& detection)
+ {
+     KAL_DATA pa = kf->update(this->mean, this->covariance, detection.to_xyah());
+     this->mean = pa.first;
+     this->covariance = pa.second;
+ 
+     featuresAppendOne(detection.feature);
+-    //    this->features.row(features.rows()) = detection.feature;
++
+     this->hits += 1;
+     this->time_since_update = 0;
+-    if (this->state == TrackState::Tentative && this->hits >= this->_n_init)
+-    {
++    if (this->state == TrackState::Tentative && this->hits >= this->_n_init) {
+         this->state = TrackState::Confirmed;
+     }
+ }
+ 
+ void Track::mark_missed()
+ {
+-    if (this->state == TrackState::Tentative)
+-    {
++    if (this->state == TrackState::Tentative) {
+         this->state = TrackState::Deleted;
+-    }
+-    else if (this->time_since_update > this->_max_age)
+-    {
++    } else if (this->time_since_update > this->_max_age) {
+         this->state = TrackState::Deleted;
+     }
+ }
+@@ -78,16 +83,16 @@ bool Track::is_tentative()
+ DETECTBOX Track::to_tlwh()
+ {
+     DETECTBOX ret = mean.leftCols(4);
+-    ret(2) *= ret(3);
+-    ret.leftCols(2) -= (ret.rightCols(2) / 2);
++    ret(TWO) *= ret(THREE);
++    ret.leftCols(TWO)-=(ret.rightCols(TWO)/TWO);
+     return ret;
+ }
+ 
+ void Track::featuresAppendOne(const FEATURE &f)
+ {
+     int size = this->features.rows();
+-    FEATURESS newfeatures = FEATURESS(size + 1, k_feature_dim);
+-    newfeatures.block(0, 0, size, k_feature_dim) = this->features;
++    FEATURESS newfeatures = FEATURESS(size+1, FEATURE_NUM);
++    newfeatures.block(0, 0, size, FEATURE_NUM) = this->features;
+     newfeatures.row(size) = f;
+     features = newfeatures;
+ }
+diff --git a/DeepSort/track.h b/DeepSort2/track.h
+index 971618e..da6fd7b 100644
+--- a/DeepSort/track.h
++++ b/DeepSort2/track.h
+@@ -1,57 +1,14 @@
+ #ifndef TRACK_H
+ #define TRACK_H
+ 
+-#include "dataType.h"
++#include "../DeepAppearanceDescriptor/dataType.h"
++
+ #include "kalmanfilter.h"
+-#include "model.h"
++#include "../DeepAppearanceDescriptor/model.h"
+ 
+ class Track
+ {
+-    /*"""
+-    A single target track with state space `(x, y, a, h)` and associated
+-    velocities, where `(x, y)` is the center of the bounding box, `a` is the
+-    aspect ratio and `h` is the height.
+-
+-    Parameters
+-    ----------
+-    mean : ndarray
+-        Mean vector of the initial state distribution.
+-    covariance : ndarray
+-        Covariance matrix of the initial state distribution.
+-    track_id : int
+-        A unique track identifier.
+-    n_init : int
+-        Number of consecutive detections before the track is confirmed. The
+-        track state is set to `Deleted` if a miss occurs within the first
+-        `n_init` frames.
+-    max_age : int
+-        The maximum number of consecutive misses before the track state is
+-        set to `Deleted`.
+-    feature : Optional[ndarray]
+-        Feature vector of the detection this track originates from. If not None,
+-        this feature is added to the `features` cache.
+-
+-    Attributes
+-    ----------
+-    mean : ndarray
+-        Mean vector of the initial state distribution.
+-    covariance : ndarray
+-        Covariance matrix of the initial state distribution.
+-    track_id : int
+-        A unique track identifier.
+-    hits : int
+-        Total number of measurement updates.
+-    age : int
+-        Total number of frames since first occurance.
+-    time_since_update : int
+-        Total number of frames since last measurement update.
+-    state : TrackState
+-        The current track state.
+-    features : List[ndarray]
+-        A cache of features. On each measurement update, the associated feature
+-        vector is added to this list.
+-
+-    """*/
++public:
+     enum TrackState {Tentative = 1, Confirmed, Deleted};
+ 
+ public:
+diff --git a/DeepSort/tracker.cpp b/DeepSort2/tracker.cpp
+index 43c3b8e..9911a8c 100644
+--- a/DeepSort/tracker.cpp
++++ b/DeepSort2/tracker.cpp
+@@ -1,22 +1,41 @@
++/*
++ * Copyright (c) 2022.Huawei Technologies Co., Ltd. All rights reserved.
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ #include "tracker.h"
+ #include "nn_matching.h"
+-#include "model.h"
++#include "../DeepAppearanceDescriptor/model.h"
+ #include "linear_assignment.h"
+-using namespace std;
+-
+-//#define MY_inner_DEBUG
+ #ifdef MY_inner_DEBUG
+ #include <string>
+ #include <iostream>
+ #endif
++#include <chrono>
++#define FOUR 4
++#define TWO 2
++using namespace std;
+ 
+-tracker::tracker(/*NearNeighborDisMetric *metric,*/
+-                 float max_cosine_distance, int nn_budget,
+-                 float max_iou_distance, int max_age, int n_init)
++tracker::tracker(
++    float max_cosine_distance,
++    int nn_budget,
++    float max_iou_distance,
++    int max_age,
++    int n_init)
+ {
+     this->metric = new NearNeighborDisMetric(
+-        NearNeighborDisMetric::METRIC_TYPE::cosine,
+-        max_cosine_distance, nn_budget);
++    		NearNeighborDisMetric::METRIC_TYPE::cosine,
++    		max_cosine_distance, nn_budget);
+     this->max_iou_distance = max_iou_distance;
+     this->max_age = max_age;
+     this->n_init = n_init;
+@@ -26,73 +45,75 @@ tracker::tracker(/*NearNeighborDisMetric *metric,*/
+     this->_next_idx = 1;
+ }
+ 
+-void tracker::predict()
+-{
+-    for (Track &track : tracks)
+-    {
++void tracker::predict() {
++    for (Track& track:tracks) {
+         track.predit(kf);
+     }
+ }
+ 
+-void tracker::update(const DETECTIONS &detections)
++std::vector<std::pair<int, int>> tracker::update(const DETECTIONS &detections)
+ {
++    std::vector<std::pair<int, int>> det_track_idxs;
+     TRACHER_MATCHD res;
+     _match(detections, res);
+ 
+-    vector<MATCH_DATA> &matches = res.matches;
+-    //#ifdef MY_inner_DEBUG
+-    //    printf("res.matches size = %d:\n", matches.size());
+-    //#endif
+-    for (MATCH_DATA &data : matches)
+-    {
++    vector<MATCH_DATA>& matches = res.matches;
++
++    for (MATCH_DATA& data:matches) {
+         int track_idx = data.first;
+         int detection_idx = data.second;
+-        //#ifdef MY_inner_DEBUG
+-        //        printf("\t%d == %d;\n", track_idx, detection_idx);
+-        //#endif
++
+         tracks[track_idx].update(this->kf, detections[detection_idx]);
++        det_track_idxs.push_back(std::pair<int, int>(detection_idx, track_idx));
+     }
+-    vector<int> &unmatched_tracks = res.unmatched_tracks;
+-    //#ifdef MY_inner_DEBUG
+-    //    printf("res.unmatched_tracks size = %d\n", unmatched_tracks.size());
+-    //#endif
+-    for (int &track_idx : unmatched_tracks)
+-    {
++    vector<int>& unmatched_tracks = res.unmatched_tracks;
++
++    for (int& track_idx:unmatched_tracks) {
+         this->tracks[track_idx].mark_missed();
+     }
+-    vector<int> &unmatched_detections = res.unmatched_detections;
+-    //#ifdef MY_inner_DEBUG
+-    //    printf("res.unmatched_detections size = %d\n", unmatched_detections.size());
+-    //#endif
+-    for (int &detection_idx : unmatched_detections)
+-    {
++    vector<int>& unmatched_detections = res.unmatched_detections;
++
++    for (int& detection_idx:unmatched_detections) {
+         this->_initiate_track(detections[detection_idx]);
++        det_track_idxs.push_back(std::pair<int, int>(detection_idx, this->tracks.size() - 1));
+     }
+-    //#ifdef MY_inner_DEBUG
+-    //    int size = tracks.size();
+-    //    printf("now track size = %d\n", size);
+-    //#endif
++
++       int size = tracks.size();
++   
++    std::vector<int> erased_tracks;
+     vector<Track>::iterator it;
+-    for (it = tracks.begin(); it != tracks.end();)
+-    {
+-        if ((*it).is_deleted())
++    for (it = tracks.begin(); it != tracks.end();) {
++        if ((*it). is_deleted()) {
+             it = tracks.erase(it);
+-        else
+-            ++it;
++            erased_tracks.push_back((*it).track_id);
++        }
++        else ++it;
++    }
++    for (int i = 0; i < erased_tracks.size(); ++i)
++    {
++        vector<std::pair<int, int>>::iterator it;
++        for (it = det_track_idxs.begin(); it != det_track_idxs.end();)
++        {
++            if (this->tracks[(*it).second].track_id ==  erased_tracks[i])
++            {
++                it = det_track_idxs.erase(it);
++            }
++            else ++it;
++        }
+     }
+ 
+     vector<int> active_targets;
+     vector<TRACKER_DATA> tid_features;
+-    for (Track &track : tracks)
+-    {
+-        if (track.is_confirmed() == false)
+-            continue;
++    for (Track& track:tracks) {
++        if (track.is_confirmed() == false) continue;
+         active_targets.push_back(track.track_id);
+-        tid_features.push_back(std::make_pair(track.track_id, track.features));
+-        FEATURESS t = FEATURESS(0, k_feature_dim);
++        tid_features. push_back(std::make_pair(track.track_id, track.features));
++        FEATURESS t = FEATURESS(0, 128);
+         track.features = t;
+     }
+     this->metric->partial_fit(tid_features, active_targets);
++
++    return det_track_idxs;
+ }
+ 
+ void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res)
+@@ -100,15 +121,13 @@ void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res)
+     vector<int> confirmed_tracks;
+     vector<int> unconfirmed_tracks;
+     int idx = 0;
+-    for (Track &t : tracks)
+-    {
+-        if (t.is_confirmed())
+-            confirmed_tracks.push_back(idx);
+-        else
+-            unconfirmed_tracks.push_back(idx);
++    for (Track& t:tracks) {
++        if (t.is_confirmed()) confirmed_tracks.push_back (idx);
++        else unconfirmed_tracks.push_back(idx);
+         idx++;
+     }
+ 
++    auto start = std::chrono::system_clock::now();
+     TRACHER_MATCHD matcha = linear_assignment::getInstance()->matching_cascade(
+         this, &tracker::gated_matric,
+         this->metric->mating_threshold,
+@@ -116,20 +135,22 @@ void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res)
+         this->tracks,
+         detections,
+         confirmed_tracks);
++    auto end = std::chrono::system_clock::now();
++    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
++
+     vector<int> iou_track_candidates;
+     iou_track_candidates.assign(unconfirmed_tracks.begin(), unconfirmed_tracks.end());
+     vector<int>::iterator it;
+-    for (it = matcha.unmatched_tracks.begin(); it != matcha.unmatched_tracks.end();)
+-    {
++    for (it = matcha.unmatched_tracks.begin(); it != matcha.unmatched_tracks.end();) {
+         int idx = *it;
+-        if (tracks[idx].time_since_update == 1)
+-        { // push into unconfirmed
++        if (tracks[idx].time_since_update == 1) {
+             iou_track_candidates.push_back(idx);
+             it = matcha.unmatched_tracks.erase(it);
+             continue;
+         }
+         ++it;
+     }
++ 
+     TRACHER_MATCHD matchb = linear_assignment::getInstance()->min_cost_matching(
+         this, &tracker::iou_cost,
+         this->max_iou_distance,
+@@ -137,10 +158,10 @@ void tracker::_match(const DETECTIONS &detections, TRACHER_MATCHD &res)
+         detections,
+         iou_track_candidates,
+         matcha.unmatched_detections);
+-    // get result:
++
+     res.matches.assign(matcha.matches.begin(), matcha.matches.end());
+     res.matches.insert(res.matches.end(), matchb.matches.begin(), matchb.matches.end());
+-    // unmatched_tracks;
++  
+     res.unmatched_tracks.assign(
+         matcha.unmatched_tracks.begin(),
+         matcha.unmatched_tracks.end());
+@@ -167,18 +188,16 @@ void tracker::_initiate_track(const DETECTION_ROW &detection)
+ DYNAMICM tracker::gated_matric(
+     std::vector<Track> &tracks,
+     const DETECTIONS &dets,
+-    const std::vector<int> &track_indices,
+-    const std::vector<int> &detection_indices)
++    const std::vector<int>& track_indices,
++    const std::vector<int>& detection_indices)
+ {
+-    FEATURESS features(detection_indices.size(), k_feature_dim);
++    FEATURESS features(detection_indices.size(), 128);
+     int pos = 0;
+-    for (int i : detection_indices)
+-    {
++    for (int i:detection_indices) {
+         features.row(pos++) = dets[i].feature;
+     }
+     vector<int> targets;
+-    for (int i : track_indices)
+-    {
++    for (int i:track_indices) {
+         targets.push_back(tracks[i].track_id);
+     }
+     DYNAMICM cost_matrix = this->metric->distance(features, targets);
+@@ -188,81 +207,59 @@ DYNAMICM tracker::gated_matric(
+     return res;
+ }
+ 
+-DYNAMICM
+-tracker::iou_cost(
++DYNAMICM tracker::iou_cost(
+     std::vector<Track> &tracks,
+     const DETECTIONS &dets,
+-    const std::vector<int> &track_indices,
+-    const std::vector<int> &detection_indices)
++    const std::vector<int>& track_indices,
++    const std::vector<int>& detection_indices)
+ {
+-    //!!!python diff: track_indices && detection_indices will never be None.
+-    //    if(track_indices.empty() == true) {
+-    //        for(size_t i = 0; i < tracks.size(); i++) {
+-    //            track_indices.push_back(i);
+-    //        }
+-    //    }
+-    //    if(detection_indices.empty() == true) {
+-    //        for(size_t i = 0; i < dets.size(); i++) {
+-    //            detection_indices.push_back(i);
+-    //        }
+-    //    }
+     int rows = track_indices.size();
+     int cols = detection_indices.size();
+     DYNAMICM cost_matrix = Eigen::MatrixXf::Zero(rows, cols);
+-    for (int i = 0; i < rows; i++)
+-    {
++    for (int i = 0; i < rows; i++) {
+         int track_idx = track_indices[i];
+-        if (tracks[track_idx].time_since_update > 1)
+-        {
++        if (tracks[track_idx].time_since_update > 1) {
+             cost_matrix.row(i) = Eigen::RowVectorXf::Constant(cols, INFTY_COST);
+             continue;
+         }
+         DETECTBOX bbox = tracks[track_idx].to_tlwh();
+         int csize = detection_indices.size();
+-        DETECTBOXSS candidates(csize, 4);
+-        for (int k = 0; k < csize; k++)
+-            candidates.row(k) = dets[detection_indices[k]].tlwh;
++        DETECTBOXSS candidates(csize, FOUR);
++        for (int k = 0; k < csize; k++) candidates.row(k) = dets[detection_indices[k]].tlwh;
+         Eigen::RowVectorXf rowV = (1. - iou(bbox, candidates).array()).matrix().transpose();
+         cost_matrix.row(i) = rowV;
+     }
+     return cost_matrix;
+ }
+ 
+-Eigen::VectorXf
+-tracker::iou(DETECTBOX &bbox, DETECTBOXSS &candidates)
++Eigen::VectorXf tracker::iou(DETECTBOX& bbox, DETECTBOXSS& candidates)
+ {
+     float bbox_tl_1 = bbox[0];
+     float bbox_tl_2 = bbox[1];
+     float bbox_br_1 = bbox[0] + bbox[2];
+     float bbox_br_2 = bbox[1] + bbox[3];
+     float area_bbox = bbox[2] * bbox[3];
+-
+-    Eigen::Matrix<float, -1, 2> candidates_tl;
+-    Eigen::Matrix<float, -1, 2> candidates_br;
+-    candidates_tl = candidates.leftCols(2);
+-    candidates_br = candidates.rightCols(2) + candidates_tl;
++    Eigen::Matrix<float, -1, TWO> candidates_tl;
++    Eigen::Matrix<float, -1, TWO> candidates_br;
++    candidates_tl = candidates.leftCols(TWO) ;
++    candidates_br = candidates.rightCols(TWO) + candidates_tl;
+ 
+     int size = int(candidates.rows());
+-    //    Eigen::VectorXf area_intersection(size);
+-    //    Eigen::VectorXf area_candidates(size);
++
+     Eigen::VectorXf res(size);
+-    for (int i = 0; i < size; i++)
+-    {
++    for (int i = 0; i < size; i++) {
+         float tl_1 = std::max(bbox_tl_1, candidates_tl(i, 0));
+         float tl_2 = std::max(bbox_tl_2, candidates_tl(i, 1));
+         float br_1 = std::min(bbox_br_1, candidates_br(i, 0));
+         float br_2 = std::min(bbox_br_2, candidates_br(i, 1));
+ 
+         float w = br_1 - tl_1;
+-        w = (w < 0 ? 0 : w);
++        w = (w < 0? 0: w);
+         float h = br_2 - tl_2;
+-        h = (h < 0 ? 0 : h);
++        h = (h < 0? 0: h);
+         float area_intersection = w * h;
+         float area_candidates = candidates(i, 2) * candidates(i, 3);
+-        res[i] = area_intersection / (area_bbox + area_candidates - area_intersection);
++        res[i] = area_intersection/(area_bbox + area_candidates - area_intersection);
+     }
+-    //#ifdef MY_inner_DEBUG
+-    //        std::cout << res << std::endl;
+-    //#endif
+     return res;
+-}
++}
+\ No newline at end of file
+diff --git a/DeepSort/tracker.h b/DeepSort2/tracker.h
+index c60bbcc..60e9615 100644
+--- a/DeepSort/tracker.h
++++ b/DeepSort2/tracker.h
+@@ -2,10 +2,9 @@
+ #define TRACKER_H
+ #include <vector>
+ 
+-
+ #include "kalmanfilter.h"
+ #include "track.h"
+-#include "model.h"
++#include "../DeepAppearanceDescriptor/model.h"
+ 
+ class NearNeighborDisMetric;
+ 
+@@ -22,20 +21,19 @@ public:
+     int _next_idx;
+ public:
+     std::vector<Track> tracks;
+-    tracker(/*NearNeighborDisMetric* metric,*/
+-    		float max_cosine_distance, int nn_budget,
+-            float max_iou_distance = 0.7,
+-            int max_age = 30, int n_init=3);
++    tracker(
++    		float max_cosine_distance,
++        int nn_budget,
++        float max_iou_distance = 0.7,
++        int max_age = 30,
++        int n_init = 3);
+     void predict();
+-    void update(const DETECTIONS& detections);
+-    typedef DYNAMICM (tracker::* GATED_METRIC_FUNC)(
++    std::vector<std::pair<int, int>> update(const DETECTIONS& detections);
++    using GATED_METRIC_FUNC = DYNAMICM (tracker::*)(
+             std::vector<Track>& tracks,
+             const DETECTIONS& dets,
+             const std::vector<int>& track_indices,
+             const std::vector<int>& detection_indices);
+-private:    
+-    void _match(const DETECTIONS& detections, TRACHER_MATCHD& res);
+-    void _initiate_track(const DETECTION_ROW& detection);
+ public:
+     DYNAMICM gated_matric(
+             std::vector<Track>& tracks,
+@@ -49,6 +47,9 @@ public:
+             const std::vector<int>& detection_indices);
+     Eigen::VectorXf iou(DETECTBOX& bbox,
+             DETECTBOXSS &candidates);
++private:
++    void _match (const DETECTIONS& detections, TRACHER_MATCHD& res);
++    void _initiate_track (const DETECTION_ROW& detection);
+ };
+ 
+ #endif // TRACKER_H
