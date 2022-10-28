@@ -48,28 +48,27 @@
 | pycocotools | 2.0.2    |
 | pillow      |          |
 
-注：安装pycocotools的命令为：
-
-`conda install -c conda-forge pycocotools`
 
 
 在编译运行项目前，需要设置环境变量：
 
-- 环境变量介绍
+- MindX SDK 环境变量介绍
 
-```
-export install_path=/usr/local/Ascend/ascend-toolkit/latest
-export PATH=/usr/local/python3.7.5/bin:${install_path}/atc/ccec_compiler/bin:${install_path}/atc/bin:$PATH
-export PYTHONPATH=${install_path}/atc/python/site-packages:${install_path}/atc/python/site-packages/auto_tune.egg/auto_tune:${install_path}/atc/python/site-packages/schedule_search.egg
-export LD_LIBRARY_PATH=${install_path}/atc/lib64:$LD_LIBRARY_PATH
-export ASCEND_OPP_PATH=${install_path}/opp
-```
+  ```
+  . ${SDK-path}/set_env.sh
+  ```
+
+- CANN 环境变量介绍
+
+  ```
+  . ${ascend-toolkit-path}/set_env.sh
+  ```
 
 ## 3 模型转换
 
 ### 3.1 FasterRcnn模型
 
-该模型直接从华为仓内下载即可。
+该模型直接从华为仓内下载即可。点击"下载模型"，使用其中的fasterrcnn_mindspore_dvpp.om模型。
 
 [Faster R-CNN-昇腾社区 (hiascend.com)](https://www.hiascend.com/zh/software/modelzoo/models/detail/C/8d8b656fe2404616a1f0f491410a224c)
 
@@ -213,5 +212,4 @@ python3.9 evaluate.py
 ```
 
 最终可以得到测试的精度结果及性能结果。
-
 
