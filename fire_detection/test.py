@@ -66,7 +66,7 @@ else:
 # 山间道路.jpg                                      山间道路
 # 城市夜灯.jpg                                      城市夜灯
 
-TEST_PATH = '{图片所在文件夹路径}' # 若在fire_detection文件夹下可设置为./fire_detection/other
+TEST_PATH = '{图片所在文件夹路径}' # 若在fire_detection文件夹下可设置为./data/other/
 PICTURE = '{图片名称}' # 修改图片名称，如：大型火灾.jpg
 TEST_PATH = TEST_PATH + PICTURE 
 PIC_TYPE = imghdr.what(TEST_PATH)
