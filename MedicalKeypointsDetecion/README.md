@@ -42,11 +42,11 @@
 | 软件名称  | 版本  |
 | --------- | ----- |
 | MindX SDK | 2.0.4 |
-| python    | 3.7  |
+| python    | 3.9  |
 | opencv2     | 4.6.0.66 |
-| numpy       | 1.23.1   |
-| pycocotools | 2.0.2    |
-| pillow      |          |
+| numpy       | 1.23.4   |
+| pycocotools | 2.0.5   |
+| pillow      | 9.2.0 |
 
 
 
@@ -104,13 +104,11 @@ ATC run success
 
 **步骤1** 获取om模型（见前一章节）
 
-**步骤2** 修改run.sh最后的执行文件名称”test.py"
-
-**步骤3** 配置pipeline
+**步骤2** 配置pipeline
 
 根据所需场景，配置pipeline1与pipeline2文件，调整路径参数等。
 
-model1.pipeline:
+fasterrcnn.pipeline:
 
 ```python
 "mxpi_tensorinfer0": {
@@ -123,7 +121,7 @@ model1.pipeline:
 #修改om文件存放的路径
 ```
 
-model2.pipeline:
+hrnet.pipeline:
 
 ```python
 "mxpi_tensorinfer0": {
@@ -144,7 +142,7 @@ model2.pipeline:
 
 ```
 FILE_PATH = '' #测试图片路径
-SAVEPATH = '' #测试结果保存路径
+SAVEPATH = '' #测试结果保存路径,图片保存路径需提前手动创建
 ```
 
 然后执行run.sh文件：

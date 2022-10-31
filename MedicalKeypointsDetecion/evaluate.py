@@ -653,7 +653,7 @@ if __name__ == '__main__':
         exit()
 
     # create streams
-    with open("./pipeline/model1.pipeline", 'rb') as f1:
+    with open("./pipeline/fasterrcnn.pipeline", 'rb') as f1:
         pipelineStr = f1.read()
     ret = streamManagerApi.CreateMultipleStreams(pipelineStr)
     if ret != 0:
@@ -665,7 +665,7 @@ if __name__ == '__main__':
         print("The Stream manager failed to init, ret=", str(ret2))
         exit()
 
-    with open("./pipeline/model2.pipeline", 'rb') as f2:
+    with open("./pipeline/hrnet.pipeline", 'rb') as f2:
         pipelineStr2 = f2.read()
     ret2 = streamManagerApi.CreateMultipleStreams(pipelineStr2)
     if ret2 != 0:
