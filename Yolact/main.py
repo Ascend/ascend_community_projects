@@ -20,7 +20,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from utils.utils_bbox import BBoxUtility
 from utils.anchors import get_anchors
-from utils.utils_map import make_json, prep_metrics
+from utils.utils_map import Make_Json, prep_metrics
 from utils.utils import cvtcolor, resize_image, get_classes, get_coco_label_map, preprocess_input
 import cv2
 from data import cfg
@@ -268,7 +268,7 @@ def val(val_args):
     if not osp.exists(map_out_path):
         os.makedirs(map_out_path)
     print("Get predict result.")
-    m_json   = make_json(map_out_path, coco_label_map)
+    m_json   = Make_Json(map_out_path, coco_label_map)
     image_ids = image_ids[4950:]
     for image_idx, image_id in enumerate(image_ids):
         print('image_idx = %d image_id = %d.' % (image_idx, image_id))

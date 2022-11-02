@@ -6,7 +6,7 @@ import numpy as np
 import pycocotools
 
 
-class make_json:
+class Make_Json:
     def __init__(self, map_out_path, coco_label_map):
         self.map_out_path = map_out_path
         self.bbox_data = []
