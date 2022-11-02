@@ -36,19 +36,21 @@ class BBoxUtility(object):
             box_b = box_b[None, ...]
 
         n = box_a.shape[0]
-        A = box_a.shape[1]
-        B = box_b.shape[1]
+        a = box_a.shape[1]
+        b = box_b.shape[1]
 
-        max_xy = np.minimum(np.broadcast_to(np.expand_dims(box_a[:, :, 2:], axis=2), (n, A, B, 2)),
-                        np.broadcast_to(np.expand_dims(box_b[:, :, 2:], axis=1), (n, A, B, 2)))
+        max_xy = np.minimum(np.broadcast_to(np.expand_dims(box_a[:, :, 2:], axis=2), (n, a, b, 2)),
+                        np.broadcast_to(np.expand_dims(box_b[:, :, 2:], axis=1), (n, a, b, 2)))
 
-        min_xy = np.maximum(np.broadcast_to(np.expand_dims(box_a[:, :, :2], axis=2), (n, A, B, 2)),
-                        np.broadcast_to(np.expand_dims(box_b[:, :, :2], axis=1), (n, A, B, 2)))
+        min_xy = np.maximum(np.broadcast_to(np.expand_dims(box_a[:, :, :2], axis=2), (n, a, b, 2)),
+                        np.broadcast_to(np.expand_dims(box_b[:, :, :2], axis=1), (n, a, b, 2)))
         inter = np.clip((max_xy - min_xy), a_min=0, a_max=None)
         inter = inter[:, :, :, 0] * inter[:, :, :, 1]
 
-        area_a = np.broadcast_to(np.expand_dims(((box_a[:, :, 2] - box_a[:, :, 0]) * (box_a[:, :, 3] - box_a[:, :, 1])), axis=2), inter.shape)  # [A,B]
-        area_b = np.broadcast_to(np.expand_dims(((box_b[:, :, 2] - box_b[:, :, 0]) * (box_b[:, :, 3] - box_b[:, :, 1])), axis=1), inter.shape)  # [A,B]
+        area_a = np.broadcast_to(
+            np.expand_dims(((box_a[:, :, 2] - box_a[:, :, 0]) * (box_a[:, :, 3] - box_a[:, :, 1])), axis=2), inter.shape)
+        area_b = np.broadcast_to(
+            np.expand_dims(((box_b[:, :, 2] - box_b[:, :, 0]) * (box_b[:, :, 3] - box_b[:, :, 1])), axis=1), inter.shape)
         union = area_a + area_b - inter
 
         out = inter / area_a if iscrowd else inter / union
@@ -57,34 +59,29 @@ class BBoxUtility(object):
     def fast_non_max_suppression(self, box_thre, class_thre, mask_thre, nms_iou=0.5, top_k=200, max_detections=100):
         #---------------------------------------------------------#
         #   先进行tranpose，方便后面的处理
-        #   [80, num_of_kept_boxes]
         #---------------------------------------------------------#
         class_thre      = class_thre.transpose(1, 0)
         class_thre      = np.ascontiguousarray(class_thre)
         #---------------------------------------------------------#
-        #   [80, num_of_kept_boxes]
         #   每一行坐标为该种类所有的框的得分，
         #   对每一个种类单独进行排序
         #---------------------------------------------------------#
         idx = np.argsort(class_thre)
-        idx = idx[:,::-1]
+        idx = idx[:, ::-1]
         class_thre = np.sort(class_thre, axis=1) 
-        class_thre = class_thre[:,::-1]
+        class_thre = class_thre[:, ::-1]
         
         idx             = idx[:, :top_k]
         class_thre      = class_thre[:, :top_k]
         num_classes, num_dets = idx.shape
         #---------------------------------------------------------#
-        #   将num_classes作为第一维度，对每一个类进行非极大抑制
-        #   [80, num_of_kept_boxes, 4]    
-        #   [80, num_of_kept_boxes, 32]    
+        #   将num_classes作为第一维度，对每一个类进行非极大抑制 
         #---------------------------------------------------------#
         box_thre    = box_thre[idx.reshape(-1), :].reshape(num_classes, num_dets, 4)
         mask_thre   = mask_thre[idx.reshape(-1), :].reshape(num_classes, num_dets, -1)
 
         iou         = self.jaccard(box_thre, box_thre)
         #---------------------------------------------------------#
-        #   [80, num_of_kept_boxes, num_of_kept_boxes]
         #   取矩阵的上三角部分
         #---------------------------------------------------------#
         iou_max = np.amax(np.triu(iou, 1), axis=1)
@@ -117,7 +114,8 @@ class BBoxUtility(object):
         boxes[:, [0, 1]]    = np.minimum(boxes[:, [0, 1]], boxes[:, [2, 3]])
         boxes[:, [2, 3]]    = np.maximum(boxes[:, [0, 1]], boxes[:, [2, 3]])
         boxes[:, [0, 1]]    = np.maximum(boxes[:, [0, 1]], np.zeros_like(boxes[:, [0, 1]]))
-        boxes[:, [2, 3]]    = np.minimum(boxes[:, [2, 3]], np.broadcast_to(np.expand_dims(image_size, axis=0), (boxes.shape[0], 2)))
+        boxes[:, [2, 3]]    = np.minimum(boxes[:, [2, 3]], np.broadcast_to(
+                                    np.expand_dims(image_size, axis=0), (boxes.shape[0], 2)))
         return boxes
 
     def crop(self, masks, boxes):
@@ -155,17 +153,9 @@ class BBoxUtility(object):
         boxes       = self.decode_boxes(pred_box, anchors)
         #---------------------------------------------------------#
         #   除去背景的部分，并获得最大的得分 
-        #   [18525, 80]
-        #   [18525]
         #---------------------------------------------------------#
-        # print('!!!!!!!!!!!!!!!!!!!!!!!')
-        # print(pred_class.shape)
-        # print('@@@@@@@@@@@@@@@@@@@@@@')
         pred_class          = pred_class[:, 1:]    
         pred_class_max = np.max(pred_class, 1)
-        # print('######################')
-        # print(pred_class_max)
-        # print('$$$$$$$$$$$$$$$$$$$$')
         keep        = (pred_class_max > confidence)
         #---------------------------------------------------------#
         #   保留满足得分的框，如果没有框保留，则返回None
@@ -176,7 +166,8 @@ class BBoxUtility(object):
         if class_thre.shape[0] == 0:
             return None, None, None, None, None
         if not traditional_nms:
-            box_thre, class_thre, class_ids, mask_thre = self.fast_non_max_suppression(box_thre, class_thre, mask_thre, nms_iou)
+            box_thre, class_thre, class_ids, mask_thre = self.fast_non_max_suppression(box_thre,
+                                                                                    class_thre, mask_thre, nms_iou)
             keep        = class_thre > confidence
             box_thre    = box_thre[keep]
             class_thre  = class_thre[keep]
@@ -184,27 +175,17 @@ class BBoxUtility(object):
             mask_thre   = mask_thre[keep]
             
         box_thre    = self.yolact_correct_boxes(box_thre, image_shape)
-        #---------------------------------------------------------#
-        #   pred_proto      [128, 128, 32]
-        #   mask_thre       [num_of_kept_boxes, 32]
-        #   masks_sigmoid   [128, 128, num_of_kept_boxes]
-        #---------------------------------------------------------#
         masks_sigmoid   = self.sigmoid(np.matmul(pred_proto, np.transpose(mask_thre)))
-        #----------------------------------------------------------------------#
-        #   masks_sigmoid   [image_shape[0], image_shape[1], num_of_kept_boxes]
-        #----------------------------------------------------------------------#
         masks_sigmoid   = cv2.resize(masks_sigmoid, (image_shape[1], image_shape[0]),  interpolation=cv2.INTER_LINEAR)
         if masks_sigmoid.ndim == 2:
             masks_sigmoid   = np.expand_dims(masks_sigmoid, axis=2)
         masks_sigmoid   = np.ascontiguousarray(masks_sigmoid)
         masks_sigmoid   = self.crop(masks_sigmoid, box_thre)
         #----------------------------------------------------------------------#
-        #   masks_arg   [image_shape[0], image_shape[1]]
         #   获得每个像素点所属的实例
         #----------------------------------------------------------------------#
         masks_arg       = np.argmax(masks_sigmoid, axis=-1)
         #----------------------------------------------------------------------#
-        #   masks_arg   [image_shape[0], image_shape[1], num_of_kept_boxes]
         #   判断每个像素点是否满足门限需求
         #----------------------------------------------------------------------#
         masks_sigmoid   = masks_sigmoid > 0.5

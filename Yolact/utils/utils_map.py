@@ -5,7 +5,7 @@ import numpy as np
 import pycocotools
 
 
-class Make_json:
+class make_json:
     def __init__(self, map_out_path, coco_label_map):
         self.map_out_path = map_out_path
         self.bbox_data = []
@@ -52,6 +52,7 @@ class Make_json:
         for data, path in dump_arguments:
             with open(path, 'w') as f:
                 json.dump(data, f)
+
 
 def prep_metrics(pred_boxes, pred_confs, pred_classes, pred_masks, image_id, make_json):
     pred_classes    = list(np.array(pred_classes, np.int32))

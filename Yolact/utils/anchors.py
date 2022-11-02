@@ -1,8 +1,9 @@
-import numpy as np
-from itertools import product
 from math import sqrt
+from itertools import product
+import numpy as np
 
-def get_anchors(input_shape = [550, 550], anchors_size = [24, 48, 96, 192, 384]):
+
+def get_anchors(input_shape, anchors_size):
     feature_heights, feature_widths = get_img_output_length(input_shape[0], input_shape[1])
     
     all_anchors = []
@@ -12,6 +13,7 @@ def get_anchors(input_shape = [550, 550], anchors_size = [24, 48, 96, 192, 384])
     
     all_anchors = np.reshape(all_anchors, [-1, 4])
     return all_anchors
+
 
 def get_img_output_length(height, width):
     filter_sizes    = [7, 3, 3, 3, 3, 3, 3]
@@ -26,6 +28,7 @@ def get_img_output_length(height, width):
         feature_heights.append(height)
         feature_widths.append(width)
     return np.array(feature_heights)[-5:], np.array(feature_widths)[-5:]
+
 
 def make_anchors(conv_h, conv_w, scale, input_shape=[550, 550], aspect_ratios=[1, 1 / 2, 2]):
     prior_data = []

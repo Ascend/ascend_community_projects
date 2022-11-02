@@ -20,14 +20,15 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from utils.utils_bbox import BBoxUtility
 from utils.anchors import get_anchors
-from utils.utils_map import Make_json, prep_metrics
-from utils.utils import cvtColor, resize_image, get_classes, get_coco_label_map, preprocess_input
+from utils.utils_map import make_json, prep_metrics
+from utils.utils import cvtcolor, resize_image, get_classes, get_coco_label_map, preprocess_input
 import cv2
 from data import cfg
 import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from PIL import Image
-from StreamManagerApi import StreamManagerApi, StringVector, MxDataInput, InProtobufVector, MxProtobufIn
+from StreamManagerApi import StreamManagerApi, StringVector, InProtobufVector, MxProtobufIn
+
 
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -83,16 +84,17 @@ def parse_args():
                         crop=True, detect=False, display_fps=False,
                         emulate_playback=False)
     # pca config
-    parse_args = parser.parse_args()
+    par_args = parser.parse_args()
 
-    return parse_args
+    return par_args
 
 iou_thresholds = [x / 100 for x in range(50, 100, 5)]
+
 
 def send_source_data(appsrc_id, tensor, stream_name, stream_manager):
     tensor_package_list = MxpiDataType.MxpiTensorPackageList()
     for i in range(tensor.shape[0]):
-        data = np.expand_dims(tensor[i,:], 0)
+        data = np.expand_dims(tensor[i, :], 0)
         tensor_package = tensor_package_list.tensorPackageVec.add()
         tensor_vec = tensor_package.tensorVec.add()
         tensor_vec.deviceId = 0
@@ -119,7 +121,7 @@ def send_source_data(appsrc_id, tensor, stream_name, stream_manager):
 def evalimage(stream_manager_api, path:str, save_path:str=None):
     image = Image.open(path)
     image_shape = np.array(np.shape(image)[0:2])
-    image = cvtColor(image)
+    image = cvtcolor(image)
     image_origin = np.array(image, np.uint8)
     image_data      = resize_image(image, (544, 544))
     batch      = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, np.float32)), (2, 0, 1)), 0)
@@ -143,14 +145,18 @@ def evalimage(stream_manager_api, path:str, save_path:str=None):
     result_list = MxpiDataType.MxpiTensorPackageList()
     result_list.ParseFromString(infer_results[0].messageBuf)
     pred_boxes = np.array(
-        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[0].dataStr, dtype=np.float32)]).reshape(1, 18525, 4)
+        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[0].dataStr, dtype=np.float32)])
+    pred_boxes = pred_boxes.reshape(1, 18525, 4)
     pred_classes = np.array(
-        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[1].dataStr, dtype=np.float32)]).reshape(1, 18525, 81)
+        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[1].dataStr, dtype=np.float32)])
+    pred_classes = pred_classes.reshape(1, 18525, 81)
     pred_masks = np.array(
-        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[2].dataStr, dtype=np.float32)]).reshape(1, 18525, 32)
+        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[2].dataStr, dtype=np.float32)])
+    pred_masks = pred_masks.reshape(1, 18525, 32)
     pred_proto = np.array(
-        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[3].dataStr, dtype=np.float32)]).reshape(1, 136, 136, 32)
-    detect = BBoxUtility()
+        [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[3].dataStr, dtype=np.float32)])
+    pred_proto = pred_proto
+    detect = BBoxUtility().reshape(1, 136, 136, 32)
     outputs = tuple([pred_boxes, pred_classes, pred_masks, pred_proto])
             
     #----------------------------------------------------------------------#
@@ -260,9 +266,8 @@ def val(val_args):
    
     if not osp.exists(map_out_path):
         os.makedirs(map_out_path)
-    image_ids = image_ids[300:301]
     print("Get predict result.")
-    make_json   = Make_json(map_out_path, coco_label_map)
+    m_json   = make_json(map_out_path, coco_label_map)
     
     for image_idx, image_id in enumerate(image_ids):
         print('image_idx = %d image_id = %d.' % (image_idx, image_id))
@@ -271,7 +276,7 @@ def val(val_args):
            
         image       = Image.open(image_path)
         image_shape = np.array(np.shape(image)[0:2])
-        image           = cvtColor(image)
+        image           = cvtcolor(image)
         image_data      = resize_image(image, (544, 544))
         image_data      = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, np.float32)), (2, 0, 1)), 0)
               
@@ -316,15 +321,16 @@ def val(val_args):
         anchor = get_anchors([544, 544], [24, 48, 96, 192, 384])
         detect = BBoxUtility()
         outputs = tuple([pred_boxes, pred_classes, pred_masks, pred_proto])
-        results = detect.decode_nms(outputs, anchor, val_args.confidence, val_args.nms_iou, image_shape, val_args.traditional_nms)
+        results = detect.decode_nms(outputs, anchor, val_args.confidence, val_args.nms_iou,
+                                        image_shape, val_args.traditional_nms)
         if results[0] is None:
             continue
         box_thre, class_thre, class_ids, masks_arg, masks_sigmoid = [x for x in results]
         if box_thre is None:
             continue
-        prep_metrics(box_thre, class_thre, class_ids, masks_sigmoid, image_id, make_json)
+        prep_metrics(box_thre, class_thre, class_ids, masks_sigmoid, image_id, m_json)
 
-    make_json.dump()
+    m_json.dump()
     print(f'\nJson files dumped, saved in: \'eval_results/\', start evaluting.')
 
     bbox_dets = test_coco.loadRes(osp.join(map_out_path, "bbox_detections.json"))
