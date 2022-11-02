@@ -52,5 +52,5 @@ def get_coco_label_map(coco, class_names):
         coco_cat_index_map[cat['name']] = index
 
     for index, class_name in enumerate(class_names):
-        coco_label_map[coco_cat_index_map[class_name]] = index + 1
+        coco_label_map[coco_cat_index_map.get(class_name)] = index + 1
     return coco_label_map

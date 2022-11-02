@@ -10,7 +10,7 @@ class BBoxUtility(object):
         """sigmoid 激活函数"""
         return 1.0 / (1.0 + np.exp(-z))
     
-    def decode_boxes(self, pred_box, anchors, variances = [0.1, 0.2]):
+    def decode_boxes(self, pred_box, anchors, variances):
         #---------------------------------------------------------#
         #   anchors[:, :2] 先验框中心
         #   anchors[:, 2:] 先验框宽高
@@ -48,11 +48,10 @@ class BBoxUtility(object):
         inter = inter[:, :, :, 0] * inter[:, :, :, 1]
 
         area_a = np.broadcast_to(
-            np.expand_dims(((box_a[:, :, 2] - box_a[:, :, 0]) * (box_a[:, :, 3] - box_a[:, :, 1])), axis=2), inter.shape)
+            np.expand_dims(((box_a[:, :, 2] - box_a[:, :, 0])*(box_a[:, :, 3] - box_a[:, :, 1])), axis=2), inter.shape)
         area_b = np.broadcast_to(
-            np.expand_dims(((box_b[:, :, 2] - box_b[:, :, 0]) * (box_b[:, :, 3] - box_b[:, :, 1])), axis=1), inter.shape)
+            np.expand_dims(((box_b[:, :, 2] - box_b[:, :, 0])*(box_b[:, :, 3] - box_b[:, :, 1])), axis=1), inter.shape)
         union = area_a + area_b - inter
-
         out = inter / area_a if iscrowd else inter / union
         return out if use_batch else out.squeeze(0)
 
@@ -104,7 +103,8 @@ class BBoxUtility(object):
         class_nms   = class_nms[idx]
         class_ids   = class_ids[idx]
         mask_nms    = mask_nms[idx]
-        return box_nms, class_nms, class_ids, mask_nms
+        print(box_nms.shape, class_nms.shape)
+        return [box_nms, class_nms, class_ids, mask_nms]
 
     def yolact_correct_boxes(self, boxes, image_shape):
         image_size          = np.array(image_shape)[::-1]
@@ -150,7 +150,7 @@ class BBoxUtility(object):
         #   将先验框调整获得预测框，
         #   [18525, 4] boxes是左上角、右下角的形式。
         #---------------------------------------------------------#
-        boxes       = self.decode_boxes(pred_box, anchors)
+        boxes       = self.decode_boxes(pred_box, anchors, [0.1, 0.2])
         #---------------------------------------------------------#
         #   除去背景的部分，并获得最大的得分 
         #---------------------------------------------------------#
@@ -164,7 +164,7 @@ class BBoxUtility(object):
         class_thre  = pred_class[keep, :]
         mask_thre   = pred_masks[keep, :]
         if class_thre.shape[0] == 0:
-            return None, None, None, None, None
+            return [None, None, None, None, None]
         if not traditional_nms:
             box_thre, class_thre, class_ids, mask_thre = self.fast_non_max_suppression(box_thre,
                                                                                     class_thre, mask_thre, nms_iou)
@@ -190,5 +190,5 @@ class BBoxUtility(object):
         #----------------------------------------------------------------------#
         masks_sigmoid   = masks_sigmoid > 0.5
 
-        return box_thre, class_thre, class_ids, masks_arg, masks_sigmoid
+        return [box_thre, class_thre, class_ids, masks_arg, masks_sigmoid]
 
