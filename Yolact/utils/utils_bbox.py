@@ -109,46 +109,6 @@ class BBoxUtility(object):
         mask_nms    = mask_nms[idx]
         return box_nms, class_nms, class_ids, mask_nms
 
-    def traditional_non_max_suppression(self, box_thre, class_thre, mask_thre, pred_class_max, nms_iou, max_detections):
-        num_classes     = class_thre.shape[1]
-        pred_class_arg  = np.argmax(class_thre, axis = -1)
-
-        box_nms, class_nms, class_ids, mask_nms = [], [], [], []
-        for c in range(num_classes):
-            #--------------------------------#
-            #   取出属于该类的所有框的置信度
-            #   判断是否大于门限
-            #--------------------------------#
-            c_confs_m = pred_class_arg == c
-            if len(c_confs_m) > 0:
-                #-----------------------------------------#
-                #   取出得分高于confidence的框
-                #-----------------------------------------#
-                boxes_to_process = box_thre[c_confs_m]
-                confs_to_process = pred_class_max[c_confs_m]
-                masks_to_process = mask_thre[c_confs_m]
-                #-----------------------------------------#
-                #   进行iou的非极大抑制
-                #-----------------------------------------#
-                idx         = nms(boxes_to_process, confs_to_process, nms_iou)
-                #-----------------------------------------#
-                #   取出在非极大抑制中效果较好的内容
-                #-----------------------------------------#
-                good_boxes  = boxes_to_process[idx]
-                confs       = confs_to_process[idx]
-                labels      = c * torch.ones((len(idx))).long()
-                good_masks  = masks_to_process[idx]
-                box_nms.append(good_boxes)
-                class_nms.append(confs)
-                class_ids.append(labels)
-                mask_nms.append(good_masks)
-        box_nms, class_nms, class_ids, mask_nms = torch.cat(box_nms, dim = 0), torch.cat(class_nms, dim = 0), \
-                                                  torch.cat(class_ids, dim = 0), torch.cat(mask_nms, dim = 0)
-
-        idx = torch.argsort(class_nms, 0, descending=True)[:max_detections]
-        box_nms, class_nms, class_ids, mask_nms = box_nms[idx], class_nms[idx], class_ids[idx], mask_nms[idx]
-        return box_nms, class_nms, class_ids, mask_nms
-
     def yolact_correct_boxes(self, boxes, image_shape):
         image_size          = np.array(image_shape)[::-1]
 
