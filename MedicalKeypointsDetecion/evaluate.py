@@ -890,7 +890,7 @@ if __name__ == '__main__':
             keyVec.push_back(KEYS_2)
         time1 = time.time()
         infer_result = streamManagerApi.GetProtobuf(STREAM_NAME_2, 0, keyVec)
-        INFER_TOTAL_TIME = time.time() - time1
+        INFER_TOTAL_TIME += time.time() - time1
         tensorList = MxpiDataType.MxpiTensorPackageList()
         tensorList.ParseFromString(infer_result[0].messageBuf)
         keypoint_outputs = np.frombuffer(
