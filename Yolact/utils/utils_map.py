@@ -5,7 +5,7 @@ import numpy as np
 import pycocotools
 
 
-class Make_Json:
+class MakeJson:
     def __init__(self, map_out_path, coco_label_map):
         self.map_out_path = map_out_path
         self.bbox_data = []
@@ -37,7 +37,7 @@ class Make_Json:
         self.mask_data.append(
             {
                 'image_id'      : int(image_id),
-                'category_id'   : self.coco_cats[int(category_id)],
+                'category_id'   : self.coco_cats.get(int(category_id)),
                 'segmentation'  : rle,
                 'score'         : float(score)
             }
@@ -54,10 +54,10 @@ class Make_Json:
                 json.dump(data, f)
 
 
-def prep_metrics(pred_boxes, pred_confs, pred_classes, pred_masks, image_id, Make_Json):
+def prep_metrics(pred_boxes, pred_confs, pred_classes, pred_masks, image_id, MakeJson):
     pred_classes    = list(np.array(pred_classes, np.int32))
     pred_confs      = list(np.array(pred_confs, np.float32))
     for i in range(pred_boxes.shape[0]):
         if (pred_boxes[i, 3] - pred_boxes[i, 1]) * (pred_boxes[i, 2] - pred_boxes[i, 0]) > 0:
-            Make_Json.add_bbox(image_id, pred_classes[i], pred_boxes[i, :], pred_confs[i])
-            Make_Json.add_mask(image_id, pred_classes[i], pred_masks[:, :, i], pred_confs[i])
+            MakeJson.add_bbox(image_id, pred_classes[i], pred_boxes[i, :], pred_confs[i])
+            MakeJson.add_mask(image_id, pred_classes[i], pred_masks[:, :, i], pred_confs[i])
