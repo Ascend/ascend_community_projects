@@ -1,11 +1,12 @@
 import json
 import os.path as osp
-
+import os
+import stat
 import numpy as np
 import pycocotools
 
 
-class MakeJson:
+class make_json:
     def __init__(self, map_out_path, coco_label_map):
         self.map_out_path = map_out_path
         self.bbox_data = []
@@ -49,15 +50,20 @@ class MakeJson:
             (self.mask_data, osp.join(self.map_out_path, "mask_detections.json"))
         ]
 
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # 注意根据具体业务的需要设置文件读写方式
+        modes = stat.S_IWUSR | stat.S_IRUSR  # 注意根据具体业务的需要设置文件权限
+
         for data, path in dump_arguments:
-            with open(path, 'w') as f:
+            #with open(path, 'w') as f:
+            with os.fdopen(os.open(path, flags, modes), 'w') as f:
                 json.dump(data, f)
+                
 
 
-def prep_metrics(pred_boxes, pred_confs, pred_classes, pred_masks, image_id, MakeJson):
+def prep_metrics(pred_boxes, pred_confs, pred_classes, pred_masks, image_id, make_jsonn):
     pred_classes    = list(np.array(pred_classes, np.int32))
     pred_confs      = list(np.array(pred_confs, np.float32))
     for i in range(pred_boxes.shape[0]):
         if (pred_boxes[i, 3] - pred_boxes[i, 1]) * (pred_boxes[i, 2] - pred_boxes[i, 0]) > 0:
-            MakeJson.add_bbox(image_id, pred_classes[i], pred_boxes[i, :], pred_confs[i])
-            MakeJson.add_mask(image_id, pred_classes[i], pred_masks[:, :, i], pred_confs[i])
+            make_jsonn.add_bbox(image_id, pred_classes[i], pred_boxes[i, :], pred_confs[i])
+            make_jsonn.add_mask(image_id, pred_classes[i], pred_masks[:, :, i], pred_confs[i])
