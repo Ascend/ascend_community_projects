@@ -67,7 +67,6 @@ COCO_LABEL_MAP = { 1:  1,  2:  2,  3:  3,  4:  4,  5:  5,  6:  6,  7:  7,  8:  8
                   82: 73, 84: 74, 85: 75, 86: 76, 87: 77, 88: 78, 89: 79, 90: 80}
 
 
-
 # ----------------------- CONFIG CLASS ----------------------- #
 
 class Config(object):
@@ -83,7 +82,7 @@ class Config(object):
         for key, val in config_dict.items():
             self.__setattr__(key, val)
 
-    def copy(self, new_config_dict={}):
+    def copy(self, new_config_dict):
         """
         Copies this config into a new config object, making
         the changes given by new_config_dict.
@@ -238,7 +237,6 @@ backbone_base = Config({
 resnet101_backbone = backbone_base.copy({
     'name': 'ResNet101',
     'path': 'resnet101_reducedfc.pth',
-    #'type': ResNetBackbone,
     'args': ([3, 4, 23, 3],),
     'transform': resnet_transform,
 
@@ -250,7 +248,6 @@ resnet101_backbone = backbone_base.copy({
 resnet101_gn_backbone = backbone_base.copy({
     'name': 'ResNet101_GN',
     'path': 'R-101-GN.pkl',
-   # 'type': ResNetBackboneGN,
     'args': ([3, 4, 23, 3],),
     'transform': resnet_transform,
 
@@ -267,7 +264,6 @@ resnet101_dcn_inter3_backbone = resnet101_backbone.copy({
 resnet50_backbone = resnet101_backbone.copy({
     'name': 'ResNet50',
     'path': 'resnet50-19c8e357.pth',
-   # 'type': ResNetBackbone,
     'args': ([3, 4, 6, 3],),
     'transform': resnet_transform,
 })
@@ -280,7 +276,6 @@ resnet50_dcnv2_backbone = resnet50_backbone.copy({
 darknet53_backbone = backbone_base.copy({
     'name': 'DarkNet53',
     'path': 'darknet53.pth',
-   # 'type': DarkNetBackbone,
     'args': ([1, 2, 8, 8, 4],),
     'transform': darknet_transform,
 
@@ -301,7 +296,6 @@ vgg16_arch = [[64, 64],
 vgg16_backbone = backbone_base.copy({
     'name': 'VGG16',
     'path': 'vgg16_reducedfc.pth',
-   # 'type': VGGBackbone,
     'args': (vgg16_arch, [(256, 2), (128, 2), (128, 1), (128, 1)], [3]),
     'transform': vgg_transform,
 
@@ -368,7 +362,6 @@ mask_type = Config({
     #   - mask_proto_coeff_diversity_loss (bool): Apply coefficient diversity loss on the coefficients so that the same
     #                                             instance has similar coefficients.
     #   - mask_proto_coeff_diversity_alpha (float): The weight to use for the coefficient diversity loss.
-    #   - mask_proto_normalize_emulate_roi_pooling (bool): Normalize the mask loss to emulate roi pooling's affect on loss.
     #   - mask_proto_double_loss (bool): Whether to use the old loss in addition to any special new losses.
     #   - mask_proto_double_loss_alpha (float): The alpha to weight the above loss.
     #   - mask_proto_split_prototypes_by_head (bool): If true, this will give each prediction head its own prototypes.
@@ -377,19 +370,12 @@ mask_type = Config({
 })
 
 
-
-
-
 # ----------------------- ACTIVATION FUNCTIONS ----------------------- #
-def Sigmoid(x):
+def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-activation_func = Config({
-#    'tanh':    torch.tanh,
-    'sigmoid': Sigmoid,
-#    'softmax': lambda x: torch.nn.functional.softmax(x, dim=-1),
-#    'relu':    lambda x: torch.nn.functional.relu(x, inplace=True),
-#    'none':    lambda x: x,
+activation_func = Config({s
+    'sigmoid': sigmoid,
 })
 
 
@@ -474,9 +460,7 @@ coco_base_config = Config({
     'mask_proto_src': None,
     'mask_proto_net': [(256, 3, {}), (256, 3, {})],
     'mask_proto_bias': False,
-    #'mask_proto_prototype_activation': activation_func.relu,
     'mask_proto_mask_activation': activation_func.sigmoid,
-    #'mask_proto_coeff_activation': activation_func.tanh,
     'mask_proto_crop': True,
     'mask_proto_crop_expand': 0,
     'mask_proto_loss': None,
@@ -548,12 +532,10 @@ coco_base_config = Config({
     # Note: at the moment this is only implemented if use_focal_loss is on.
     'use_objectness_score': False,
 
-    # Adds a global pool + fc layer to the smallest selected layer that predicts the existence of each of the 80 classes.
     # This branch is only evaluated during training time and is just there for multitask learning.
     'use_class_existence_loss': False,
     'class_existence_alpha': 1,
 
-    # Adds a 1x1 convolution directly to the biggest selected layer that predicts a semantic segmentations for each of the 80 classes.
     # This branch is only evaluated during training time and is just there for multitask learning.
     'use_semantic_segmentation_loss': False,
     'semantic_segmentation_alpha': 1,
@@ -566,7 +548,6 @@ coco_base_config = Config({
     # Note that the threshold you set for iou_threshold should be negative with this setting on.
     'use_change_matching': False,
 
-    # Uses the same network format as mask_proto_net, except this time it's for adding extra head layers before the final
     # prediction in prediction modules. If this is none, no extra layers will be added.
     'extra_head_net': None,
 
@@ -722,7 +703,7 @@ yolact_im400_config = yolact_base_config.copy({
 
     'max_size': 400,
     'backbone': yolact_base_config.backbone.copy({
-        'pred_scales': [[int(x[0] / yolact_base_config.max_size * 400)] for x in yolact_base_config.backbone.pred_scales],
+        'pred_scales':[[int(x[0]/yolact_base_config.max_size*400)] for x in yolact_base_config.backbone.pred_scales],
     }),
 })
 
@@ -732,7 +713,7 @@ yolact_im700_config = yolact_base_config.copy({
     'masks_to_train': 300,
     'max_size': 700,
     'backbone': yolact_base_config.backbone.copy({
-        'pred_scales': [[int(x[0] / yolact_base_config.max_size * 700)] for x in yolact_base_config.backbone.pred_scales],
+        'pred_scales':[[int(x[0]/yolact_base_config.max_size*700)] for x in yolact_base_config.backbone.pred_scales],
     }),
 })
 
