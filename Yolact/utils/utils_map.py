@@ -1,3 +1,17 @@
+# Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import os.path as osp
 import os
@@ -7,25 +21,25 @@ import pycocotools
 
 
 class MakeJson:
-    def __init__(self, map_out_path, coco_label_map):
-        self.map_out_path = map_out_path
-        self.bbox_data = []
-        self.mask_data = []
-        self.coco_cats = {}
+    def __init__(self, path, coco_label_map):
+        self.path = path
+        self.data = []
+        self.mask = []
+        self.coco = {}
 
         for coco_id, real_id in coco_label_map.items():
-            class_id = real_id - 1
-            self.coco_cats[class_id] = coco_id
+            id = real_id - 1
+            self.coco[id] = coco_id
 
     def add_bbox(self, image_id: int, category_id: int, bbox: list, score: float):
         bbox = [bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]]
 
         bbox = [round(float(x) * 10) / 10 for x in bbox]
 
-        self.bbox_data.append(
+        self.data.append(
             {
                 'image_id'      : int(image_id),
-                'category_id'   : self.coco_cats.get(int(category_id)),
+                'category_id'   : self.coco.get(int(category_id)),
                 'bbox'          : bbox,
                 'score'         : float(score)
             }
@@ -35,10 +49,10 @@ class MakeJson:
         rle = pycocotools.mask.encode(np.asfortranarray(segmentation.astype(np.uint8)))
         rle['counts'] = rle['counts'].decode('ascii')
 
-        self.mask_data.append(
+        self.mask.append(
             {
                 'image_id'      : int(image_id),
-                'category_id'   : self.coco_cats.get(int(category_id)),
+                'category_id'   : self.coco.get(int(category_id)),
                 'segmentation'  : rle,
                 'score'         : float(score)
             }
@@ -46,8 +60,8 @@ class MakeJson:
 
     def dump(self):
         dump_arguments = [
-            (self.bbox_data, osp.join(self.map_out_path, "bbox_detections.json")),
-            (self.mask_data, osp.join(self.map_out_path, "mask_detections.json"))
+            (self.data, osp.join(self.path, "bbox_detections.json")),
+            (self.mask, osp.join(self.path, "mask_detections.json"))
         ]
 
         flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # 注意根据具体业务的需要设置文件读写方式
@@ -60,10 +74,10 @@ class MakeJson:
                 
 
 
-def prep_metrics(pred_boxes, pred_confs, pred_classes, pred_masks, image_id, make_jsonn):
-    pred_classes    = list(np.array(pred_classes, np.int32))
-    pred_confs      = list(np.array(pred_confs, np.float32))
-    for i in range(pred_boxes.shape[0]):
-        if (pred_boxes[i, 3] - pred_boxes[i, 1]) * (pred_boxes[i, 2] - pred_boxes[i, 0]) > 0:
-            make_jsonn.add_bbox(image_id, pred_classes[i], pred_boxes[i, :], pred_confs[i])
-            make_jsonn.add_mask(image_id, pred_classes[i], pred_masks[:, :, i], pred_confs[i])
+def prep_metrics(boxes, confs, classes, pred_masks, id, make_jsonn):
+    classes    = list(np.array(classes, np.int32))
+    confs      = list(np.array(confs, np.float32))
+    for i in range(boxes.shape[0]):
+        if (boxes[i, 3] - boxes[i, 1]) * (boxes[i, 2] - boxes[i, 0]) > 0:
+            make_jsonn.add_bbox(id, classes[i], boxes[i, :], confs[i])
+            make_jsonn.add_mask(id, classes[i], pred_masks[:, :, i], confs[i])

@@ -1,3 +1,17 @@
+# Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import cv2
 
@@ -106,89 +120,84 @@ class BBoxUtility(object):
         print(box_nms.shape, class_nms.shape)
         return [box_nms, class_nms, class_ids, mask_nms]
 
-    def yolact_correct_boxes(self, boxes, image_shape):
-        image_size          = np.array(image_shape)[::-1]
+    def correct_boxes(self, boxes, shape):
+        size          = np.array(shape)[::-1]
 
-        scales              = np.concatenate([image_size, image_size], axis=-1)
+        scales              = np.concatenate([size, size], axis=-1)
         boxes               = boxes * scales
         boxes[:, [0, 1]]    = np.minimum(boxes[:, [0, 1]], boxes[:, [2, 3]])
         boxes[:, [2, 3]]    = np.maximum(boxes[:, [0, 1]], boxes[:, [2, 3]])
         boxes[:, [0, 1]]    = np.maximum(boxes[:, [0, 1]], np.zeros_like(boxes[:, [0, 1]]))
         boxes[:, [2, 3]]    = np.minimum(boxes[:, [2, 3]], np.broadcast_to(
-                                    np.expand_dims(image_size, axis=0), (boxes.shape[0], 2)))
+                                    np.expand_dims(size, axis=0), (boxes.shape[0], 2)))
         return boxes
 
-    def crop(self, masks, boxes):
-        h, w, n     = masks.shape
+    def crop(self, ms, boxes):
+        h, w, n     = ms.shape
         x1, x2      = boxes[:, 0], boxes[:, 2]
         y1, y2      = boxes[:, 1], boxes[:, 3]
 
-        rows        = np.broadcast_to(np.arange(w, dtype=x1.dtype).reshape(1, -1, 1), (h, w, n))
-        cols        = np.broadcast_to(np.arange(h, dtype=x1.dtype).reshape(-1, 1, 1), (h, w, n))
+        ro        = np.broadcast_to(np.arange(w, dtype=x1.dtype).reshape(1, -1, 1), (h, w, n))
+        co        = np.broadcast_to(np.arange(h, dtype=x1.dtype).reshape(-1, 1, 1), (h, w, n))
 
-        masks_left  = rows >= x1.reshape(1, 1, -1)
-        masks_right = rows < x2.reshape(1, 1, -1)
-        masks_up    = cols >= y1.reshape(1, 1, -1)
-        masks_down  = cols < y2.reshape(1, 1, -1)
+        left  = ro >= x1.reshape(1, 1, -1)
+        right = ro < x2.reshape(1, 1, -1)
+        up    = co >= y1.reshape(1, 1, -1)
+        down  = co < y2.reshape(1, 1, -1)
 
-        crop_mask   = masks_left * masks_right * masks_up * masks_down
-        return masks * crop_mask.astype(np.float32)
+        mask   = left * right * up * down
+        return ms * mask.astype(np.float32)
 
-    def decode_nms(self, outputs, anchors, confidence, nms_iou, image_shape, traditional_nms=False, max_detections=100):
-        #---------------------------------------------------------#
-        #   pred_box    [18525, 4]  对应每个先验框的调整情况
-        #   pred_class  [18525, 81] 对应每个先验框的种类      
-        #   pred_mask   [18525, 32] 对应每个先验框的语义分割情况
-        #   pred_proto  [128, 128, 32]  需要和结合pred_mask使用
-        #---------------------------------------------------------#
-        pred_box    = outputs[0].squeeze()
-        pred_class  = outputs[1].squeeze()
-        pred_masks  = outputs[2].squeeze()
-        pred_proto  = outputs[3].squeeze()
+    def decode_nms(self, puts, an, confidence, nms_iou, image_shape, traditional_nms=False, max_detections=100):
+        
+        box    = puts[0].squeeze()
+        p_class  = puts[1].squeeze()
+        p_masks  = puts[2].squeeze()
+        p_proto  = puts[3].squeeze()
 
         #---------------------------------------------------------#
         #   将先验框调整获得预测框，
         #   [18525, 4] boxes是左上角、右下角的形式。
         #---------------------------------------------------------#
-        boxes       = self.decode_boxes(pred_box, anchors, [0.1, 0.2])
+        boxes       = self.decode_boxes(box, an, [0.1, 0.2])
         #---------------------------------------------------------#
         #   除去背景的部分，并获得最大的得分 
         #---------------------------------------------------------#
-        pred_class          = pred_class[:, 1:]    
-        pred_class_max = np.max(pred_class, 1)
+        p_class          = p_class[:, 1:]    
+        pred_class_max = np.max(p_class, 1)
         keep        = (pred_class_max > confidence)
         #---------------------------------------------------------#
         #   保留满足得分的框，如果没有框保留，则返回None
         #---------------------------------------------------------#
         box_thre    = boxes[keep, :]
-        class_thre  = pred_class[keep, :]
-        mask_thre   = pred_masks[keep, :]
+        class_thre  = p_class[keep, :]
+        m_thre   = p_masks[keep, :]
         if class_thre.shape[0] == 0:
             return [None, None, None, None, None]
         if not traditional_nms:
-            box_thre, class_thre, class_ids, mask_thre = self.fast_non_max_suppression(box_thre,
-                                                                                    class_thre, mask_thre, nms_iou)
+            box_thre, class_thre, class_ids, m_thre = self.fast_non_max_suppression(box_thre,
+                                                                                    class_thre, m_thre, nms_iou)
             keep        = class_thre > confidence
             box_thre    = box_thre[keep]
             class_thre  = class_thre[keep]
             class_ids   = class_ids[keep]
-            mask_thre   = mask_thre[keep]
+            m_thre   = m_thre[keep]
             
-        box_thre    = self.yolact_correct_boxes(box_thre, image_shape)
-        masks_sigmoid   = self.sigmoid(np.matmul(pred_proto, np.transpose(mask_thre)))
+        b_thre    = self.correct_boxes(box_thre, image_shape)
+        masks_sigmoid   = self.sigmoid(np.matmul(p_proto, np.transpose(m_thre)))
         masks_sigmoid   = cv2.resize(masks_sigmoid, (image_shape[1], image_shape[0]),  interpolation=cv2.INTER_LINEAR)
         if masks_sigmoid.ndim == 2:
             masks_sigmoid   = np.expand_dims(masks_sigmoid, axis=2)
         masks_sigmoid   = np.ascontiguousarray(masks_sigmoid)
-        masks_sigmoid   = self.crop(masks_sigmoid, box_thre)
+        masks_sigmoid   = self.crop(masks_sigmoid, b_thre)
         #----------------------------------------------------------------------#
         #   获得每个像素点所属的实例
         #----------------------------------------------------------------------#
-        masks_arg       = np.argmax(masks_sigmoid, axis=-1)
+        m_arg       = np.argmax(masks_sigmoid, axis=-1)
         #----------------------------------------------------------------------#
         #   判断每个像素点是否满足门限需求
         #----------------------------------------------------------------------#
         masks_sigmoid   = masks_sigmoid > 0.5
 
-        return [box_thre, class_thre, class_ids, masks_arg, masks_sigmoid]
+        return [b_thre, class_thre, class_ids, m_arg, masks_sigmoid]
 

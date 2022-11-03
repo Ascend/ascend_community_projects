@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+# Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -10,7 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ============================================================================
+
 from __future__ import annotations
 import argparse
 import os
@@ -337,15 +341,15 @@ def val(val_args):
     bbox = test.loadRes(osp.join(map_out_path, "bbox_detections.json"))
     mask = test.loadRes(osp.join(map_out_path, "mask_detections.json"))
     print('\nBBoxes:')
-    eval = COCOeval(test, bbox, 'bbox')
-    eval.evaluate()
-    eval.accumulate()
-    eval.summarize()
+    b_eval = COCOeval(test, bbox, 'bbox')
+    b_eval.evaluate()
+    b_eval.accumulate()
+    b_eval.summarize()
     print('\nMasks:')
-    eval = COCOeval(test, mask, 'segm')
-    eval.evaluate()
-    eval.accumulate()
-    eval.summarize()
+    b_eval = COCOeval(test, mask, 'segm')
+    b_eval.evaluate()
+    b_eval.accumulate()
+    b_eval.summarize()
 
 if __name__ == '__main__':
     args = parse_args()
