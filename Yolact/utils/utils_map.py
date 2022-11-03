@@ -28,8 +28,8 @@ class MakeJson:
         self.coco = {}
 
         for coco_id, real_id in coco_label_map.items():
-            id = real_id - 1
-            self.coco[id] = coco_id
+            cl_id = real_id - 1
+            self.coco[cl_id] = coco_id
 
     def add_bbox(self, image_id: int, category_id: int, bbox: list, score: float):
         bbox = [bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]]

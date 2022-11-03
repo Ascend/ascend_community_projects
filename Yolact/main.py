@@ -98,23 +98,23 @@ iou_thresholds = [x / 100 for x in range(50, 100, 5)]
 def send_source_data(appsrc_id, tensor, stream_name, stream_manager):
     tensor_package_list = MxpiDataType.MxpiTensorPackageList()
     for i in range(tensor.shape[0]):
-        data = np.expand_dims(tensor[i, :], 0)
-        tensor_package = tensor_package_list.tensorPackageVec.add()
-        tensor_vec = tensor_package.tensorVec.add()
-        tensor_vec.deviceId = 0
-        tensor_vec.memType = 0
-        tensor_vec.tensorShape.extend(data.shape)
-        tensor_vec.dataStr = data.tobytes()
-        tensor_vec.tensorDataSize = data.shape[0]
-    key = "appsrc{}".format(appsrc_id).encode('utf-8')
-    protobuf_vec = InProtobufVector()
-    protobuf = MxProtobufIn()
-    protobuf.key = key
-    protobuf.type = b'MxTools.MxpiTensorPackageList'
-    protobuf.protobuf = tensor_package_list.SerializeToString()
-    protobuf_vec.push_back(protobuf)
+        da = np.expand_dims(tensor[i, :], 0)
+        tensor_pack = tensor_package_list.tensorPackageVec.add()
+        ten_vec = tensor_pack.tensorVec.add()
+        ten_vec.deviceId = 0
+        ten_vec.memType = 0
+        ten_vec.tensorShape.extend(da.shape)
+        ten_vec.dataStr = da.tobytes()
+        ten_vec.tensorDataSize = da.shape[0]
+    keys = "appsrc{}".format(appsrc_id).encode('utf-8')
+    protobu_vec = InProtobufVector()
+    protobu = MxProtobufIn()
+    protobu.key = keys
+    protobu.type = b'MxTools.MxpiTensorPackageList'
+    protobu.protobuf = tensor_package_list.SerializeToString()
+    protobu_vec.push_back(protobu)
 
-    ret = stream_manager.SendProtobuf(stream_name, appsrc_id, protobuf_vec)
+    ret = stream_manager.SendProtobuf(stream_name, appsrc_id, protobu_vec)
     if ret < 0:
         print("Failed to send data to stream.")
         return False

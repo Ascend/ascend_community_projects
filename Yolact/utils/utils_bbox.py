@@ -159,45 +159,45 @@ class BBoxUtility(object):
         #   将先验框调整获得预测框，
         #   [18525, 4] boxes是左上角、右下角的形式。
         #---------------------------------------------------------#
-        boxes       = self.decode_boxes(box, an, [0.1, 0.2])
+        boxesss       = self.decode_boxes(box, an, [0.1, 0.2])
         #---------------------------------------------------------#
         #   除去背景的部分，并获得最大的得分 
         #---------------------------------------------------------#
         p_class          = p_class[:, 1:]    
-        pred_class_max = np.max(p_class, 1)
-        keep        = (pred_class_max > confidence)
+        pred_cl_max = np.max(p_class, 1)
+        keep        = (pred_cl_max > confidence)
         #---------------------------------------------------------#
         #   保留满足得分的框，如果没有框保留，则返回None
         #---------------------------------------------------------#
-        box_thre    = boxes[keep, :]
-        class_thre  = p_class[keep, :]
+        box_th    = boxesss[keep, :]
+        class_th  = p_class[keep, :]
         m_thre   = p_masks[keep, :]
-        if class_thre.shape[0] == 0:
+        if class_th.shape[0] == 0:
             return [None, None, None, None, None]
         if not traditional_nms:
-            box_thre, class_thre, class_ids, m_thre = self.fast_non_max_suppression(box_thre,
-                                                                                    class_thre, m_thre, nms_iou)
-            keep        = class_thre > confidence
-            box_thre    = box_thre[keep]
-            class_thre  = class_thre[keep]
-            class_ids   = class_ids[keep]
+            box_th, class_th, cla_ids, m_thre = self.fast_non_max_suppression(box_th,
+                                                                                    class_th, m_thre, nms_iou)
+            keep        = class_th > confidence
+            box_th    = box_th[keep]
+            class_th  = class_th[keep]
+            cla_ids   = cla_ids[keep]
             m_thre   = m_thre[keep]
             
-        b_thre    = self.correct_boxes(box_thre, image_shape)
-        masks_sigmoid   = self.sigmoid(np.matmul(p_proto, np.transpose(m_thre)))
-        masks_sigmoid   = cv2.resize(masks_sigmoid, (image_shape[1], image_shape[0]),  interpolation=cv2.INTER_LINEAR)
-        if masks_sigmoid.ndim == 2:
-            masks_sigmoid   = np.expand_dims(masks_sigmoid, axis=2)
-        masks_sigmoid   = np.ascontiguousarray(masks_sigmoid)
-        masks_sigmoid   = self.crop(masks_sigmoid, b_thre)
+        b_thre    = self.correct_boxes(box_th, image_shape)
+        masks_sig   = self.sigmoid(np.matmul(p_proto, np.transpose(m_thre)))
+        masks_sig   = cv2.resize(masks_sig, (image_shape[1], image_shape[0]),  interpolation=cv2.INTER_LINEAR)
+        if masks_sig.ndim == 2:
+            masks_sig   = np.expand_dims(masks_sig, axis=2)
+        masks_sig   = np.ascontiguousarray(masks_sig)
+        masks_sig   = self.crop(masks_sig, b_thre)
         #----------------------------------------------------------------------#
         #   获得每个像素点所属的实例
         #----------------------------------------------------------------------#
-        m_arg       = np.argmax(masks_sigmoid, axis=-1)
+        m_arg       = np.argmax(masks_sig, axis=-1)
         #----------------------------------------------------------------------#
         #   判断每个像素点是否满足门限需求
         #----------------------------------------------------------------------#
-        masks_sigmoid   = masks_sigmoid > 0.5
+        masks_sig   = masks_sig > 0.5
 
-        return [b_thre, class_thre, class_ids, m_arg, masks_sigmoid]
+        return [b_thre, class_th, cla_ids, m_arg, masks_sig]
 
