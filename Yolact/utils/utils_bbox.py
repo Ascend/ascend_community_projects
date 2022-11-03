@@ -117,7 +117,6 @@ class BBoxUtility(object):
         class_nms   = class_nms[idx]
         class_ids   = class_ids[idx]
         mask_nms    = mask_nms[idx]
-        print(box_nms.shape, class_nms.shape)
         return [box_nms, class_nms, class_ids, mask_nms]
 
     def correct_boxes(self, boxes, shape):

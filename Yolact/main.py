@@ -159,8 +159,8 @@ def evalimage(stream_manager_api, path:str, save_path:str=None):
     pred_masks = pred_masks.reshape(1, 18525, 32)
     pred_proto = np.array(
         [np.frombuffer(result_list.tensorPackageVec[0].tensorVec[3].dataStr, dtype=np.float32)])
-    pred_proto = pred_proto
-    detect = BBoxUtility().reshape(1, 136, 136, 32)
+    pred_proto = pred_proto.reshape(1, 136, 136, 32)
+    detect = BBoxUtility()
     outputs = tuple([pred_boxes, pred_classes, pred_masks, pred_proto])
             
     #----------------------------------------------------------------------#
@@ -247,15 +247,15 @@ def val(val_args):
     with open(val_args.PL_PATH, 'rb') as pl:
         pipeline_str = pl.read()
     ret = str_man_api.CreateMultipleStreams(pipeline_str)
-    annotationfile = './data/coco/annotations/instances_val2017.json'
+    annotationfile = '../Yolact_mid/data/coco/annotations/instances_val2017.json'
     coco_gt = COCO(annotationfile)
-    imagefolder = './data/coco/images'
+    imagefolder = '../Yolact_mid/data/coco/images'
     image_ids = list(coco_gt.imgToAnns.keys())
     #-------------------------------------------------------#
     #   获得测试用的图片路径和标签
     #   默认指向根目录下面的datasets/coco文件夹
     #-------------------------------------------------------#
-    json_path       = "./data/coco/annotations/instances_val2017.json"
+    json_path       = "../Yolact_mid/data/coco/annotations/instances_val2017.json"
     map_out_path    = 'map_out'
     test       = COCO(json_path)
     class_names, _  = get_classes(val_args.classes_path)
@@ -273,7 +273,6 @@ def val(val_args):
         os.makedirs(map_out_path)
     print("Get predict result.")
     m_json   = MakeJson(map_out_path, coco_label_map)
-    image_ids = image_ids[4950:]
     for image_idx, image_id in enumerate(image_ids):
         print('image_idx = %d image_id = %d.' % (image_idx, image_id))
         image_info = coco_gt.loadImgs(image_id)[0]
