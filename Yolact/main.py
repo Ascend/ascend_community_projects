@@ -237,8 +237,8 @@ def evalimage(stream_manager_api, path:str, save_path:str=None):
 
 def val(val_args):
     # init streams
-    stream_manager_api = StreamManagerApi()
-    ret = stream_manager_api.InitManager()
+    str_man_api = StreamManagerApi()
+    ret = str_man_api.InitManager()
     if ret != 0:
         print("Failed to init Stream manager, ret=%s" % str(ret))
         exit()
@@ -246,7 +246,7 @@ def val(val_args):
     # create streams by pipeline config file
     with open(val_args.PL_PATH, 'rb') as pl:
         pipeline_str = pl.read()
-    ret = stream_manager_api.CreateMultipleStreams(pipeline_str)
+    ret = str_man_api.CreateMultipleStreams(pipeline_str)
     annotationfile = './data/coco/annotations/instances_val2017.json'
     coco_gt = COCO(annotationfile)
     imagefolder = './data/coco/images'
@@ -264,9 +264,9 @@ def val(val_args):
     if val_args.image is not None:
         if ':' in val_args.image:
             inp, out = val_args.image.split(':')
-            evalimage(stream_manager_api, inp, out)
+            evalimage(str_man_api, inp, out)
         else:
-            evalimage(stream_manager_api, val_args.image)
+            evalimage(str_man_api, val_args.image)
         return
    
     if not osp.exists(map_out_path):
@@ -295,13 +295,13 @@ def val(val_args):
         stre_name = b'im_yolact'
         in_plugin_id = 0
 
-        if not send_source_data(0, batch, stre_name, stream_manager_api):
+        if not send_source_data(0, batch, stre_name, str_man_api):
             return
         kes = [b"mxpi_tensorinfer0"]
         ke_vec = StringVector()
         for key in kes:
             ke_vec.push_back(key)
-        infer_results = stream_manager_api.GetProtobuf(stre_name, in_plugin_id, ke_vec)
+        infer_results = str_man_api.GetProtobuf(stre_name, in_plugin_id, ke_vec)
         if infer_results.size() == 0 or infer_results.size() == 0:
             print("infer_result is null")
             exit()
