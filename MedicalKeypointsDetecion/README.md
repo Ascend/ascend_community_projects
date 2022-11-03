@@ -231,3 +231,15 @@ python3.9 evaluate.py
 性能测试结果如下：
 
 在整个测试集上进行性能测试，未进行模型1的推理时间统计，模型2(hrnet-w48)的推理总花费时间为116s，fps=3651/116=31.47.原modelzoo下的hrnet-w48在五百张图片上推理耗时551s，fps=1.1.可见本模型在模型上的优化可以很好的提升性能。
+
+## 6 常见问题
+
+### 6.1 推理时无法正常读取json文件
+
+**问题描述：**
+
+在进行精度验证时，读取res_file时出现报错，`json.decoder.JSONDecodeError: Extra data`，然后自动退出。
+
+**解决方案：**
+
+这是因为前序的精度验证时出现其他报错信息，导致json写入了部分不该被写入的缓存区内容。可以直接找到生成的json文件（目录一般为`output/results/keypoints_coco_results_0.json`）直接删除即可。
