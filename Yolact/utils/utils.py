@@ -1,5 +1,7 @@
 import numpy as np
 from PIL import Image
+
+
 def cvtcolor(img):
     if len(np.shape(img)) == 3 and np.shape(img)[2] == 3:
         return img 
@@ -7,10 +9,12 @@ def cvtcolor(img):
         img = img.convert('RGB')
         return img 
 
+
 def resize_image(img, sz):
     w, h    = sz
     image = img.resize((w, h), Image.BICUBIC)
     return image
+
 
 def get_classes(path):
     with open(path, encoding='utf-8') as f:
@@ -25,6 +29,7 @@ def preprocess_input(img):
     img   = (img - m)/s
     return img
 
+
 def get_coco_label_map(coco, names):
     label_map = {}
 
@@ -33,7 +38,7 @@ def get_coco_label_map(coco, names):
         if cat['name'] == '_background_':
             continue
         cat_index_map[cat['name']] = index
-
+        
     for index, name in enumerate(names):
         label_map[cat_index_map.get(name)] = index + 1
     return label_map

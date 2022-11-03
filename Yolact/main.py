@@ -253,9 +253,9 @@ def val(val_args):
     #-------------------------------------------------------#
     json_path       = "./data/coco/annotations/instances_val2017.json"
     map_out_path    = 'map_out'
-    test_coco       = COCO(json_path)
+    test       = COCO(json_path)
     class_names, _  = get_classes(val_args.classes_path)
-    coco_label_map  = get_coco_label_map(test_coco, class_names)
+    coco_label_map  = get_coco_label_map(test, class_names)
     
     if val_args.image is not None:
         if ':' in val_args.image:
@@ -334,18 +334,18 @@ def val(val_args):
     m_json.dump()
     print(f'\nJson files dumped, saved in: \'eval_results/\', start evaluting.')
 
-    bbox_dets = test_coco.loadRes(osp.join(map_out_path, "bbox_detections.json"))
-    mask_dets = test_coco.loadRes(osp.join(map_out_path, "mask_detections.json"))
-    print('\nEvaluating BBoxes:')
-    bbox_eval = COCOeval(test_coco, bbox_dets, 'bbox')
-    bbox_eval.evaluate()
-    bbox_eval.accumulate()
-    bbox_eval.summarize()
-    print('\nEvaluating Masks:')
-    bbox_eval = COCOeval(test_coco, mask_dets, 'segm')
-    bbox_eval.evaluate()
-    bbox_eval.accumulate()
-    bbox_eval.summarize()
+    bbox = test.loadRes(osp.join(map_out_path, "bbox_detections.json"))
+    mask = test.loadRes(osp.join(map_out_path, "mask_detections.json"))
+    print('\nBBoxes:')
+    eval = COCOeval(test, bbox, 'bbox')
+    eval.evaluate()
+    eval.accumulate()
+    eval.summarize()
+    print('\nMasks:')
+    eval = COCOeval(test, mask, 'segm')
+    eval.evaluate()
+    eval.accumulate()
+    eval.summarize()
 
 if __name__ == '__main__':
     args = parse_args()
