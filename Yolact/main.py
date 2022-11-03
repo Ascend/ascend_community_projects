@@ -27,7 +27,6 @@ from utils.anchors import get_anchors
 from utils.utils_map import MakeJson, prep_metrics
 from utils.utils import cvtcolor, resize_image, get_classes, get_coco_label_map, preprocess_input
 import cv2
-from data import cfg
 import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from PIL import Image
@@ -247,15 +246,15 @@ def val(val_args):
     with open(val_args.PL_PATH, 'rb') as pl:
         pipeline_str = pl.read()
     ret = str_man_api.CreateMultipleStreams(pipeline_str)
-    annotationfile = '../Yolact_mid/data/coco/annotations/instances_val2017.json'
+    annotationfile = './data/coco/annotations/instances_val2017.json'
     coco_gt = COCO(annotationfile)
-    imagefolder = '../Yolact_mid/data/coco/images'
+    imagefolder = './data/coco/images'
     image_ids = list(coco_gt.imgToAnns.keys())
     #-------------------------------------------------------#
     #   获得测试用的图片路径和标签
     #   默认指向根目录下面的datasets/coco文件夹
     #-------------------------------------------------------#
-    json_path       = "../Yolact_mid/data/coco/annotations/instances_val2017.json"
+    json_path       = "./data/coco/annotations/instances_val2017.json"
     map_out_path    = 'map_out'
     test       = COCO(json_path)
     class_names, _  = get_classes(val_args.classes_path)
