@@ -292,16 +292,16 @@ def val(val_args):
             exit()
         batch = image_data 
         batch = batch.astype(np.float32)
-        stream_name = b'im_yolact'
+        stre_name = b'im_yolact'
         in_plugin_id = 0
 
-        if not send_source_data(0, batch, stream_name, stream_manager_api):
+        if not send_source_data(0, batch, stre_name, stream_manager_api):
             return
-        keys = [b"mxpi_tensorinfer0"]
-        key_vec = StringVector()
-        for key in keys:
-            key_vec.push_back(key)
-        infer_results = stream_manager_api.GetProtobuf(stream_name, in_plugin_id, key_vec)
+        kes = [b"mxpi_tensorinfer0"]
+        ke_vec = StringVector()
+        for key in kes:
+            ke_vec.push_back(key)
+        infer_results = stream_manager_api.GetProtobuf(stre_name, in_plugin_id, ke_vec)
         if infer_results.size() == 0 or infer_results.size() == 0:
             print("infer_result is null")
             exit()

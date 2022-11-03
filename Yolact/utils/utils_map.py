@@ -74,10 +74,10 @@ class MakeJson:
                 
 
 
-def prep_metrics(boxes, confs, classes, pred_masks, id, make_jsonn):
+def prep_metrics(boxes, confs, classes, pred_masks, img_id, make_jsonn):
     classes    = list(np.array(classes, np.int32))
     confs      = list(np.array(confs, np.float32))
     for i in range(boxes.shape[0]):
         if (boxes[i, 3] - boxes[i, 1]) * (boxes[i, 2] - boxes[i, 0]) > 0:
-            make_jsonn.add_bbox(id, classes[i], boxes[i, :], confs[i])
-            make_jsonn.add_mask(id, classes[i], pred_masks[:, :, i], confs[i])
+            make_jsonn.add_bbox(img_id, classes[i], boxes[i, :], confs[i])
+            make_jsonn.add_mask(img_id, classes[i], pred_masks[:, :, i], confs[i])
