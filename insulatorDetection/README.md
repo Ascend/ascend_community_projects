@@ -142,7 +142,7 @@ bash run.sh
 
 模型转换结果如下，如果出现ATC run success，说明转换模型成功
 
-```bash
+```txt
 ATC start working now, please wait for a moment.
 ATC run success, welcome to the next use.
 ```
@@ -186,7 +186,7 @@ python map_calculate.py  # 计算AP
 ![precision](./img/precision.png)
 ![precision1](./img/precision_origin.png)
 
-SDK跑的精度为89.48%，原模型精度为90.31%，两者相差0.85%，目标精度要求SDK跑的精度与原模型精度相差不超过1%，SDK模型精度大于80%，符合精度要求。
+SDK跑的精度为89.48%，原模型精度为90.31%，两者相差0.83%，目标精度要求SDK跑的精度与原模型精度相差不超过1%，SDK模型精度大于80%，符合精度要求。
 
 
 ## 6.FPS测试
