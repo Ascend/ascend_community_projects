@@ -75,8 +75,6 @@
 
 ```bash
 . ${SDK-path}/set_env.sh  ## 修改${SDK-path}为你自己的SDK安装路径
-. ${ascend_toolkit_path}/set_env.sh ## 修改${ascend_toolkit_path}为自己Ascend的ascend_toolkit路径
-
 ```
 
 ### 2.2 软件依赖
@@ -188,7 +186,7 @@ python map_calculate.py  # 计算AP
 ![precision](./img/precision.png)
 ![precision1](./img/precision_origin.png)
 
-该模型AP为89.46%，原模型精度为90.31%，两者相差0.85%，目标精度要求精度与原模型精度相差不超过1%，模型精度大于80%，符合精度要求。
+SDK跑的精度为89.46%，原模型精度为90.31%，两者相差0.85%，目标精度要求SDK跑的精度与原模型精度相差不超过1%，SDK模型精度大于80%，符合精度要求。
 
 
 ## 6.FPS测试
