@@ -122,6 +122,12 @@ def send_source_data(appsrc_id, tensor, stream_name, stream_manager):
 
 
 def evalimage(stream_manager_api, path:str, save_path:str=None):
+    if not os.path.exists(path):
+        print("Picture doesn't exist, please try again")
+        exit()
+    if not os.path.splitext(path)[-1] == '.jpg':
+        print("The image should be in .jpg format")
+        exit()
     image = Image.open(path)
     image_shape = np.array(np.shape(image)[0:2])
     image = cvtcolor(image)
