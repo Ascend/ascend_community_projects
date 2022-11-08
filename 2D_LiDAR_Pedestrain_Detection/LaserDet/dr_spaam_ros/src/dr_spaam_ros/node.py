@@ -24,8 +24,6 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point, Pose, PoseArray
 from visualization_msgs.msg import Marker
 
-sys.path.append("/home/HwHiAiUser/edge_dev/2D_LiDAR_Pedestrain_Detection/LaserDet")
-pprint(sys.path)
 from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 from StreamManagerApi import InProtobufVector, MxProtobufIn
 import MxpiDataType_pb2 as MxpiDataType
@@ -325,22 +323,22 @@ if __name__ == '__main__':
     # init ros node here
     rospy.init_node("dr_spaam_ros")
     MODE_CHOOSE = 1
-    Seq_Name = "bytes-cafe-2019-02-07_0"
-    Timestamps_Path = "frames_pc_im_laser.json"
-    Pipe_Store = "dr_spaam_jrdb_e20.pipeline"
+    SEQ_NAME = "bytes-cafe-2019-02-07_0"
+    TIMESTAMPS_PATH = "frames_pc_im_laser.json"
+    PIPE_STORE = "dr_spaam_jrdb_e20.pipeline"
 
     IS_RIVZ_SUPPORTED = False 
     # setup callback
     if MODE_CHOOSE == 2:
         try:
-            LaserDetROS(Pipe_Store, Timestamps_Path, MODE_CHOOSE)
+            LaserDetROS(PIPE_STORE, TIMESTAMPS_PATH, MODE_CHOOSE)
             print("** Node Launched **")
         except rospy.ROSInterruptException:
             pass
         rospy.spin()
     elif MODE_CHOOSE == 1:
-        ROS_CLS = LaserDetROS(Pipe_Store, Timestamps_Path, MODE_CHOOSE)
-        ROS_CLS.Seq_Name = Seq_Name
+        ROS_CLS = LaserDetROS(PIPE_STORE, TIMESTAMPS_PATH, MODE_CHOOSE)
+        ROS_CLS.seq_name = SEQ_NAME
         ROS_CLS.visu = IS_RIVZ_SUPPORTED
         ROS_CLS.dets_pub = rospy.Publisher(
             "/laser_det_detections", PoseArray, queue_size=1, latch=False

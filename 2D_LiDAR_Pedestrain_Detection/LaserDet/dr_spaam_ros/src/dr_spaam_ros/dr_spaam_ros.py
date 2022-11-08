@@ -18,7 +18,7 @@ import sys
 import time
 import json
 import shutil
-
+from pprint import pprint
 from collections import deque
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point, Pose, PoseArray
@@ -27,10 +27,6 @@ from std_msgs.msg import Int16
 from srcs.detector import scans_to_cutout
 from srcs.utils.precision_recall import eval_internal
 
-sys.path.append("/home/HwHiAiUser/edge_dev/2D_LiDAR_Pedestrain_Detection/LaserDet")
-
-from pprint import pprint
-pprint(sys.path)
 from StreamManagerApi import StreamManagerApi, MxDataInput, MxBufferInput, StringVector
 from StreamManagerApi import InProtobufVector, MxProtobufIn
 import MxpiDataType_pb2 as MxpiDataType
@@ -137,6 +133,7 @@ class LaserDetROS:
         return len(self.laser_scans)
 
 
+    @classmethod
     def _init(self):
         """
         @brief      Initialize ROS connection.
