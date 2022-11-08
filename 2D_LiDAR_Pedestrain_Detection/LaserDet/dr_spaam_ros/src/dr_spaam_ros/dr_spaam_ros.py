@@ -13,10 +13,10 @@
 # limitations under the License.
 import time
 import json
-import numpy as np
 import shutil
-import matplotlib.pyplot as plt
 from collections import deque
+import numpy as np
+import matplotlib.pyplot as plt
 import rospy
 
 from sensor_msgs.msg import LaserScan
@@ -49,17 +49,17 @@ class LaserDetROS:
 
         self.visu = True # False Or True
         self._seq_name = "rendering"
-        self._bag_id = -1
-        self._anno_id = 0
+        self.bag_id = -1
+        self.anno_id = 0
         # Set scan params
         self.conf_thresh = 0.5
         self.stride = 1
         self.panoramic_scan = True
         self.detector_model = os.path.basename(pipe_store).split("_")[0]
         if self.detector_model == "drow3":
-            self._num_scans = 1
+            self.num_scans = 1
         else:
-            self._num_scans = 10
+            self.num_scans = 10
 
         self.ct_kwargs = {
             "win_width": 1.0,
@@ -71,8 +71,8 @@ class LaserDetROS:
         if mode == 2:
             self._init()
 
-        self._laser_scans = deque([None] * self._num_scans)
-        self._tested_id = deque([0])
+        self.laser_scans = deque([None] * self.num_scans)
+        self.tested_id = deque([0])
 
         if "jrdb" in pipe_store or "JRDB" in pipe_store:
             self._laser_fov_deg = 360
@@ -89,13 +89,13 @@ class LaserDetROS:
 
         self._timestamps = timestamps_path
         with open(self._timestamps, "rb") as f:
-            self._ts_frames = json.load(f)["data"]
+            self.ts_frames = json.load(f)["data"]
         self._mode = mode # 1: eval, 2: display
 
         # The following belongs to the SDK Process
-        self._stream_manager_api = StreamManagerApi()
+        self.stream_manager_api = StreamManagerApi()
         # init stream manager
-        ret = self._stream_manager_api.InitManager()
+        ret = self.stream_manager_api.InitManager()
         if ret != 0:
             print("Failed to init Stream manager, ret=%s" % str(ret))
             exit()
@@ -108,7 +108,7 @@ class LaserDetROS:
             pipeline_str = f.read()
             print("-----------------成功读取pipeline-----------------")
 
-        _ret = self._stream_manager_api.CreateMultipleStreams(pipeline_str)
+        _ret = self.stream_manager_api.CreateMultipleStreams(pipeline_str)
 
         # Print error message
         if _ret != 0:
@@ -133,44 +133,39 @@ class LaserDetROS:
         fig_dict = {}
 
 
+    def __len__(self):
+        return len(self.laser_scans)
+
+
     def _init(self):
         """
         @brief      Initialize ROS connection.
         """
         # Publisher
-        #topic, queue_size, latch = read_publisher_param("detections")
-        # /dr_spaam_detections, 1, False
         self._dets_pub = rospy.Publisher(
             "/laser_det_detections", PoseArray, queue_size=1, latch=False
         )
-
-        #topic, queue_size, latch = read_publisher_param("rviz")
-        # /dr_spaam_rviz, 1, False
         self._rviz_pub = rospy.Publisher(
             "/laser_det_rviz", Marker, queue_size=1, latch=False
         )
 
         # Subscriber
-        #topic, queue_size = read_subscriber_param("scan")
-        # /segway/scan_multi, 1
-
         self._scan_sub = rospy.Subscriber(
             "/segway/scan_multi", LaserScan, self._scan_callback, queue_size=1
         )
 
 
-    def __len__(self):
-        return len(self._laser_scans)
-
-
-    def _sigmoid(self, z):
+    @classmethod
+    def sigmoid(self, z):
         return 1.0 / (1.0 + np.exp(-z))
 
 
-    def _rphi_xy_convertor(self, rdius, ang):
+    @classmethod
+    def rphi_xy_convertor(self, rdius, ang):
         return rdius * np.cos(ang), rdius * np.sin(ang)
 
 
+    @classmethod
     def _can_glob_convertor(self, rdius, ang, dx, dy):
         tmp_y = rdius + dy
         tmp_phi = np.arctan2(dx, tmp_y)
@@ -187,7 +182,7 @@ class LaserDetROS:
         pred_r, pred_phi = self._can_glob_convertor(
             scan_grid, phi_grid, pred_reg[:, 0], pred_reg[:, 1]
         )
-        pred_xs, pred_ys = self._rphi_xy_convertor(pred_r, pred_phi)
+        pred_xs, pred_ys = self.rphi_xy_convertor(pred_r, pred_phi)
 
         # sort prediction with descending confidence
         sort_inds = np.argsort(pred_cls)[::-1]
@@ -244,7 +239,7 @@ class LaserDetROS:
         ax_handle.set_title(f"{frame_idx}")
 
         # plot scan
-        scan_x, scan_y = self._rphi_xy_convertor(scan_r, scan_phi)
+        scan_x, scan_y = self.rphi_xy_convertor(scan_r, scan_phi)
         ax_handle.scatter(scan_x, scan_y, s=1, c="blue")
 
         # plot rviz
@@ -259,7 +254,7 @@ class LaserDetROS:
         pred_r, pred_phi = self._can_glob_convertor(
             scan_r, scan_phi, pred_reg[:, 0], pred_reg[:, 1]
         )
-        pred_x, pred_y = self._rphi_xy_convertor(pred_r, pred_phi)
+        pred_x, pred_y = self.rphi_xy_convertor(pred_r, pred_phi)
         ax_handle.scatter(pred_x, pred_y, s=1, c="red")
 
         # plot detection
@@ -274,7 +269,7 @@ class LaserDetROS:
 
     def _scan_callback(self, msg):
 
-        self._bag_id += 1
+        self.bag_id += 1
 
         output_save_dir = os.path.realpath(
                             os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -285,15 +280,15 @@ class LaserDetROS:
         scan[np.isnan(scan)] = 29.99
 
         # added-in
-        self._laser_scans.append(scan)  # append to the right
-        self._laser_scans.popleft()     # pop out from the left
+        self.laser_scans.append(scan)  # append to the right
+        self.laser_scans.popleft()     # pop out from the left
 
-        if self._num_scans > 1:
-            laser_scans = list(filter(lambda x: x is not None, self._laser_scans))
+        if self.num_scans > 1:
+            laser_scans = list(filter(lambda x: x is not None, self.laser_scans))
         else:
-            laser_scans = self._laser_scans
+            laser_scans = self.laser_scans
         scan_index = len(laser_scans)
-        delta_inds = (np.arange(self._num_scans) * self.stride)[::-1]
+        delta_inds = (np.arange(self.num_scans) * self.stride)[::-1]
         scans_inds = [max(0, scan_index - i) for i in delta_inds]
 
         scans = np.array([laser_scans[i-1] for i in scans_inds])
@@ -330,7 +325,7 @@ class LaserDetROS:
         protobuf.protobuf = tensor_package_list.SerializeToString()
         protobuf_vec.push_back(protobuf)
 
-        ret = self._stream_manager_api.SendProtobuf(self._stream_name, self.in_plugin_id, protobuf_vec)
+        ret = self.stream_manager_api.SendProtobuf(self._stream_name, self.in_plugin_id, protobuf_vec)
 
         if ret != 0:
             print("Failed to send data to stream.")
@@ -338,7 +333,7 @@ class LaserDetROS:
 
         key_vec = StringVector()
         key_vec.push_back(b'mxpi_tensorinfer0')
-        infer_result = self._stream_manager_api.GetProtobuf(self._stream_name, 0, key_vec)
+        infer_result = self.stream_manager_api.GetProtobuf(self._stream_name, 0, key_vec)
 
         if infer_result.size() == 0:
             print("infer_result is null")
@@ -395,16 +390,16 @@ class LaserDetROS:
         self._rviz_pub.publish(rviz_msg)
 
         # dirty fix: no rendering support ONBOARD !!!
-        if self.visu == False:
+        if self.visu is False:
             print(len(dets_msg.poses), len(rviz_msg.points))
             fig, ax = self._plot_one_frame_beta(scan,
                                           self._scan_phi,
-                                          self._bag_id,
+                                          self.bag_id,
                                           pred_reg.squeeze(),
                                           dets_msg.poses,
                                           rviz_msg.points,
                                         )
-            fig_name = f"bags2png/{self._seq_name}/{str(self._bag_id).zfill(6)}.png"
+            fig_name = f"bags2png/{self._seq_name}/{str(self.bag_id).zfill(6)}.png"
             fig_file = os.path.join(output_save_dir, fig_name)
             print("Saving to {}...".format(fig_file))
             os.makedirs(os.path.dirname(fig_file), exist_ok=True)
