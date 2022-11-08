@@ -11,32 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+import stat
+import sys
+
 import time
 import json
 import shutil
-from collections import deque
-import numpy as np
-import matplotlib.pyplot as plt
-import rospy
 
+from collections import deque
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point, Pose, PoseArray
 from visualization_msgs.msg import Marker
 from std_msgs.msg import Int16
-
-import os
-import stat
-import sys
-sys.path.append("/home/HwHiAiUser/edge_dev/2D_LiDAR_Pedestrain_Detection/LaserDet")
-from pprint import pprint
-pprint(sys.path)
 from srcs.detector import scans_to_cutout
 from srcs.utils.precision_recall import eval_internal
 
+sys.path.append("/home/HwHiAiUser/edge_dev/2D_LiDAR_Pedestrain_Detection/LaserDet")
+
+from pprint import pprint
+pprint(sys.path)
 from StreamManagerApi import StreamManagerApi, MxDataInput, MxBufferInput, StringVector
 from StreamManagerApi import InProtobufVector, MxProtobufIn
 import MxpiDataType_pb2 as MxpiDataType
-
+import numpy as np
+import matplotlib.pyplot as plt
+import rospy
 
 FLAGS = os.O_WRONLY | os.O_CREAT
 MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -48,7 +48,7 @@ class LaserDetROS:
     def __init__(self, pipe_store, timestamps_path, mode=1):
 
         self.visu = True # False Or True
-        self._seq_name = "rendering"
+        self.seq_name = "rendering"
         self.bag_id = -1
         self.anno_id = 0
         # Set scan params
@@ -77,13 +77,13 @@ class LaserDetROS:
         if "jrdb" in pipe_store or "JRDB" in pipe_store:
             self._laser_fov_deg = 360
             bisec_fov_rad = 0.5 * np.deg2rad(self._laser_fov_deg)
-            self._scan_phi = np.linspace(
+            self.scan_phi = np.linspace(
             -bisec_fov_rad, bisec_fov_rad, 1091, dtype=np.float32
             )
         elif "drow" in pipe_store or "DROW" in pipe_store:
             self._laser_fov_deg = 225
             bisec_fov_rad = 0.5 * np.deg2rad(self._laser_fov_deg)
-            self._scan_phi = np.linspace(
+            self.scan_phi = np.linspace(
             -bisec_fov_rad, bisec_fov_rad, 450, dtype=np.float32
             )
 
@@ -121,7 +121,7 @@ class LaserDetROS:
                 str(_ret))
         # Stream name
 
-        self._stream_name = b'detection0'
+        self.stream_name = b'detection0'
 
         self.in_plugin_id = 0
         tb_dict_list = []
@@ -142,10 +142,10 @@ class LaserDetROS:
         @brief      Initialize ROS connection.
         """
         # Publisher
-        self._dets_pub = rospy.Publisher(
+        self.dets_pub = rospy.Publisher(
             "/laser_det_detections", PoseArray, queue_size=1, latch=False
         )
-        self._rviz_pub = rospy.Publisher(
+        self.rviz_pub = rospy.Publisher(
             "/laser_det_rviz", Marker, queue_size=1, latch=False
         )
 
@@ -174,7 +174,7 @@ class LaserDetROS:
         return dets_r, dets_phi
 
 
-    def _nms(
+    def nms(
         self, scan_grid, phi_grid, pred_cls, pred_reg, min_dist=0.5
         ):
         assert len(pred_cls.shape) == 1
@@ -216,7 +216,7 @@ class LaserDetROS:
         return det_xys, det_cls, instance_mask
 
 
-    def _plot_one_frame_beta(
+    def plot_one_frame_beta(
         self,
         scan_r,
         scan_phi,
@@ -295,7 +295,7 @@ class LaserDetROS:
         scans = scans[:, ::-1]
         laser_input = scans_to_cutout(
             scans,
-            self._scan_phi,
+            self.scan_phi,
             stride=self.stride,
             win_size=[1.0, 0.5],
             num_cutout_pts=56,
@@ -325,7 +325,7 @@ class LaserDetROS:
         protobuf.protobuf = tensor_package_list.SerializeToString()
         protobuf_vec.push_back(protobuf)
 
-        ret = self.stream_manager_api.SendProtobuf(self._stream_name, self.in_plugin_id, protobuf_vec)
+        ret = self.stream_manager_api.SendProtobuf(self.stream_name, self.in_plugin_id, protobuf_vec)
 
         if ret != 0:
             print("Failed to send data to stream.")
@@ -333,7 +333,7 @@ class LaserDetROS:
 
         key_vec = StringVector()
         key_vec.push_back(b'mxpi_tensorinfer0')
-        infer_result = self.stream_manager_api.GetProtobuf(self._stream_name, 0, key_vec)
+        infer_result = self.stream_manager_api.GetProtobuf(self.stream_name, 0, key_vec)
 
         if infer_result.size() == 0:
             print("infer_result is null")
@@ -357,7 +357,7 @@ class LaserDetROS:
         prediction_shape = result.tensorPackageVec[0].tensorVec[1].tensorShape
 
         pred_cls_sigmoid = self._sigmoid(pred_cls.squeeze())
-        dets_xy, dets_cls, inst_mask = self._nms(scans[-1], self._scan_phi, pred_cls_sigmoid, pred_reg.squeeze())
+        dets_xy, dets_cls, inst_mask = self.nms(scans[-1], self.scan_phi, pred_cls_sigmoid, pred_reg.squeeze())
         print("[DrSpaamROS] End-to-end inference time: %f" % (t - time.time()))
         '''
         # dirty fix: save dets to file as roslaunch won't automatively terminate
@@ -369,7 +369,7 @@ class LaserDetROS:
         for cls, xy, occ in zip(dets_cls, dets_xy, occluded):
             long_str += f"Pedestrian 0 {occ} 0 0 0 0 0 0 0 0 0 {xy[0]} {xy[1]} 0 0 {cls}\n"
         long_str = long_str.strip("\n")
-        txt_name = f"outputs/detections/{self._seq_name}/{str(frame_id).zfill(6)}.txt"
+        txt_name = f"outputs/detections/{self.seq_name}/{str(frame_id).zfill(6)}.txt"
         det_fname = os.path.join(output_save_dir, txt_name)
         os.makedirs(os.path.dirname(det_fname), exist_ok=True)
         with os.fdopen(os.open(det_fname, FLAGS, MODES), "w") as fdo:
@@ -383,23 +383,23 @@ class LaserDetROS:
         # convert to ros msg and publish
         dets_msg = detections_to_pose_array(dets_xy, dets_cls)
         dets_msg.header = msg.header
-        self._dets_pub.publish(dets_msg)
+        self.dets_pub.publish(dets_msg)
 
         rviz_msg = detections_to_rviz_marker(dets_xy, dets_cls)
         rviz_msg.header = msg.header
-        self._rviz_pub.publish(rviz_msg)
+        self.rviz_pub.publish(rviz_msg)
 
         # dirty fix: no rendering support ONBOARD !!!
         if self.visu is False:
             print(len(dets_msg.poses), len(rviz_msg.points))
-            fig, ax = self._plot_one_frame_beta(scan,
-                                          self._scan_phi,
+            fig, ax = self.plot_one_frame_beta(scan,
+                                          self.scan_phi,
                                           self.bag_id,
                                           pred_reg.squeeze(),
                                           dets_msg.poses,
                                           rviz_msg.points,
                                         )
-            fig_name = f"bags2png/{self._seq_name}/{str(self.bag_id).zfill(6)}.png"
+            fig_name = f"bags2png/{self.seq_name}/{str(self.bag_id).zfill(6)}.png"
             fig_file = os.path.join(output_save_dir, fig_name)
             print("Saving to {}...".format(fig_file))
             os.makedirs(os.path.dirname(fig_file), exist_ok=True)

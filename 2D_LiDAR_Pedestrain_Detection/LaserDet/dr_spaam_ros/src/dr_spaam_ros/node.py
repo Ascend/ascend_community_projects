@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from srcs.utils.utils import trim_the_scans
-from srcs.utils.precision_recall import eval_internal
+
 import os
 import stat
 import sys
@@ -34,6 +33,8 @@ import numpy as np
 import shutil
 import matplotlib.pyplot as plt
 
+from srcs.utils.utils import trim_the_scans
+from srcs.utils.precision_recall import eval_internal
 
 FLAGS = os.O_WRONLY | os.O_CREAT
 MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -43,8 +44,6 @@ def listener(ros_cls, output_save_dir=None):
 
     msg = rospy.wait_for_message("/segway/scan_multi", LaserScan, timeout=None)
     ros_cls.bag_id += 1
-
-
     scan = np.array(msg.ranges) # len of msg.ranges: 1091
 
     # added-in
@@ -84,7 +83,7 @@ def listener(ros_cls, output_save_dir=None):
 
     laser_input = trim_the_scans(
             scans,
-            ros_cls._scan_phi,
+            ros_cls.scan_phi,
             stride=ros_cls.stride,
             **ros_cls.ct_kwargs,
         )
@@ -113,7 +112,7 @@ def listener(ros_cls, output_save_dir=None):
     protobuf_vec.push_back(protobuf)
 
     ret = ros_cls.stream_manager_api.SendProtobuf(
-        ros_cls._stream_name, ros_cls.in_plugin_id, protobuf_vec)
+        ros_cls.stream_name, ros_cls.in_plugin_id, protobuf_vec)
 
     if ret != 0:
         print("Failed to send data to stream.")
@@ -121,7 +120,7 @@ def listener(ros_cls, output_save_dir=None):
 
     key_vec = StringVector()
     key_vec.push_back(b'mxpi_tensorinfer0')
-    infer_result = ros_cls.stream_manager_api.GetProtobuf(ros_cls._stream_name, 0, key_vec)
+    infer_result = ros_cls.stream_manager_api.GetProtobuf(ros_cls.stream_name, 0, key_vec)
 
     if infer_result.size() == 0:
         print("infer_result is null")
@@ -145,7 +144,7 @@ def listener(ros_cls, output_save_dir=None):
     prediction_shape = result.tensorPackageVec[0].tensorVec[1].tensorShape
 
     pred_cls_sigmoid = ros_cls.sigmoid(pred_cls.squeeze())
-    dets_xy, dets_cls, inst_mask = ros_cls._nms(scans[-1], ros_cls._scan_phi, pred_cls_sigmoid, pred_reg.squeeze())
+    dets_xy, dets_cls, inst_mask = ros_cls.nms(scans[-1], ros_cls.scan_phi, pred_cls_sigmoid, pred_reg.squeeze())
     print("[DrSpaamROS] End-to-end inference time: %f" % (t - time.time()))
 
     # dirty fix: save dets to file as roslaunch won't automatively terminate
@@ -157,7 +156,7 @@ def listener(ros_cls, output_save_dir=None):
     for category, xy, occ in zip(dets_cls, dets_xy, occluded):
         long_str += f"Pedestrian 0 {occ} 0 0 0 0 0 0 0 0 0 {xy[0]} {xy[1]} 0 0 {category}\n"
     long_str = long_str.strip("\n")
-    txt_name = f"outputs/detections/{ros_cls._seq_name}/{str(frame_id).zfill(6)}.txt"
+    txt_name = f"outputs/detections/{ros_cls.seq_name}/{str(frame_id).zfill(6)}.txt"
     det_fname = os.path.join(output_save_dir, txt_name)
     os.makedirs(os.path.dirname(det_fname), exist_ok=True)
     with os.fdopen(os.open(det_fname, FLAGS, MODES), "w") as fdo:
@@ -166,23 +165,23 @@ def listener(ros_cls, output_save_dir=None):
     # convert to ros msg and publish
     dets_msg = detections_to_pose_array(dets_xy, dets_cls)
     dets_msg.header = msg.header
-    ros_cls._dets_pub.publish(dets_msg)
+    ros_cls.dets_pub.publish(dets_msg)
 
     rviz_msg = detections_to_rviz_marker(dets_xy, dets_cls)
     rviz_msg.header = msg.header
-    ros_cls._rviz_pub.publish(rviz_msg)
+    ros_cls.rviz_pub.publish(rviz_msg)
 
     # dirty fix: no rendering support ONBOARD !!!
-    if ros_cls.visu == False:
+    if ros_cls.visu is False:
         print(len(dets_msg.poses), len(rviz_msg.points))
-        fig, ax = ros_cls._plot_one_frame_beta(scan,
-                                          ros_cls._scan_phi,
+        fig, ax = ros_cls.plot_one_frame_beta(scan,
+                                          ros_cls.scan_phi,
                                           ros_cls.bag_id,
                                           pred_reg.squeeze(),
                                           dets_msg.poses,
                                           rviz_msg.points,
                                         )
-        fig_name = f"bags2png/{ros_cls._seq_name}/{str(ros_cls.bag_id).zfill(6)}.png"
+        fig_name = f"bags2png/{ros_cls.seq_name}/{str(ros_cls.bag_id).zfill(6)}.png"
         fig_file = os.path.join(output_save_dir, fig_name)
         print("Saving to {}...".format(fig_file))
         os.makedirs(os.path.dirname(fig_file), exist_ok=True)
@@ -225,7 +224,7 @@ def echo(ros_cls, output_save_dir=None):
 
     laser_input = trim_the_scans(
             scans,
-            ros_cls._scan_phi,
+            ros_cls.scan_phi,
             stride=ros_cls.stride,
             **ros_cls.ct_kwargs,
         )
@@ -253,7 +252,7 @@ def echo(ros_cls, output_save_dir=None):
     protobuf.protobuf = tensor_package_list.SerializeToString()
     protobuf_vec.push_back(protobuf)
 
-    ret = ros_cls.stream_manager_api.SendProtobuf(ros_cls._stream_name, ros_cls.in_plugin_id, protobuf_vec)
+    ret = ros_cls.stream_manager_api.SendProtobuf(ros_cls.stream_name, ros_cls.in_plugin_id, protobuf_vec)
 
     if ret != 0:
         print("Failed to send data to stream.")
@@ -261,7 +260,7 @@ def echo(ros_cls, output_save_dir=None):
 
     key_vec = StringVector()
     key_vec.push_back(b'mxpi_tensorinfer0')
-    infer_result = ros_cls.stream_manager_api.GetProtobuf(ros_cls._stream_name, 0, key_vec)
+    infer_result = ros_cls.stream_manager_api.GetProtobuf(ros_cls.stream_name, 0, key_vec)
 
     if infer_result.size() == 0:
         print("infer_result is null")
@@ -285,7 +284,7 @@ def echo(ros_cls, output_save_dir=None):
     prediction_shape = result.tensorPackageVec[0].tensorVec[1].tensorShape
 
     pred_cls_sigmoid = ros_cls.sigmoid(pred_cls.squeeze())
-    dets_xy, dets_cls, inst_mask = ros_cls._nms(scans[-1], ros_cls._scan_phi, pred_cls_sigmoid, pred_reg.squeeze())
+    dets_xy, dets_cls, inst_mask = ros_cls.nms(scans[-1], ros_cls.scan_phi, pred_cls_sigmoid, pred_reg.squeeze())
     print("[DrSpaamROS] End-to-end inference time: %f" % (t - time.time()))
 
     # dirty fix: save dets to file as roslaunch won't automatively terminate
@@ -297,7 +296,7 @@ def echo(ros_cls, output_save_dir=None):
     for category, xy, occ in zip(dets_cls, dets_xy, occluded):
         long_str += f"Pedestrian 0 {occ} 0 0 0 0 0 0 0 0 0 {xy[0]} {xy[1]} 0 0 {category}\n"
     long_str = long_str.strip("\n")
-    txt_name = f"outputs/detections/{ros_cls._seq_name}/{str(frame_id).zfill(6)}.txt"
+    txt_name = f"outputs/detections/{ros_cls.seq_name}/{str(frame_id).zfill(6)}.txt"
     det_fname = os.path.join(output_save_dir, txt_name)
     os.makedirs(os.path.dirname(det_fname), exist_ok=True)
     with os.fdopen(os.open(det_fname, FLAGS, MODES), "w") as fdo:
@@ -305,16 +304,16 @@ def echo(ros_cls, output_save_dir=None):
 
 
     # dirty fix: no rendering support ONBOARD !!!
-    if ros_cls.visu == False:
+    if ros_cls.visu is False:
         print(len(dets_msg.poses), len(rviz_msg.points))
-        fig, ax = ros_cls._plot_one_frame_beta(scan,
-                                          ros_cls._scan_phi,
+        fig, ax = ros_cls.plot_one_frame_beta(scan,
+                                          ros_cls.scan_phi,
                                           ros_cls.bag_id,
                                           pred_reg.squeeze(),
                                           dets_msg.poses,
                                           rviz_msg.points,
                                         )
-        fig_name = f"bags2png/{ros_cls._seq_name}/{str(ros_cls.bag_id).zfill(6)}.png"
+        fig_name = f"bags2png/{ros_cls.seq_name}/{str(ros_cls.bag_id).zfill(6)}.png"
         fig_file = os.path.join(output_save_dir, fig_name)
         print("Saving to {}...".format(fig_file))
         os.makedirs(os.path.dirname(fig_file), exist_ok=True)
@@ -325,29 +324,29 @@ def echo(ros_cls, output_save_dir=None):
 if __name__ == '__main__':
     # init ros node here
     rospy.init_node("dr_spaam_ros")
-    mode = 1
-    seq_name = "bytes-cafe-2019-02-07_0"
-    timestamps_path = "frames_pc_im_laser.json"
-    pipe_store = "dr_spaam_jrdb_e20.pipeline"
+    MODE_CHOOSE = 1
+    Seq_Name = "bytes-cafe-2019-02-07_0"
+    Timestamps_Path = "frames_pc_im_laser.json"
+    Pipe_Store = "dr_spaam_jrdb_e20.pipeline"
 
-    is_rviz_supported = False
+    IS_RIVZ_SUPPORTED = False 
     # setup callback
-    if mode == 2:
+    if MODE_CHOOSE == 2:
         try:
-            LaserDetROS(pipe_store, timestamps_path, mode)
+            LaserDetROS(Pipe_Store, Timestamps_Path, MODE_CHOOSE)
             print("** Node Launched **")
         except rospy.ROSInterruptException:
             pass
         rospy.spin()
-    elif mode == 1:
-        ROS_CLS = LaserDetROS(pipe_store, timestamps_path, mode)
-        ROS_CLS._seq_name = seq_name
-        ROS_CLS.visu = is_rviz_supported
-        ROS_CLS._dets_pub = rospy.Publisher(
+    elif MODE_CHOOSE == 1:
+        ROS_CLS = LaserDetROS(Pipe_Store, Timestamps_Path, MODE_CHOOSE)
+        ROS_CLS.Seq_Name = Seq_Name
+        ROS_CLS.visu = IS_RIVZ_SUPPORTED
+        ROS_CLS.dets_pub = rospy.Publisher(
             "/laser_det_detections", PoseArray, queue_size=1, latch=False
         )
 
-        ROS_CLS._rviz_pub = rospy.Publisher(
+        ROS_CLS.rviz_pub = rospy.Publisher(
             "/laser_det_rviz", Marker, queue_size=1, latch=False
         )
         Output_save_dir = os.path.realpath(
