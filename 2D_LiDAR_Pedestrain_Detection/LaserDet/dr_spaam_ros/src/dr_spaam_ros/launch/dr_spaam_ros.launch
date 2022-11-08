@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="dr_spaam_ros" type="node.py" name="dr_spaam_ros" output="screen">
+  </node>
+</launch>
