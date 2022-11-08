@@ -134,25 +134,6 @@ class LaserDetROS:
 
 
     @classmethod
-    def _init(self):
-        """
-        @brief      Initialize ROS connection.
-        """
-        # Publisher
-        self.dets_pub = rospy.Publisher(
-            "/laser_det_detections", PoseArray, queue_size=1, latch=False
-        )
-        self.rviz_pub = rospy.Publisher(
-            "/laser_det_rviz", Marker, queue_size=1, latch=False
-        )
-
-        # Subscriber
-        self._scan_sub = rospy.Subscriber(
-            "/segway/scan_multi", LaserScan, self._scan_callback, queue_size=1
-        )
-
-
-    @classmethod
     def sigmoid(self, z):
         return 1.0 / (1.0 + np.exp(-z))
 
@@ -169,6 +150,24 @@ class LaserDetROS:
         dets_phi = tmp_phi + ang
         dets_r = tmp_y / np.cos(tmp_phi)
         return dets_r, dets_phi
+
+
+    def _init(self):
+        """
+        @brief      Initialize ROS connection.
+        """
+        # Publisher
+        self.dets_pub = rospy.Publisher(
+            "/laser_det_detections", PoseArray, queue_size=1, latch=False
+        )
+        self.rviz_pub = rospy.Publisher(
+            "/laser_det_rviz", Marker, queue_size=1, latch=False
+        )
+
+        # Subscriber
+        self._scan_sub = rospy.Subscriber(
+            "/segway/scan_multi", LaserScan, self._scan_callback, queue_size=1
+        )
 
 
     def nms(

@@ -17,8 +17,9 @@ import stat
 import sys
 import time
 import argparse
+import shutil
 from pprint import pprint
-import rospy
+
 from dr_spaam_ros import LaserDetROS, detections_to_pose_array, detections_to_rviz_marker
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Point, Pose, PoseArray
@@ -28,7 +29,7 @@ from StreamManagerApi import StreamManagerApi, MxDataInput, StringVector
 from StreamManagerApi import InProtobufVector, MxProtobufIn
 import MxpiDataType_pb2 as MxpiDataType
 import numpy as np
-import shutil
+import rospy
 import matplotlib.pyplot as plt
 
 from srcs.utils.utils import trim_the_scans
