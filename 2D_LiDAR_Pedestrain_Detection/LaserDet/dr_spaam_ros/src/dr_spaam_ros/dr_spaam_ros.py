@@ -152,24 +152,6 @@ class LaserDetROS:
         return dets_r, dets_phi
 
 
-    def _init(self):
-        """
-        @brief      Initialize ROS connection.
-        """
-        # Publisher
-        self.dets_pub = rospy.Publisher(
-            "/laser_det_detections", PoseArray, queue_size=1, latch=False
-        )
-        self.rviz_pub = rospy.Publisher(
-            "/laser_det_rviz", Marker, queue_size=1, latch=False
-        )
-
-        # Subscriber
-        self._scan_sub = rospy.Subscriber(
-            "/segway/scan_multi", LaserScan, self._scan_callback, queue_size=1
-        )
-
-
     def nms(
         self, scan_grid, phi_grid, pred_cls, pred_reg, min_dist=0.5
         ):
@@ -402,6 +384,23 @@ class LaserDetROS:
             fig.savefig(fig_file)
             plt.close(fig)
 
+
+    def _init(self):
+        """
+        @brief      Initialize ROS connection.
+        """
+        # Publisher
+        self.dets_pub = rospy.Publisher(
+            "/laser_det_detections", PoseArray, queue_size=1, latch=False
+        )
+        self.rviz_pub = rospy.Publisher(
+            "/laser_det_rviz", Marker, queue_size=1, latch=False
+        )
+
+        # Subscriber
+        self._scan_sub = rospy.Subscriber(
+            "/segway/scan_multi", LaserScan, self._scan_callback, queue_size=1
+        )
 
 
 def detections_to_rviz_marker(dets_xy, dets_cls):
