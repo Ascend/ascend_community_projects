@@ -13,7 +13,7 @@
         "mxpi_tensorinfer0": {
             "props": {
                 "dataSource": "appsrc0",
-                "modelPath": "../convert/yolact_second.om"
+                "modelPath": "./yolact_second.om"
             },  
             "factory": "mxpi_tensorinfer",
             "next": "mxpi_dataserialize0"
