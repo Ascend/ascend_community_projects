@@ -337,22 +337,7 @@ class LaserDetROS:
         pred_cls_sigmoid = self._sigmoid(pred_cls.squeeze())
         dets_xy, dets_cls, inst_mask = self.nms(scans[-1], self.scan_phi, pred_cls_sigmoid, pred_reg.squeeze())
         print("[DrSpaamROS] End-to-end inference time: %f" % (t - time.time()))
-        '''
-        # dirty fix: save dets to file as roslaunch won't automatively terminate
-        if dets_cls is None:
-            dets_cls = np.ones(len(dets_xy), dtype=np.float32)
-        # occluded for gts only
-        occluded = np.zeros(len(dets_xy), dtype=np.int32)
-        long_str = ""
-        for cls, xy, occ in zip(dets_cls, dets_xy, occluded):
-            long_str += f"Pedestrian 0 {occ} 0 0 0 0 0 0 0 0 0 {xy[0]} {xy[1]} 0 0 {cls}\n"
-        long_str = long_str.strip("\n")
-        txt_name = f"outputs/detections/{self.seq_name}/{str(frame_id).zfill(6)}.txt"
-        det_fname = os.path.join(output_save_dir, txt_name)
-        os.makedirs(os.path.dirname(det_fname), exist_ok=True)
-        with os.fdopen(os.open(det_fname, FLAGS, MODES), "w") as fdo:
-            fdo.write(long_str)
-        '''
+
         # confidence threshold (for visulization ONLY)
         conf_mask = (dets_cls >= self.conf_thresh).reshape(-1)
         dets_xy = dets_xy[conf_mask]
