@@ -404,24 +404,24 @@ class LaserDetROS:
 
 
 def detections_to_rviz_marker(dets_xy, dets_cls):
-    msg = Marker()
-    msg.action = Marker.ADD
-    msg.ns = "dr_spaam_ros" # name_space
-    msg.id = 0
-    msg.type = Marker.LINE_LIST
+    message = Marker()
+    message.action = Marker.ADD
+    message.ns = "dr_spaam_ros" # name_space
+    message.id = 0
+    message.type = Marker.LINE_LIST
 
     # set quaternion so that RViz does not give warning
-    msg.pose.orientation.x = 0.0
-    msg.pose.orientation.y = 0.0
-    msg.pose.orientation.z = 0.0
-    msg.pose.orientation.w = 1.0
+    message.pose.orientation.x = 0.0
+    message.pose.orientation.y = 0.0
+    message.pose.orientation.z = 0.0
+    message.pose.orientation.w = 1.0
 
-    msg.scale.x = 0.03  # line width
-    # red color
-    msg.color.r = 1.0
-    msg.color.a = 1.0
+    message.scale.x = 0.03  # line width
+    # color in red
+    message.color.r = 1.0
+    message.color.a = 1.0
 
-    # circle
+    # draw a circle
     r = 0.4
     ang = np.linspace(0, 2 * np.pi, 20)
     xy_offsets = r * np.stack((np.cos(ang), np.sin(ang)), axis=1)
@@ -430,20 +430,20 @@ def detections_to_rviz_marker(dets_xy, dets_cls):
     for d_xy, d_cls in zip(dets_xy, dets_cls):
         for i in range(len(xy_offsets) - 1):
             # start point of a segment
-            p0 = Point()
-            p0.x = d_xy[0] + xy_offsets[i, 0]
-            p0.y = d_xy[1] + xy_offsets[i, 1]
-            p0.z = 0.0
-            msg.points.append(p0)
+            point_0 = Point()
+            point_0.x = d_xy[0] + xy_offsets[i, 0]
+            point_0.y = d_xy[1] + xy_offsets[i, 1]
+            point_0.z = 0.0
+            message.points.append(point_0)
 
             # end point
-            p1 = Point()
-            p1.x = d_xy[0] + xy_offsets[i + 1, 0]
-            p1.y = d_xy[1] + xy_offsets[i + 1, 1]
-            p1.z = 0.0
-            msg.points.append(p1)
+            point_1 = Point()
+            point_1.x = d_xy[0] + xy_offsets[i + 1, 0]
+            point_1.y = d_xy[1] + xy_offsets[i + 1, 1]
+            point_1.z = 0.0
+            message.points.append(point_1)
 
-    return msg
+    return message
 
 
 def detections_to_pose_array(dets_xy, dets_cls):
