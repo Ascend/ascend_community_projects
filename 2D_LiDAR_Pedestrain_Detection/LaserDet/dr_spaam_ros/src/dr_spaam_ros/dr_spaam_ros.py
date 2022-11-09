@@ -404,10 +404,6 @@ class LaserDetROS:
 
 
 def detections_to_rviz_marker(dets_xy, dets_cls):
-    """
-    @brief     Convert detection to RViz marker msg. Each detection is marked as
-               a circle approximated by line segments.
-    """
     msg = Marker()
     msg.action = Marker.ADD
     msg.ns = "dr_spaam_ros" # name_space
@@ -451,33 +447,27 @@ def detections_to_rviz_marker(dets_xy, dets_cls):
 
 
 def detections_to_pose_array(dets_xy, dets_cls):
-    pose_array = PoseArray()
+    pose_array_1 = PoseArray()
     for d_xy, d_cls in zip(dets_xy, dets_cls):
         # Detector uses following frame convention:
         # x forward, y rightward, z downward, phi is angle w.r.t. x-axis
-        p = Pose()
-        p.position.x = d_xy[0]
-        p.position.y = d_xy[1]
-        p.position.z = 0.0
-        pose_array.poses.append(p)
+        p_tmp = Pose()
+        p_tmp.position.z = 0.0
+        p_tmp.position.x = d_xy[0]
+        p_tmp.position.y = d_xy[1]
+        pose_array_1.poses.append(p_tmp)
 
-    return pose_array
-
-
-def read_subscriber_param(name):
-    """
-    @brief      Convenience function to read subscriber parameter.
-    """
-    topic = rospy.get_param("~subscriber/" + name + "/topic")
-    queue_size = rospy.get_param("~subscriber/" + name + "/queue_size")
-    return topic, queue_size
+    return pose_array_1
 
 
-def read_publisher_param(name):
-    """
-    @brief      Convenience function to read publisher parameter.
-    """
-    topic = rospy.get_param("~publisher/" + name + "/topic")
-    queue_size = rospy.get_param("~publisher/" + name + "/queue_size")
-    latch = rospy.get_param("~publisher/" + name + "/latch")
-    return topic, queue_size, latch
+def read_subscriber_param(name_tmp):
+    topic_tmp = rospy.get_param("~subscriber/" + name_tmp + "/topic")
+    queue_size_tmp = rospy.get_param("~subscriber/" + name_tmp + "/queue_size")
+    return topic_tmp, queue_size_tmp
+
+
+def read_publisher_param(name_tmp):
+    topic_tmp = rospy.get_param("~publisher/" + name_tmp + "/topic")
+    queue_size_tmp = rospy.get_param("~publisher/" + name_tmp + "/queue_size")
+    latch_tmp = rospy.get_param("~publisher/" + name_tmp + "/latch")
+    return topic_tmp, queue_size_tmp, latch_tmp
