@@ -167,22 +167,21 @@ class _SequenceHandle:
             self.pc_labels = json.load(f)["labels"]
 
         # load 2D annotation
-        im_label_fname = os.path.join(data_path,
+        im_label_fname_1 = os.path.join(data_path,
                             "labels",
                             "labels_2d_stitched",
                             f"{self.sequence}.json")
-        with open(im_label_fname, "r") as f:
+        with open(im_label_fname_1, "r") as f:
             self.im_labels = json.load(f)["labels"]
 
         # load 2D detection
-        im_det_fname = os.path.join(data_path,
+        im_det_fname_1 = os.path.join(data_path,
                             "detections",
                             "detections_2d_stitched",
                             f"{self.sequence}.json")
-        with open(im_det_fname, "r") as f:
+        with open(im_det_fname_1, "r") as f:
             self.im_dets = json.load(f)["detections"]
 
-        # find out which frames has 3D annotation
         self.frames_labeled = []
         for frame in self.frames:
             pc_file = os.path.basename(frame["pc_frame"]["pointclouds"][0]["url"].replace("\\", "/"))
@@ -190,30 +189,26 @@ class _SequenceHandle:
             if pc_file in self.pc_labels:
                 self.frames_labeled.append(frame)
 
-        self.jrdb_frames = (
-            self.frames_labeled
-        )
+        self.jrdb_frames = (self.frames_labeled)
 
 
     def __len__(self):
         return len(self.jrdb_frames)
 
     def __getitem__(self, idx):
-        # NOTE It's important to use a copy as the return dict, otherwise the
-        # original dict in the data handle will be corrupted
-        jrdb_frame = copy.deepcopy(self.jrdb_frames[idx])
+        jrdb_frame_tmp = copy.deepcopy(self.jrdb_frames[idx])
 
         if self._is_unlabeled_frames:
-            frame_handle = _FrameHandle(jrdb_frame, [], [], [])
-            return frame_handle     # frame, [], [], []
+            frame_handle = _FrameHandle(jrdb_frame_tmp, [], [], [])
+            return frame_handle   
 
-        pc_load = os.path.basename(jrdb_frame["pc_frame"]["pointclouds"][0]["url"].replace("\\", "/"))
-        pc_anns = copy.deepcopy(self.pc_labels[pc_load])
+        pc_load_tmp = os.path.basename(jrdb_frame_tmp["pc_frame"]["pointclouds"][0]["url"].replace("\\", "/"))
+        pc_anns_tmp = copy.deepcopy(self.pc_labels[pc_load_tmp])
 
-        img_file = os.path.basename(jrdb_frame["im_frame"]["cameras"][0]["url"].replace("\\", "/"))
-        img_anns = copy.deepcopy(self.im_labels[img_file])
-        img_dets = copy.deepcopy(self.im_dets[img_file])
+        image_file = os.path.basename(jrdb_frame_tmp["im_frame"]["cameras"][0]["url"].replace("\\", "/"))
+        image_anns = copy.deepcopy(self.im_labels[image_file])
+        image_dets = copy.deepcopy(self.im_dets[image_file])
 
-        frame_handle = _FrameHandle(jrdb_frame, pc_anns, img_anns, img_dets)
+        frame_handle_tmp = _FrameHandle(jrdb_frame_tmp, pc_anns_tmp, image_anns, image_dets)
 
-        return frame_handle
+        return frame_handle_tmp
