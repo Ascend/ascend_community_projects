@@ -81,9 +81,9 @@ eg：推荐系统为ubuntu 18.04或centos 7.6，环境依赖软件和版本如�
 在运行项目前，需要设置环境变量：
 ```bash
 MindSDK 环境变量：
-.SDK−path/setenv.sh
+. SDK−path/setenv.sh
 CANN环境变量：
-.{ascend-toolkit-path}/set_env.sh
+. {ascend-toolkit-path}/set_env.sh
 环境变量介绍
 SDK-path: mxVision SDK 安装路径
 ascend-toolkit-path: CANN 安装路径
@@ -100,7 +100,8 @@ ascend-toolkit-path: CANN 安装路径
 
 > 仓库链接：https://github.com/bubbliiiing/yolact-pytorch
 
-下载代码与原pth模型文件后，在predict.py文件的21行处将mode设置为“export_onnx”，并执行python3 predict.py，即可自动转化得到onnx模型。
+下载代码与原pth模型文件后，将其放置并命名如'model_data/yolact_weights_coco.pth'。模型路径也可在yolact.py的32行修改。在predict.py文件的21行处将mode设置为“export_onnx”，并执行python3 predict.py，即可自动转化得到onnx模型。
+> 模型链接：https://github.com/bubbliiiing/yolact-pytorch/releases/download/v1.0/yolact_weights_coco.pth
 
 **步骤3** 将转化后的Yolact模型onnx文件存放至`./convert`。
 
@@ -116,7 +117,7 @@ ascend-toolkit-path: CANN 安装路径
 bash convert_om.sh  [INPUT_ONNX_PATH]  [OUTPUT_OM_PATH_NAME]
 ```
 
-执行完模型转换脚本后，会生成相应的om模型文件。 
+执行完模型转换脚本后，会生成相应的om模型文件。 得到om模型后在/model_data/yolact.pipeline中16行中修改modelPath,指向om模型文件所在路径。
 
 > 模型转换使用了ATC工具，如需更多信息请参考: https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Yolact/yolact_second.om
 
@@ -124,7 +125,7 @@ bash convert_om.sh  [INPUT_ONNX_PATH]  [OUTPUT_OM_PATH_NAME]
 
 **步骤1** 
 
-将需要推理的图像放到文件夹中
+将需要推理的图像放到文件夹中。
 
 **步骤2**
 
