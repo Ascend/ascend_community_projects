@@ -92,21 +92,15 @@ ascend-toolkit-path: CANN 安装路径
 
 ## 3 模型转换
 
-**步骤1** 从Yolact代码仓库中下载源码与已训练的pth模型文件。
+**步骤1** 下载Yolact的onnx格式的模型。
 
-> 模型链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Yolact/yolact_weights_coco.pth
-
-**步骤2** 将pth模型文件转换成onnx，利用原仓库中pytorch代码可以实此功能。
-
-> 仓库链接：https://github.com/bubbliiiing/yolact-pytorch
-
-下载代码与原pth模型文件后，将其放置并命名如'model_data/yolact_weights_coco.pth'。模型路径也可在yolact.py的32行修改。在predict.py文件的21行处将mode设置为“export_onnx”，并执行python3 predict.py，即可自动转化得到onnx模型。
-> 模型链接：https://github.com/bubbliiiing/yolact-pytorch/releases/download/v1.0/yolact_weights_coco.pth
-
-**步骤3** 将转化后的Yolact模型onnx文件存放至`./convert`。
+> 模型链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/Yolact/models.onnx
 
 
-**步骤4** 模型转换
+**步骤2** 将下载得到的Yolact模型onnx文件存放至`./convert`。
+
+
+**步骤3** 模型转换
 在`./convert`目录下执行以下命令。
 
 ```bash
@@ -177,3 +171,7 @@ python3 main.py
 |   bbox mAP 0.5   |    52.0%   |
 |    segm mAP 0.5:0.95     |    27.3%   |
 |    segm mAP 0.5     |    47.7%    |
+
+对比原代码仓库的精度如下：
+![result](./images/result.png)
+可见，推理结果与原仓库代码的推理结果完全一致。
