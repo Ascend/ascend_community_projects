@@ -1,0 +1,5 @@
+# This file is originally from https://github.com/pjreddie/darknet/blob/master/data/coco.names
+person
+non motor-vehicle
+motor-vehicle
+face
