@@ -17,53 +17,50 @@ import numpy as np
 
 
 # define the arguments
-def get_arguments():
-    parser = argparse.ArgumentParser(description="Attribute Network")
-    parser.add_argument("--gt-file", type=str,
-                        help="ground truth file path.")
-    parser.add_argument("--pred-file", type=str,
-                        help="prediction file path.")
-    parser.add_argument("--path-shift", type=int, default=0,
-                        help="prediction file path.")
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Calculate AttrRecognition infer result's accuracy")
+
+    parser.add_argument("--pred-file", type=str, default="infer_result.txt",
+                        help="infer result file's path.")
+    parser.add_argument("--gt-file", type=str, default="test_full.txt",
+                        help="ground truth file's path.")
+
     return parser.parse_args()
 
-
-def cal_attr():
-    args = get_arguments()
-    path_shift = args.path_shift
-    print(args)
-    gt_attr_file = args.gt_file
-    pred_file = args.pred_file
-    # the number of the attribute is 40
-    attr_num = 40
-    gt_f = open(gt_attr_file, 'r')
-    gt_line = gt_f.readline().strip().split()
-    pred_f = open(pred_file, 'r')
-    pred_line = pred_f.readline().strip().split()
-    # count the same prediction
-    same_count = np.zeros(attr_num, dtype=np.int32)
-    valid_sum = 0
-    while pred_line:
-        valid_sum += 1
-        for i in range(attr_num):
-            pred_attr = int(pred_line[1 + i])
-            gt_attr = int(gt_line[path_shift + 1 + i])
-            if pred_attr == gt_attr:
-                same_count[i] += 1
-        gt_line = gt_f.readline().strip().split()
-        pred_line = pred_f.readline().strip().split()
-    print(valid_sum)
-    result = np.zeros(attr_num)
-    cur_index = 0
-    for v in same_count:
-        # percentage calculation
-        print(v * 1.0 / valid_sum * 100)
-        result[cur_index] = v * 1.0 / valid_sum * 100
-        cur_index += 1
-        # calculate the mean result
-    print('mean result', np.mean(result))
-    return result
-
-
 if __name__ == '__main__':
-    cal_attr()
+    PATH_SHIFT = 0
+    ATTR_NUM = 40  # the number of all attributes is 40
+
+    args = parse_args()
+
+    gt_file_path = args.gt_file
+    pred_file_path = args.pred_file
+
+    gt_file = open(gt_file_path, 'r')
+    pred_file = open(pred_file_path, 'r')
+
+    gt_line = gt_file.readline().strip().split()
+    pred_line = pred_file.readline().strip().split()
+
+    equal_nums = np.zeros(ATTR_NUM, dtype=np.int32)
+    sum = 0
+    while pred_line:
+        sum += 1
+        for i in range(ATTR_NUM):
+            pred_value = int(pred_line[1 + i])
+            gt_value = int(gt_line[PATH_SHIFT + 1 + i])
+            if pred_value == gt_value:
+                equal_nums[i] += 1
+
+        gt_line = gt_file.readline().strip().split()
+        pred_line = pred_file.readline().strip().split()
+
+    result = np.zeros(ATTR_NUM)
+    index = 0
+    for value in equal_nums:
+        result[index] = value * 1.0 / sum * 100
+        index += 1
+
+    # calculate the mean result
+    print('mean result', np.mean(result))
