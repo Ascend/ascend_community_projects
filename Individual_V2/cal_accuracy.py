@@ -44,9 +44,9 @@ if __name__ == '__main__':
     pred_line = pred_file.readline().strip().split()
 
     equal_nums = np.zeros(ATTR_NUM, dtype=np.int32)
-    sum = 0
+    EVAL_SUM = 0
     while pred_line:
-        sum += 1
+        EVAL_SUM += 1
         for i in range(ATTR_NUM):
             pred_value = int(pred_line[1 + i])
             gt_value = int(gt_line[PATH_SHIFT + 1 + i])
@@ -57,10 +57,9 @@ if __name__ == '__main__':
         pred_line = pred_file.readline().strip().split()
 
     result = np.zeros(ATTR_NUM)
-    index = 0
+    INDEX = 0
     for value in equal_nums:
-        result[index] = value * 1.0 / sum * 100
-        index += 1
+        result[INDEX] = value * 1.0 / EVAL_SUM * 100
+        INDEX += 1
 
-    # calculate the mean result
     print('mean result', np.mean(result))
