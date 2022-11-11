@@ -118,7 +118,7 @@ int i2c_ioctl_data_create(int file, char read_write, unsigned char command, int 
 	args.data = data;
 
 	int ret = ioctl(fd_smbus, I2C_SMBUS, &args);
-  if (ret){
+  if (ret) {
     ERROR_LOG("fail ioctl I2C_SMBUS");
   }
 	return ret;
