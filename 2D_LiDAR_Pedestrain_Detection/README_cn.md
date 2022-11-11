@@ -233,8 +233,11 @@ $(PROJECT_DIR)
 ...
 ```
 数据集下载地址：
-- [DROW dataset](https://github.com/VisualComputingInstitute/DROW)
-- [JackRabbot dataset](https://jrdb.stanford.edu/)
+- [DROW dataset](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/DROWv2-data.zip)
+- [JackRabbot dataset - train](https://jrdb.erc.monash.edu/static/downloads/jrdb_train.zip)
+- [JackRabbot dataset - train with activity](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/train_dataset_with_activity/train_dataset_with_activity.zip)
+- [jrdb22_test.zip](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/test_dataset_without_labels/jrdb22_test.zip)
+- [JackRabbot dataset - test]( https://jrdb.erc.monash.edu/static/downloads/jrdb_test.zip)
 
 <em>5.1.2 预处理 JRDB 数据集</em>
 
