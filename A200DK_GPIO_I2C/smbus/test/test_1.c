@@ -31,7 +31,7 @@ int main(void)
     res = read_byte_data(address, reg);
     printf("read_byte_data(0x68, 0x00): %#x\n", res);
     res = read_word_data(address, reg);
-    printf("read_word_data(0x68, 0x00): %#x\n", res); 
+    printf("read_word_data(0x68, 0x00): %#x\n", res);
     i2c_2_close();
     return 0;
 }
