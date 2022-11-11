@@ -103,7 +103,7 @@ int get_funcs(void)
     if (ioctl(fd_smbus, I2C_FUNCS, f) < 0)
     {
         ERROR_LOG("fail ioctl I2C_FUNCS");
-		return -1;
+        return -1;
     }
     return f;
 }
@@ -118,6 +118,9 @@ int i2c_ioctl_data_create(int file, char read_write, unsigned char command, int 
 	args.data = data;
 
 	int ret = ioctl(fd_smbus, I2C_SMBUS, &args);
+  if (ret){
+    ERROR_LOG("fail ioctl I2C_SMBUS");
+  }
 	return ret;
 }
 
@@ -350,10 +353,7 @@ unsigned char *block_process_call(int address, unsigned char command, unsigned c
     }
 	else
     {
-		for (i = 1; i <= data.block[0]; i++)
-        {
-			values[i-1] = data.block[i];
-        }
+		memcpy(values, (data.block + 1), length);
 		return values;
 	}
 }
