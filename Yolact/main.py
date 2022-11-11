@@ -27,6 +27,7 @@ from utils.anchors import get_anchors
 from utils.utils_map import MakeJson, prep_metrics
 from utils.utils import cvtcolor, resize_image, get_classes, get_coco_label_map, preprocess_input
 import cv2
+import shutil
 import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from PIL import Image
@@ -241,6 +242,8 @@ def evalimage(stream_manager_api, path:str, save_path:str=None):
 
 
 def val(val_args):
+    if os.path.exists('./map_out'):
+        shutil.rmtree('./map_out')
     # init streams
     str_man_api = StreamManagerApi()
     ret = str_man_api.InitManager()
