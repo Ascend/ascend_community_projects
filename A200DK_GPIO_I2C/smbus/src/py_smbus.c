@@ -15,6 +15,7 @@
 */
 
 #include "Python.h"
+#include <string.h>
 #include "smbus.h"
 
 static PyObject *py_i2c_2_init(PyObject *self, PyObject *args) {
@@ -111,25 +112,26 @@ static PyObject *py_write_word_data(PyObject *self, PyObject *args) {
 
 static PyObject *py_read_block_data(PyObject *self, PyObject *args) {
   int address, cmd;
-  char *result;
+  unsigned char *result;
   unsigned char command;
   if (!PyArg_ParseTuple(args, "ii", &address, &cmd)) {
     return NULL;
   }
   command = (unsigned char)cmd;
   result = read_block_data(address, command);
-  return Py_BuildValue("s", result);
+  return Py_BuildValue("[i]", result);
 }
 
 static PyObject *py_write_block_data(PyObject *self, PyObject *args) {
-  int address, cmd, result;
-  char *value;
+  int address, cmd, val[I2C_SMBUS_BLOCK_MAX], result;
+  unsigned char *values;
   unsigned char command;
-  if (!PyArg_ParseTuple(args, "iis", &address, &cmd, &value)) {
+  if (!PyArg_ParseTuple(args, "ii[i]", &address, &cmd, &val)) {
     return NULL;
   }
   command = (unsigned char)cmd;
-  result = write_block_data(address, command, value);
+  memcpy(values, val, sizeof(val));
+  result = write_block_data(address, command, values);
   return Py_BuildValue("i", result);
 }
 
@@ -156,39 +158,45 @@ static PyObject *py_process_call(PyObject *self, PyObject *args) {
 
 static PyObject *py_read_i2c_block_data(PyObject *self, PyObject *args) {
   int address, cmd, len;
-  char *result;
   unsigned char command, length;
   if (!PyArg_ParseTuple(args, "iii", &address, &cmd, &len)) {
     return NULL;
   }
+  unsigned char *result = (char*)malloc(sizeof(char) * len);
+  memset(result, '\0', sizeof(result));
   command = (unsigned char)cmd;
   length = (unsigned char)len;
   result = read_i2c_block_data(address, command, length);
-  return Py_BuildValue("s", result);
+  PyObject *result_list = PyList_New(0);
+  for (int i = 0; i < len; i++)
+    PyList_Append(result_list, result[i]);
+  return result_list;
 }
 
 static PyObject *py_write_i2c_block_data(PyObject *self, PyObject *args) {
-  int address, cmd, result;
-  char *value;
+  int address, cmd, val[I2C_SMBUS_BLOCK_MAX], result;
+  unsigned char *values;
   unsigned char command;
-  if (!PyArg_ParseTuple(args, "iis", &address, &cmd, &value)) {
+  if (!PyArg_ParseTuple(args, "ii[i]", &address, &cmd, &val)) {
     return NULL;
   }
   command = (unsigned char)cmd;
-  result = write_i2c_block_data(address, command, value);
+  memcpy(values, val, sizeof(val));
+  result = write_i2c_block_data(address, command, values);
   return Py_BuildValue("i", result);
 }
 
 static PyObject *py_block_process_call(PyObject *self, PyObject *args) {
-  int address, cmd;
-  char *value, *result;
+  int address, cmd, val[I2C_SMBUS_BLOCK_MAX];
+  unsigned char *values, *result;
   unsigned char command;
-  if (!PyArg_ParseTuple(args, "iis", &address, &cmd, &value)) {
+  if (!PyArg_ParseTuple(args, "ii[i]", &address, &cmd, &val)) {
     return NULL;
   }
   command = (unsigned char)cmd;
-  result = block_process_call(address, command, value);
-  return Py_BuildValue("s", result);
+  memcpy(values, val, sizeof(val));
+  result = block_process_call(address, command, values);
+  return Py_BuildValue("[i]", result);
 }
 
 static PyMethodDef smbus_methods[] = {
