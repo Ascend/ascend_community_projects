@@ -153,7 +153,7 @@ python-lzf | 0.2.4 | 压缩/解压缩.pcd格式的点云数据。
 ## 4 模型转换
 
 本项目使用的模型checkpoints可通过[here](
-https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/Archive_pth_om_petit.zip)获取。压缩文件下载后解压，checkpoints文件后缀是.pth，下载后先将checkpoints转换成onnx格式，再使用模型转换工具[ATC](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)将onnx转换成om模型。
+https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/Archive_pth_om_v2.zip)获取。压缩文件下载后解压，checkpoints文件后缀是.pth，下载后先将checkpoints转换成onnx格式，再使用模型转换工具[ATC](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)将onnx转换成om模型。
 
 ### 4.1 DROW3 模型转换
 
@@ -283,6 +283,7 @@ $ cd $(PROJECT_PATH)
 ### 7.1 性能测试
 执行 __6 编译与运行__ 中 S1-S3步骤完成准备工作，执行以下命令：
 首先确保lidar_quicktest.sh中的python命令行如下：
+
 >```bash
 > # lidar_quicktest.sh
 >nohup python -u release_lidar_speedtest.py --data_path $1 --pipe_store $2 --split $3 --seq_name $4
