@@ -23,7 +23,6 @@
 */
 int main(void)
 {
-    int res;
     int gpio = 7;
     gpio_init();
     printf("setup gpio%d INTPUT\n", gpio);
