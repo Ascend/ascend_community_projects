@@ -14,47 +14,47 @@
  * limitations under the License.
  */
 
+#include <RetinafaceDetection.h>
+
 #include <iostream>
 #include <vector>
-#include <RetinafaceDetection.h>
+
 #include "MxBase/Log/Log.h"
 
 std::string imgPath;
-void InitRetinafaceParam(InitParam& initParam)
-{
-    initParam.deviceId = 0;
-    initParam.checkTensor = true;
-    initParam.modelPath = "./model/newRetinaface.om";
-    initParam.classNum = 1;
-    initParam.labelPath = "";
-    initParam.ImagePath = imgPath;
+void InitRetinafaceParam(InitParam& initParam) {
+  initParam.deviceId = 0;
+  initParam.checkTensor = true;
+  initParam.modelPath = "./model/newRetinaface.om";
+  initParam.classNum = 1;
+  initParam.labelPath = "";
+  initParam.ImagePath = imgPath;
 }
 
-int main(int argc, char* argv[])
-{
-    if (argc <= 1) {
-        LogWarn << "Please input image path, such as './RetinafacePostProcess test.jpg'.";
-        return APP_ERR_OK;
-    }
-    imgPath = argv[1];
-
-    InitParam initParam;
-    InitRetinafaceParam(initParam);
-    auto Retinaface = std::make_shared<RetinafaceDetection>();
-
-    APP_ERROR ret = Retinaface->Init(initParam);
-    if (ret != APP_ERR_OK) {
-        LogError << "RetinafaceDetection init failed, ret=" << ret << ".";
-        return ret;
-    }
-
-    
-    ret = Retinaface->Process(imgPath);
-    if (ret != APP_ERR_OK) {
-        LogError << "RetinafaceDetection process failed, ret=" << ret << ".";
-        Retinaface->DeInit();
-        return ret;
-    }
-    Retinaface->DeInit();
+int main(int argc, char* argv[]) {
+  if (argc <= 1) {
+    LogWarn << "Please input image path, such as './RetinafacePostProcess "
+               "test.jpg'.";
     return APP_ERR_OK;
+  }
+  imgPath = argv[1];
+
+  InitParam initParam;
+  InitRetinafaceParam(initParam);
+  auto Retinaface = std::make_shared<RetinafaceDetection>();
+
+  APP_ERROR ret = Retinaface->Init(initParam);
+  if (ret != APP_ERR_OK) {
+    LogError << "RetinafaceDetection init failed, ret=" << ret << ".";
+    return ret;
+  }
+
+  ret = Retinaface->Process(imgPath);
+  if (ret != APP_ERR_OK) {
+    LogError << "RetinafaceDetection process failed, ret=" << ret << ".";
+    Retinaface->DeInit();
+    return ret;
+  }
+  Retinaface->DeInit();
+  return APP_ERR_OK;
 }
