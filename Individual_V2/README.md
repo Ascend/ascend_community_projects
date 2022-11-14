@@ -27,10 +27,10 @@ MindX SDK安装前准备可参考《用户指南》中的[安装教程](https://
 |----|--------|-------------------------------------------------|
 | 1  | 图像输入   | 将图像文件数据读取进内存                            |
 | 2  | 人脸检测   | 利用yolov4的检测模型，检测出图片中人脸                 |
-| 3  | 关键点提取  | 通过人脸关键点提取模型，获取人脸图片中的人脸关键点数据。      |
+| 3  | 关键点提取  | 通过人脸关键点提取模型，获取人脸图片中的人脸关键点数据      |
 | 4  | 人脸对齐   | 通过人脸关键点实现人脸对齐          |
-| 5  | 人脸属性识别 | 通过人脸属性识别模型对人脸对齐后的图片提取人脸属性，选取的模型为caffe框架下的FaceAttribute-FAN，需要使用转换工具转化。 |
-| 6  | 结果输出   | 将人脸属性识别的结果输出。           |
+| 5  | 人脸属性识别 | 通过人脸属性识别模型对人脸对齐后的图片提取人脸属性，选取的模型为caffe框架下的FaceAttribute-FAN，需要使用转换工具转化 |
+| 6  | 结果输出   | 将人脸属性识别的结果输出           |
 
 ### 1.4 代码目录结构与说明
 
@@ -67,6 +67,17 @@ MindX SDK安装前准备可参考《用户指南》中的[安装教程](https://
 └── test.jpg // 测试图片(需自行准备)
 ```
 
+### 1.5 技术实现流程图
+![pic](./README_IMAGES/flow_chart.png)
+
+### 1.6 特性及适用场景
+
+本案例可以满足目标属性识别，但同时对输入的图像有以下限制:
+
+1.  输入图像要求为jpg编码格式
+2.  输入图像要求为彩色的包含人脸的半身图像。本项目在半身正面肖像照表现最佳。其中，图像要求正脸或者微侧脸，允许遮挡嘴部（戴口罩），不支持遮挡鼻子以上的脸部照片，允许佩戴眼镜，但不支持过多遮挡面部。完全侧脸的图像可能存在问题。最大支持范围半身照，全身照可能由于人脸尺寸问题导致识别错误。如果是大头照，需要填充背景区域以达到人脸能够精确检测的目的，要求人脸必须全部处于图像区域内，且占比不超过80%。
+3.  本项目支持的图像尺寸为32x32以上
+
 ## 2 环境依赖
 
 ### 2.1 软件版本
@@ -85,29 +96,23 @@ MindX SDK安装前准备可参考《用户指南》中的[安装教程](https://
 
 在编译运行项目前，需要设置环境变量：
 
-在CANN的安装目录和MindX SDK的安装目录可以找到**set_env.sh**,将其加入bashrc文件中。
+Mind SDK环境变量：
 
-```bash
-# 执行如下命令，打开.bashrc文件
-cd $HOME
-vi .bashrc
+. ${SDK-path}/set_env.sh
 
-# 在.bashrc文件中添加以下语句
-source ${CANN安装目录}/set_env.sh
-source ${MindX SDK安装目录}/set_env.sh
+CANN环境变量：
 
-# 保存退出.bashrc文件
-# 执行如下命令使环境变量生效
-source ~/.bashrc
+. ${ascend-toolkit-path}/set_env.sh
 
-# 查看环境变量
-env
-```
+环境变量介绍
 
+SDK-path：mxVision SDK安装路径
+
+ascend-toolkit-path：CANN安装路径
 
 ## 3 模型转换
 
-模型转换所需ATC工具环境搭建参考链接：https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0004.html
+模型转换所需ATC工具环境搭建参考链接：https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/600alpha001/infacldevg/atctool/atlasatc_16_0004.html
 
 本项目中用到的模型有：yolov4，face_quality_0605_b1.om，resnet50
 
@@ -117,7 +122,7 @@ face_quality_0605_b1.om模型下载链接：https://mindx.sdk.obs.cn-north-4.myh
 
 resnet50模型下载链接同上述face_quality_0605_b1.om模型下载链接。
 
-转换离线模型参考昇腾Gitee：https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html
+转换离线模型参考昇腾Gitee：https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/600alpha001/infacldevg/atctool/atlasatc_16_0005.html
 
 首先需要配置ATC环境，然后下载提供的模型和待转换模型的caffemodel以及prototxt文件等，放到models文件夹中，按需修改模型转换的cfg配置文件，cfg配置文件已经位于项目目录models下。
 
@@ -134,9 +139,9 @@ atc --input_shape="data:1,3,224,224" --weight="single.caffemodel" --input_format
 **步骤1**
 下载项目文件，以及数据集。数据集链接：https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/Individual/data.zip
 
-项目运行数据集为Img下img_celeba.7z，运行评测代码所需数据集为Img下img_align_celeba。
-将img_celeba.7z解压后，任意取出其中一张图片，命名为test.jpg，并放置于项目根目录下。
-在项目根目录新建CelebA文件夹，并将img_align_celeba放置于CelebA文件夹下，即CelebA/img_align_celeba。
+项目运行数据集为Img下img_celeba.7z里的分卷压缩包，运行评测代码所需数据集为Img下img_align_celeba.zip。
+将img_celeba.7z里的数据集分卷压缩包解压后，任意取出其中一张图片，命名为test.jpg，并放置于项目根目录下。
+在项目根目录新建CelebA文件夹，并将img_align_celeba.zip解压并放置于CelebA文件夹下，即CelebA/img_align_celeba。
 
 
 **步骤2**

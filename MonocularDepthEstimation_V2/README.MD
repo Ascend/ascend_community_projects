@@ -14,7 +14,18 @@ Atlas 200DK
 
 MindX SDK安装前准备可参考《用户指南》，[安装教程](https://gitee.com/ascend/mindxsdk-referenceapps/blob/master/docs/quickStart/1-1安装SDK开发套件.md)
 
-### 1.3 目录结构
+### 1.3 软件方案介绍
+本系统设计了不同的功能模块。主要流程为：读取图片后，将图片放缩至合适的尺寸，再利用Adabins模型推理输入图像的深度信息，然后使用OpenCV对推理的深度图进行归一化和色彩可视化，最后保存可视化的深度图。各模块功能描述如表1.1所示：
+
+表1.1 系统方案中各模块功能：
+| 序号 | 子系统    | 功能描述                           |
+|----|--------|-------------------------------------------------|
+| 1  | 图像输入   | 将图像文件数据读取进内存                            |
+| 2  | 深度信息估计   | 利用Adabins模型，估计输入图像的深度信息                 |
+| 3  | 后处理  | 适用OpenCV，对推理结果进行归一化和色彩可视化      |
+| 4  | 结果输出   | 将可视化的深度图保存           |
+
+### 1.4 目录结构
 ```
 |-------- dataset
 |           |---- full_set                          // 测试集图片(需自行准备)
@@ -38,6 +49,18 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 |-------- README.md                                 // ReadMe
 |-------- test.jpg                                  // 运行所需图片(需自行准备)
 ```
+
+### 1.5 技术实现流程图
+![pic](./README_IMAGES/flow_chart.png)
+
+### 1.6 特性及适用场景
+
+本案例可以满足单目深度估计，但同时对输入的图像有以下限制:
+
+1.  输入图像要求为jpg编码格式
+2.  输入图像要求为彩色的室内图像。
+
+
 ## 2 环境依赖
 
 ### 2.1 软件版本
@@ -59,24 +82,21 @@ MindX SDK安装前准备可参考《用户指南》，[安装教程](https://git
 
 ### 2.2 配置环境变量
 
-在CANN的安装目录和MindX SDK的安装目录可以找到**set_env.sh**,将其加入bashrc文件中。
+在编译运行项目前，需要设置环境变量：
 
-```bash
-# 执行如下命令，打开.bashrc文件
-cd $HOME
-vi .bashrc
+Mind SDK环境变量：
 
-# 在.bashrc文件中添加以下语句
-source ${CANN安装目录}/set_env.sh
-source ${MindX SDK安装目录}/set_env.sh
+. ${SDK-path}/set_env.sh
 
-# 保存退出.bashrc文件
-# 执行如下命令使环境变量生效
-source ~/.bashrc
+CANN环境变量：
 
-# 查看环境变量
-env
-```
+. ${ascend-toolkit-path}/set_env.sh
+
+环境变量介绍
+
+SDK-path：mxVision SDK安装路径
+
+ascend-toolkit-path：CANN安装路径
 
 ### 2.3 准备工作
 
