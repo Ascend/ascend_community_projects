@@ -12,6 +12,8 @@
 # limitations under the License.
 import math
 import torch
+import io
+import pickle
 import numpy as np
 
 from srcs.nets.drow_net import DrowNet
@@ -24,7 +26,7 @@ __all__ = ["Detector", "scans_to_cutout"]
 
 class Detector(object):
     def __init__(
-        self, ckpt_file, dataset="JRDB", model="DROW3", gpu=True, stride=1, panoramic_scan=False
+        self, ckpt_file, dataset, model="DROW3", gpu=True, stride=1, panoramic_scan=False
     ):
         """A warpper class around DROW3 or DR-SPAAM network for end-to-end inference.
 
@@ -35,7 +37,7 @@ class Detector(object):
             stride (int): Downsample scans for faster inference.
             panoramic_scan (bool): True if the scan covers 360 degree.
         """
-        self._device = gpu
+        self._device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self._stride = stride
         self._use_dr_spaam = model == "DR-SPAAM"
 
@@ -59,10 +61,10 @@ class Detector(object):
             self._model = DrSpaam(
                 dropout=0.5,
                 num_pts=56,
-                embedding_length=128,
+                embed_len=128,
                 alpha=0.5,
-                window_size=17,
-                panoramic_scan=panoramic_scan,
+                win_size=17,
+                pano_scan=panoramic_scan,
                 cls_loss=None,
             )
         else:
@@ -72,7 +74,8 @@ class Detector(object):
                 )
             )
 
-        ckpt = torch.load(ckpt_file)
+        ckpt = torch.load(ckpt_file, map_location=self._device) 
+        
         self._model.load_state_dict(ckpt["model_state"])
         self.model = self._model
         self._model.eval()
@@ -98,8 +101,6 @@ class Detector(object):
         )
         ct = torch.from_numpy(ct).float()
 
-        if self._device:
-            ct = ct.cuda()
         return ct.unsqueeze(dim=0)
 
 
