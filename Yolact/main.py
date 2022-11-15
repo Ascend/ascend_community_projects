@@ -20,14 +20,14 @@ import argparse
 import os
 import os.path as osp
 import colorsys
+import cv2
+import shutil
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from utils.utils_bbox import BBoxUtility
 from utils.anchors import get_anchors
 from utils.utils_map import MakeJson, prep_metrics
 from utils.utils import cvtcolor, resize_image, get_classes, get_coco_label_map, preprocess_input
-import cv2
-import shutil
 import numpy as np
 import MxpiDataType_pb2 as MxpiDataType
 from PIL import Image
