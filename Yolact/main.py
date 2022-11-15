@@ -20,8 +20,8 @@ import argparse
 import os
 import os.path as osp
 import colorsys
-import cv2
 import shutil
+import cv2
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from utils.utils_bbox import BBoxUtility
