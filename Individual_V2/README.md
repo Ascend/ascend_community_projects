@@ -198,4 +198,4 @@ python3 cal_accuracy.py --gt-file=./test_full.txt --pred-file=./infer_result.txt
 
 作为对比，目标属性识别v1的19962张图片的端到端总耗时为427.26s，平均每张图片的耗时为21.40ms。
 
-目标属性识别v1的平均精度为90.12。
+目标属性识别v1的平均精度为90.11709748522192。
