@@ -1,0 +1,5 @@
+/.backup
+/.vs
+/serial/src/.vscode
+/*/build
+/*/dist
