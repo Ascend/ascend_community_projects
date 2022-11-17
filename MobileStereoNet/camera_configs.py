@@ -1,36 +1,46 @@
-# filename: camera_configs.py
+# Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import re
+import xml.dom.minidom as xml
 import cv2
 import numpy as np
 
-left_camera_matrix = np.array([[823.3582, 0., 365.5732],
-                               [0., 831.0410, 250.4912],
-                               [0., 0., 1.]])
-left_distortion = np.array([[0.2194, -1.1576, 0.0071, -0.0049, 0.0000]])
+dom = xml.parse('camera.xml')
+root = dom.documentElement
+params = root.getElementsByTagName('data')
+camera_list = []
+for matrix in params:
+    line = re.split(r"\s|\n", matrix.firstChild.data)
+    while "" in line:
+        line.remove("")
+    camera_list.append(list(map(float, line)))
 
+left_camera_matrix = np.array([camera_list[0][:3],
+                               camera_list[0][3:6],
+                               camera_list[0][6:]])
+left_distortion = np.array([camera_list[1]])
 
+right_camera_matrix = np.array([camera_list[2][:3],
+                                camera_list[2][3:6],
+                                camera_list[2][6:]])
+right_distortion = np.array([camera_list[3]])
 
-right_camera_matrix = np.array([[832.8658, 0., 384.2469],
-                                [0., 839.1351, 244.8956],
-                                [0., 0., 1.]])
-right_distortion = np.array([[0.1951, -1.4400, 0.0059, -0.0017, 0.0000]])
+# 旋转关系向量
+R = np.array([camera_list[4][:3],
+              camera_list[4][3:6],
+              camera_list[4][6:]])
 
-# om = np.array([0.01911, 0.03125, -0.00960]) # 旋转关系向量
-R = np.array([[0.9990, -0.0037, -0.0442],
-               [0.0023, 0.9995, -0.0304],
-               [0.0443, 0.0303, 0.9986]])
-# R = cv2.Rodrigues(om)[0]  # 使用Rodrigues变换将om变换为R
-T = np.array([76.5799, 1.0316, 4.9442]) # 平移关系向量
-
-size = (640, 480) # 图像尺寸
-
-# 进行立体更正
-R1, R2, P1, P2, Q, validPixROI1, validPixROI2 = cv2.stereoRectify(left_camera_matrix, left_distortion,
-                                                                  right_camera_matrix, right_distortion, size, R,
-                                                                  T)
-# 计算更正map
-left_map1, left_map2 = cv2.initUndistortRectifyMap(left_camera_matrix, left_distortion, R1, P1, size, cv2.CV_16SC2)
-right_map1, right_map2 = cv2.initUndistortRectifyMap(right_camera_matrix, right_distortion, R2, P2, size, cv2.CV_16SC2)
-
-
-
-
+# 平移关系向量
+T = np.array(camera_list[5])
