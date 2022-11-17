@@ -42,7 +42,7 @@
 
 (1)setup：设置GPIO方向，0为INPUT，1为OUTPUT
 
-(2)cleanup：释放CPIO，即将GPIO方向设置为INPUT
+(2)cleanup：释放GPIO，即将GPIO方向设置为INPUT
 
 (3)output：设置方向为OUTPUT的GPIO的电平，0为低电平，1为高电平
 
@@ -182,7 +182,8 @@ GPIO3、GPIO4、GPIO5、GPIO6、GPIO7：通过在用户态编写PCA6416扩展GPI
     1.由于PCA6416连接的是I2C-1，打开I2C-1设备文件，获取文件描述符；
     2.通过I2C读写操作，读写PCA6416的寄存器，从而配置PCA6416扩展IO的输入输出特性，包括GPIO输入输出属性配置，GPIO输出电平配置，获取当前GPIO管脚电平状态等。
     3.操作完成后，关闭I2C-1设备。
-    4.2I2C外设库
+
+### 4.2 I2C外设库
 
 I2C2-SDA和I2C2-SCL组成I2C-2，可以用来外接传感器，与其他模块通信等，速率最高支持400KHz。
 说明：I2C-1接口属于板内接口，不对外开放。
