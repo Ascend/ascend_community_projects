@@ -227,7 +227,7 @@ static PyObject *py_block_process_call(PyObject *self, PyObject *args) {
     PyArg_Parse(list_item, "i", &tmp);
     values[i] = (unsigned char)tmp;
   }
-  unsigned char *result = write_i2c_block_data(address, command, values);
+  unsigned char *result = block_process_call(address, command, values);
   free(values);
   PyObject *result_list = PyList_New(0);
   for (int i = 0; i < length; i++)
