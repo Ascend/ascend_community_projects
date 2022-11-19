@@ -15,9 +15,9 @@
 import a200dksmbus as i2c
 
 i2c.i2c_2_init()
-address = 0x68
-reg = 0x00
-values = [0x01, 0x02, 0x03, 0x04]
-res = i2c.write_i2c_block_data(address, reg, values)
+ADDRESS = 0x68
+REG = 0x00
+VALUES = [0x01, 0x02, 0x03, 0x04]
+res = i2c.write_i2c_block_data(ADDRESS, REG, VALUES)
 print(res)
 i2c.i2c_2_close()
