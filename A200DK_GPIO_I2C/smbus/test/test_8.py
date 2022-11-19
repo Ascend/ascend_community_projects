@@ -15,9 +15,9 @@
 import a200dksmbus as i2c
 
 i2c.i2c_2_init()
-read_length = 16
-address = 0x68
-reg = 0x00
-buf = i2c.read_i2c_block_data(address, reg, read_length)
+READ_LENGTH = 16
+ADDRESS = 0x68
+REG = 0x00
+buf = i2c.read_i2c_block_data(ADDRESS, REG, READ_LENGTH)
 print(buf)
 i2c.i2c_2_close()
