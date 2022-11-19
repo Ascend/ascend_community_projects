@@ -210,9 +210,11 @@ unsigned char *read_block_data(int address, unsigned char command)
 {
     unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * I2C_SMBUS_BLOCK_MAX);
     memset(values, 0, sizeof(values));
-    for(int i=0; i<I2C_SMBUS_BLOCK_MAX; i++)
+    for (int i = 0; i < I2C_SMBUS_BLOCK_MAX; i++)
+    {
         values[i] = read_byte_data(address, (command+i));
-		return values;
+    }
+    return values;
 }
 
 int write_block_data(int address, unsigned char command, unsigned char *values)
@@ -279,9 +281,11 @@ unsigned char *read_i2c_block_data(int address, unsigned char command, unsigned 
     }
     unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
     memset(values, 0, sizeof(values));
-    for(int i=0; i<length; i++)
+    for (int i = 0; i < length; i++)
+    {
         values[i] = read_byte_data(address, (command+i));
-		return values;
+    }
+    return values;
 }
 
 int write_i2c_block_data(int address, unsigned char command, unsigned char *values)
