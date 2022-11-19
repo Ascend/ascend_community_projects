@@ -136,7 +136,7 @@ static PyObject *py_write_block_data(PyObject *self, PyObject *args) {
   command = (unsigned char)cmd;
   unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
   memset(values, 0, sizeof(values));
-  for(int i=0;i<length;i++)
+  for (int i = 0; i < length; i++)
   {
     int tmp;
     PyObject *list_item = PyList_GetItem(value_list, i);
@@ -196,7 +196,7 @@ static PyObject *py_write_i2c_block_data(PyObject *self, PyObject *args) {
   command = (unsigned char)cmd;
   unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
   memset(values, 0, sizeof(values));
-  for(int i = 0; i < length; i++)
+  for (int i = 0; i < length; i++)
   {
     int tmp;
     PyObject *list_item = PyList_GetItem(value_list, i);
@@ -220,7 +220,7 @@ static PyObject *py_block_process_call(PyObject *self, PyObject *args) {
   command = (unsigned char)cmd;
   unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
   memset(values, 0, sizeof(values));
-  for(int i = 0;i < length;i++)
+  for (int i = 0; i < length; i++)
   {
     int tmp;
     PyObject *list_item = PyList_GetItem(value_list, i);
