@@ -112,26 +112,39 @@ static PyObject *py_write_word_data(PyObject *self, PyObject *args) {
 
 static PyObject *py_read_block_data(PyObject *self, PyObject *args) {
   int address, cmd;
-  unsigned char *result;
   unsigned char command;
   if (!PyArg_ParseTuple(args, "ii", &address, &cmd)) {
     return NULL;
   }
   command = (unsigned char)cmd;
-  result = read_block_data(address, command);
-  return Py_BuildValue("[i]", result);
+  unsigned char *result = read_block_data(address, command);
+  PyObject *result_list = PyList_New(0);
+  for (int i = 0; i < I2C_SMBUS_BLOCK_MAX; i++)
+    PyList_Append(result_list, Py_BuildValue("i", result[i]));
+  return result_list;
 }
 
 static PyObject *py_write_block_data(PyObject *self, PyObject *args) {
-  int address, cmd, val[I2C_SMBUS_BLOCK_MAX], result;
-  unsigned char *values;
+  int address, cmd, result;
+  PyObject *value_list;
+  int length;
   unsigned char command;
-  if (!PyArg_ParseTuple(args, "ii[i]", &address, &cmd, &val)) {
+  if (!PyArg_ParseTuple(args, "iiO", &address, &cmd, &value_list)) {
     return NULL;
   }
+  length = PyList_Size(value_list);
   command = (unsigned char)cmd;
-  memcpy(values, val, sizeof(val));
+  unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
+  memset(values, 0, sizeof(values));
+  for(int i=0;i<length;i++)
+  {
+    int tmp;
+    PyObject *list_item = PyList_GetItem(value_list, i);
+    PyArg_Parse(list_item, "i", &tmp);
+    values[i] = (unsigned char)tmp;
+  }
   result = write_block_data(address, command, values);
+  free(values);
   return Py_BuildValue("i", result);
 }
 
@@ -162,41 +175,64 @@ static PyObject *py_read_i2c_block_data(PyObject *self, PyObject *args) {
   if (!PyArg_ParseTuple(args, "iii", &address, &cmd, &len)) {
     return NULL;
   }
-  unsigned char *result = (char*)malloc(sizeof(char) * len);
-  memset(result, '\0', sizeof(result));
   command = (unsigned char)cmd;
   length = (unsigned char)len;
-  result = read_i2c_block_data(address, command, length);
+  unsigned char *result = read_i2c_block_data(address, command, length);
   PyObject *result_list = PyList_New(0);
   for (int i = 0; i < len; i++)
-    PyList_Append(result_list, result[i]);
+    PyList_Append(result_list, Py_BuildValue("i", result[i]));
   return result_list;
 }
 
 static PyObject *py_write_i2c_block_data(PyObject *self, PyObject *args) {
-  int address, cmd, val[I2C_SMBUS_BLOCK_MAX], result;
-  unsigned char *values;
+  int address, cmd, result;
+  PyObject *value_list;
+  int length;
   unsigned char command;
-  if (!PyArg_ParseTuple(args, "ii[i]", &address, &cmd, &val)) {
+  if (!PyArg_ParseTuple(args, "iiO", &address, &cmd, &value_list)) {
     return NULL;
   }
+  length = PyList_Size(value_list);
   command = (unsigned char)cmd;
-  memcpy(values, val, sizeof(val));
+  unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
+  memset(values, 0, sizeof(values));
+  for(int i = 0; i < length; i++)
+  {
+    int tmp;
+    PyObject *list_item = PyList_GetItem(value_list, i);
+    PyArg_Parse(list_item, "i", &tmp);
+    values[i] = (unsigned char)tmp;
+  }
   result = write_i2c_block_data(address, command, values);
+  free(values);
   return Py_BuildValue("i", result);
 }
 
 static PyObject *py_block_process_call(PyObject *self, PyObject *args) {
-  int address, cmd, val[I2C_SMBUS_BLOCK_MAX];
-  unsigned char *values, *result;
+  int address, cmd;
+  PyObject *value_list;
+  int length;
   unsigned char command;
-  if (!PyArg_ParseTuple(args, "ii[i]", &address, &cmd, &val)) {
+  if (!PyArg_ParseTuple(args, "iiO", &address, &cmd, &value_list)) {
     return NULL;
   }
+  length = PyList_Size(value_list);
   command = (unsigned char)cmd;
-  memcpy(values, val, sizeof(val));
-  result = block_process_call(address, command, values);
-  return Py_BuildValue("[i]", result);
+  unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
+  memset(values, 0, sizeof(values));
+  for(int i = 0;i < length;i++)
+  {
+    int tmp;
+    PyObject *list_item = PyList_GetItem(value_list, i);
+    PyArg_Parse(list_item, "i", &tmp);
+    values[i] = (unsigned char)tmp;
+  }
+  unsigned char *result = write_i2c_block_data(address, command, values);
+  free(values);
+  PyObject *result_list = PyList_New(0);
+  for (int i = 0; i < length; i++)
+    PyList_Append(result_list, Py_BuildValue("i", result[i]));
+  return result_list;
 }
 
 static PyMethodDef smbus_methods[] = {
