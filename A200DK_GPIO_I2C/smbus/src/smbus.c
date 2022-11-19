@@ -208,22 +208,11 @@ int write_word_data(int address, unsigned char command, unsigned short value)
 
 unsigned char *read_block_data(int address, unsigned char command)
 {
-    if (-1 == set_address(address))
-    {
-        return NULL;
-    }
-    unsigned char *values = (char*)malloc(sizeof(char) * I2C_SMBUS_BLOCK_MAX);
-    memset(values, '\0', sizeof(values));
-    union i2c_smbus_data data;
-	if (i2c_ioctl_data_create(fd_smbus, I2C_SMBUS_READ, command, I2C_SMBUS_BLOCK_DATA, &data))
-    {
-		return NULL;
-    }
-	else
-    {
-		memcpy(values, (data.block + 1), I2C_SMBUS_BLOCK_MAX);
+    unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * I2C_SMBUS_BLOCK_MAX);
+    memset(values, 0, sizeof(values));
+    for(int i=0; i<I2C_SMBUS_BLOCK_MAX; i++)
+        values[i] = read_byte_data(address, (command+i));
 		return values;
-	}
 }
 
 int write_block_data(int address, unsigned char command, unsigned char *values)
@@ -232,19 +221,19 @@ int write_block_data(int address, unsigned char command, unsigned char *values)
     {
         return -1;
     }
-    unsigned char length = strlen(values);
- 	if (length > I2C_SMBUS_BLOCK_MAX)
-	{
+    int length = strlen(values) - 1;
+    if (length > I2C_SMBUS_BLOCK_MAX)
+    {
         ERROR_LOG("data length cannot exceed %d bytes", I2C_SMBUS_BLOCK_MAX);
         return -1;
     }
     union i2c_smbus_data data;
-    data.block[0] = length;
-	for (int i = 1; i <= length; i++)
+    for (int i = 1; i <= length; i++)
     {
-		data.block[i] = values[i-1];
+        data.block[i] = values[i-1];
     }
-	return i2c_ioctl_data_create(fd_smbus, I2C_SMBUS_WRITE, command, I2C_SMBUS_BLOCK_DATA, &data);
+    data.block[0] = length;
+    return i2c_ioctl_data_create(fd_smbus, I2C_SMBUS_WRITE, command, I2C_SMBUS_BLOCK_DATA, &data);
 }
 
 int write_quick(int address)
@@ -283,27 +272,16 @@ int process_call(int address, unsigned char command, unsigned short value)
 
 unsigned char *read_i2c_block_data(int address, unsigned char command, unsigned char length)
 {
-    if (-1==set_address(address))
-    {
-        return NULL;
-    }
     if (length > I2C_SMBUS_BLOCK_MAX)
-	{
+    {
         ERROR_LOG("data length cannot exceed %d bytes", I2C_SMBUS_BLOCK_MAX);
         return NULL;
     }
-    unsigned char *values = (char*)malloc(sizeof(char) * length);
-    memset(values, '\0', sizeof(values));
-    union i2c_smbus_data data;
-	if (i2c_ioctl_data_create(fd_smbus, I2C_SMBUS_READ, command, I2C_SMBUS_I2C_BLOCK_DATA, &data))
-    {
-        return NULL;
-    }
-	else
-    {
-		memcpy(values, (data.block + 1), length);
+    unsigned char *values = (unsigned char*)malloc(sizeof(unsigned char) * length);
+    memset(values, 0, sizeof(values));
+    for(int i=0; i<length; i++)
+        values[i] = read_byte_data(address, (command+i));
 		return values;
-	}
 }
 
 int write_i2c_block_data(int address, unsigned char command, unsigned char *values)
@@ -312,20 +290,19 @@ int write_i2c_block_data(int address, unsigned char command, unsigned char *valu
     {
         return -1;
     }
-    unsigned char length = strlen(values);
+    int length = strlen(values) - 1;
     if (length > I2C_SMBUS_BLOCK_MAX)
-	{
+    {
         ERROR_LOG("data length cannot exceed %d bytes", I2C_SMBUS_BLOCK_MAX);
         return -1;
     }
     union i2c_smbus_data data;
-	int i;
-	for (i = 1; i <= length; i++)
+    for (int i = 1; i <= length; i++)
     {
-		data.block[i] = values[i-1];
+        data.block[i] = values[i-1];
     }
-	data.block[0] = length;
-	return i2c_ioctl_data_create(fd_smbus, I2C_SMBUS_WRITE, command, I2C_SMBUS_I2C_BLOCK_DATA, &data);
+    data.block[0] = length;
+    return i2c_ioctl_data_create(fd_smbus, I2C_SMBUS_WRITE, command, I2C_SMBUS_I2C_BLOCK_DATA, &data);
 }
 
 unsigned char *block_process_call(int address, unsigned char command, unsigned char *values)
@@ -334,7 +311,7 @@ unsigned char *block_process_call(int address, unsigned char command, unsigned c
     {
         return NULL;
     }
-    unsigned char length = strlen(values);
+    unsigned char length = sizeof(values);
     if (length > I2C_SMBUS_BLOCK_MAX)
 	{
         ERROR_LOG("data length cannot exceed %d bytes", I2C_SMBUS_BLOCK_MAX);
@@ -353,7 +330,10 @@ unsigned char *block_process_call(int address, unsigned char command, unsigned c
     }
 	else
     {
-		memcpy(values, (data.block + 1), length);
+		for (i = 1; i <= length; i++)
+    {
+		values[i-1] = data.block[i];
+    }
 		return values;
 	}
 }
