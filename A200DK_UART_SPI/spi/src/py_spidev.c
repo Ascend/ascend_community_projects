@@ -27,12 +27,11 @@
 
 #define VERSION "0.0.1"
 
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
 #define PyLong_AS_LONG(val) PyInt_AS_LONG(val)
 #define PyLong_AsLong(val) PyInt_AsLong(val)
 #endif
 
-//	Macros needed for Python 3
 #ifndef PyInt_Check
 #define PyInt_Check PyLong_Check
 #define PyInt_FromLong PyLong_FromLong
@@ -119,7 +118,7 @@ static PyObject *SpiDev_writebytes(SpiDevObject *self, PyObject *args) {
 
     for (ii = 0; ii < len; ii++) {
         PyObject *val = PySequence_Fast_GET_ITEM(seq, ii);
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
         if (PyInt_Check(val)) {
             buf[ii] = (__u8)PyInt_AS_LONG(val);
         } else
@@ -233,7 +232,7 @@ static PyObject *SpiDev_writebytes2_seq_internal(SpiDevObject *self, PyObject *s
 
         for (ii = 0; ii < block_size; ii++, jj++) {
             PyObject *val = PySequence_Fast_GET_ITEM(seq, jj);
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
             if (PyInt_Check(val)) {
                 buf[ii] = (__u8)PyInt_AS_LONG(val);
             } else
@@ -396,7 +395,7 @@ static PyObject *SpiDev_xfer(SpiDevObject *self, PyObject *args) {
 
     for (ii = 0; ii < len; ii++) {
         PyObject *val = PySequence_Fast_GET_ITEM(seq, ii);
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
         if (PyInt_Check(val)) {
             txbuf[ii] = (__u8)PyInt_AS_LONG(val);
         } else
@@ -440,7 +439,7 @@ static PyObject *SpiDev_xfer(SpiDevObject *self, PyObject *args) {
 #else
     for (ii = 0; ii < len; ii++) {
         PyObject *val = PySequence_Fast_GET_ITEM(seq, ii);
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
         if (PyInt_Check(val)) {
             txbuf[ii] = (__u8)PyInt_AS_LONG(val);
         } else
@@ -557,7 +556,7 @@ static PyObject *SpiDev_xfer2(SpiDevObject *self, PyObject *args) {
 
         for (ii = 0; ii < len; ii++) {
         PyObject *val = PySequence_Fast_GET_ITEM(seq, ii);
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
         if (PyInt_Check(val)) {
             txbuf[ii] = (__u8)PyInt_AS_LONG(val);
         } else
@@ -693,7 +692,7 @@ static PyObject *SpiDev_xfer3(SpiDevObject *self, PyObject *args) {
     while (block_start < len) {
         for (ii = 0, jj = block_start; jj < len && ii < bufsize; ii++, jj++) {
             PyObject *val = PySequence_Fast_GET_ITEM(seq, jj);
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
             if (PyInt_Check(val)) {
                 txbuf[ii] = (__u8)PyInt_AS_LONG(val);
             } else
@@ -841,7 +840,7 @@ static int SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure) {
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         mode = PyInt_AS_LONG(val);
     } else
@@ -856,7 +855,7 @@ static int SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure) {
         }
     }
 
-    if (mode > 3) {
+    if (mode > MODE) {
         PyErr_SetString(PyExc_TypeError,
                         "The mode attribute must be an integer"
                         "between 0 and 3.");
@@ -984,7 +983,7 @@ static int SpiDev_set_bits_per_word(SpiDevObject *self, PyObject *val, void *clo
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         bits = PyInt_AS_LONG(val);
     } else
@@ -999,7 +998,7 @@ static int SpiDev_set_bits_per_word(SpiDevObject *self, PyObject *val, void *clo
         }
     }
 
-    if (bits < 8 || bits > 32) {
+    if (bits < BITS_8 || bits > BITS_32) {
         PyErr_SetString(PyExc_TypeError,
                         "invalid bits_per_word (8 to 32)");
         return -1;
@@ -1029,7 +1028,7 @@ static int SpiDev_set_max_speed_hz(SpiDevObject *self, PyObject *val, void *clos
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         max_speed_hz = PyInt_AS_LONG(val);
     } else
@@ -1147,7 +1146,7 @@ static PyObject *SpiDev_exit(SpiDevObject *self, PyObject *args) {
     PyObject *exc_type = 0;
     PyObject *exc_value = 0;
     PyObject *traceback = 0;
-    if (!PyArg_UnpackTuple(args, "__exit__", 3, 3, &exc_type, &exc_value,
+    if (!PyArg_UnpackTuple(args, "__exit__", EXIT_ARGS_LEN_MIN, EXIT_ARGS_LEN_MAX, &exc_type, &exc_value,
                            &traceback)) {
         return 0;
     }
@@ -1183,7 +1182,7 @@ static PyMethodDef SpiDev_methods[] = {
 };
 
 static PyTypeObject SpiDevObjectType = {
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL) 0, /*	ob_size	*/
@@ -1230,7 +1229,7 @@ static PyTypeObject SpiDevObjectType = {
 static PyMethodDef SpiDev_module_methods[] = {
     {NULL}};
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "spidev",
@@ -1248,7 +1247,7 @@ static struct PyModuleDef moduledef = {
 #endif
 #endif
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
 PyMODINIT_FUNC
 PyInit_spidev(void)
 #else
@@ -1258,13 +1257,13 @@ void initspidev(void)
     PyObject *m;
 
     if (PyType_Ready(&SpiDevObjectType) < 0)
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
         return NULL;
 #else
         return;
 #endif
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
     m = PyModule_Create(&moduledef);
     PyObject *version = PyUnicode_FromString(VERSION);
 #else
@@ -1279,7 +1278,7 @@ void initspidev(void)
     Py_INCREF(&SpiDevObjectType);
     PyModule_AddObject(m, "SpiDev", (PyObject *)&SpiDevObjectType);
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
     return m;
 #endif
 }

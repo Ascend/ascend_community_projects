@@ -24,6 +24,13 @@
 extern "C" {
 #endif
 
+#define PY_VERSION_3 3
+#define MODE 3
+#define EXIT_ARGS_LEN_MAX 3
+#define EXIT_ARGS_LEN_MIN 3
+#define BITS_8 8
+#define BITS_32 32
+
 #define INFO_LOG(fmt, args...) fprintf(stdout, "[INFO]  " fmt "\n", ##args)
 #define WARN_LOG(fmt, args...) \
     if (EnableWarnings) fprintf(stdout, "[WARN]  " fmt "\n", ##args)
@@ -57,7 +64,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len,
 int spi_xfer3(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len,
               uint16_t delay_usecs, uint8_t bits_per_word, uint32_t speed_hz);
 int spi_write(int fd, const uint8_t *txbuf, size_t len);
-int spi_read(int fd, uint8_t *txbuf, size_t len);
+int spi_read(int fd, uint8_t *rxbuf, size_t len);
 int spi_close(int *fd);
 
 /*	Getters	*/

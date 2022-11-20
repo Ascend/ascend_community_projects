@@ -324,7 +324,7 @@ int spi_set_m(int fd, uint8_t mode) {
     return 0;
 }
 
-static int __spi_get_mode(int fd, uint8_t *mode) {
+static int spi_get_mode__(int fd, uint8_t *mode) {
     uint8_t data8;
 
     if (ioctl(fd, SPI_IOC_RD_MODE, &data8) < 0) {
@@ -338,7 +338,7 @@ static int __spi_get_mode(int fd, uint8_t *mode) {
 int spi_get_mode(int fd, uint8_t *mode) {
     uint8_t data8;
 
-    if (__spi_get_mode(fd, &data8)) {
+    if (spi_get_mode__(fd, &data8)) {
         ERROR_LOG("Getting SPI mode");
         return -1;
     }
@@ -400,7 +400,7 @@ int spi_get_extra_flags(int fd, uint8_t *extra_flags) {
 
 int spi_get_cshigh(int fd, bool *cs) {
     uint8_t mode = 0;
-    if (__spi_get_mode(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
 
     *cs = (mode & SPI_CS_HIGH) ? true : false;
 
@@ -409,7 +409,7 @@ int spi_get_cshigh(int fd, bool *cs) {
 
 int spi_get_loop(int fd, bool *result) {
     uint8_t mode = 0;
-    if (__spi_get_mode(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
 
     *result = (mode & SPI_LOOP) ? true : false;
 
@@ -418,7 +418,7 @@ int spi_get_loop(int fd, bool *result) {
 
 int spi_get_no_cs(int fd, bool *result) {
     uint8_t mode = 0;
-    if (__spi_get_mode(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
 
     *result = (mode & SPI_NO_CS) ? true : false;
 
@@ -504,7 +504,7 @@ int spi_set_bits_per_word(int fd, uint8_t bits_per_word) {
 int spi_set_cshigh(int fd, bool val) {
     uint8_t tmp, mode = 0;
 
-    if (__spi_get_mode(fd, &mode) != 0) { return -1; }
+    if (spi_get_mode__(fd, &mode) != 0) { return -1; }
 
     tmp = (val == true) ? (mode | SPI_CS_HIGH) : (mode & ~SPI_CS_HIGH);
 
@@ -516,7 +516,7 @@ int spi_set_cshigh(int fd, bool val) {
 int spi_set_no_cs(int fd, bool val) {
     uint8_t tmp, mode;
 
-    if (__spi_get_mode(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
 
     tmp = (val == true) ? (mode | SPI_NO_CS) : (mode & ~SPI_NO_CS);
 
@@ -528,7 +528,7 @@ int spi_set_no_cs(int fd, bool val) {
 int spi_set_loop(int fd, bool val) {
     uint8_t tmp, mode;
 
-    if (__spi_get_mode(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
 
     tmp = (val == true) ? (mode | SPI_LOOP) : mode & ~SPI_LOOP;
 

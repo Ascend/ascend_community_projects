@@ -1,6 +1,8 @@
 /.backup
 /.vs
 /*/*/.vscode
+/.vscode
 /*/*/.clang-format
+/.clang-format
 /*/build
 /*/dist
