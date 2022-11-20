@@ -758,7 +758,7 @@ static PyObject *SpiDev_xfer3(SpiDevObject *self, PyObject *args) {
     return rx_tuple;
 }
 
-static int __spidev_set_mode(int fd, uint8_t mode) {
+static int spidev_set_mode__(int fd, uint8_t mode) {
     uint8_t test;
     if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
         PyErr_SetFromErrno(PyExc_IOError);
@@ -864,7 +864,7 @@ static int SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure) {
 
     //	clean and set CPHA and CPOL bits
     tmp = (self->mode & ~(SPI_CPHA | SPI_CPOL)) | mode;
-    ret = __spidev_set_mode(self->fd, tmp);
+    ret = spidev_set_mode__(self->fd, tmp);
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -884,7 +884,7 @@ static int SpiDev_set_cshigh(SpiDevObject *self, PyObject *val, void *closure) {
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_CS_HIGH) : (tmp = self->mode & ~SPI_CS_HIGH);
-    ret = __spidev_set_mode(self->fd, tmp);
+    ret = spidev_set_mode__(self->fd, tmp);
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -904,7 +904,7 @@ static int SpiDev_set_lsbfirst(SpiDevObject *self, PyObject *val, void *closure)
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_LSB_FIRST) : (self->mode & ~SPI_LSB_FIRST);
-    ret = __spidev_set_mode(self->fd, tmp);
+    ret = spidev_set_mode__(self->fd, tmp);
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -944,7 +944,7 @@ static int SpiDev_set_no_cs(SpiDevObject *self, PyObject *val, void *closure) {
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_NO_CS) : (self->mode & ~SPI_NO_CS);
-    ret = __spidev_set_mode(self->fd, tmp);
+    ret = spidev_set_mode__(self->fd, tmp);
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -964,7 +964,7 @@ static int SpiDev_set_loop(SpiDevObject *self, PyObject *val, void *closure) {
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_LOOP) : (self->mode & ~SPI_LOOP);
-    ret = __spidev_set_mode(self->fd, tmp);
+    ret = spidev_set_mode__(self->fd, tmp);
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
