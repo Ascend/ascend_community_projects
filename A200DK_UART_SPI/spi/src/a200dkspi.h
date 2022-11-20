@@ -1,16 +1,17 @@
 #ifndef _PERIPHERY_SPI_H
 #define _PERIPHERY_SPI_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define INFO_LOG(fmt, args...) fprintf(stdout, "[INFO]  " fmt "\n", ##args)
-#define WARN_LOG(fmt, args...) if (EnableWarnings) fprintf(stdout, "[WARN]  " fmt "\n", ##args)
+#define WARN_LOG(fmt, args...) \
+    if (EnableWarnings) fprintf(stdout, "[WARN]  " fmt "\n", ##args)
 #define ERROR_LOG(fmt, args...) fprintf(stderr, "[ERROR]  " fmt "\n", ##args)
 
 #define SPIDEV_MAXPATH 4096
@@ -29,19 +30,19 @@ typedef enum spi_bit_order {
 
 /*	Primary Functions	*/
 int spi_open(const char *path, unsigned int mode, uint32_t max_speed);
-int spi_open_advanced(const char *path, unsigned int mode, 
-                        uint32_t max_speed, spi_bit_order_t bit_order, 
-                        uint8_t bits_per_word, uint8_t extra_flags);
-int spi_open_advanced2(const char *path, unsigned int mode, 
-                        uint32_t max_speed, spi_bit_order_t bit_order, 
-                        uint8_t bits_per_word, uint32_t extra_flags);
+int spi_open_advanced(const char *path, unsigned int mode,
+                      uint32_t max_speed, spi_bit_order_t bit_order,
+                      uint8_t bits_per_word, uint8_t extra_flags);
+int spi_open_advanced2(const char *path, unsigned int mode,
+                       uint32_t max_speed, spi_bit_order_t bit_order,
+                       uint8_t bits_per_word, uint32_t extra_flags);
 int spi_xfer(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len);
-int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, 
-                        uint16_t delay_usecs,uint8_t bits_per_word,uint32_t speed_hz);
-int spi_xfer3(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, 
-                        uint16_t delay_usecs,uint8_t bits_per_word,uint32_t speed_hz);
-int spi_write(int fd, const uint8_t *txbuf, size_t len );
-int spi_read(int fd, uint8_t *txbuf, size_t len );
+int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len,
+              uint16_t delay_usecs, uint8_t bits_per_word, uint32_t speed_hz);
+int spi_xfer3(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len,
+              uint16_t delay_usecs, uint8_t bits_per_word, uint32_t speed_hz);
+int spi_write(int fd, const uint8_t *txbuf, size_t len);
+int spi_read(int fd, uint8_t *txbuf, size_t len);
 int spi_close(int *fd);
 
 /*	Getters	*/

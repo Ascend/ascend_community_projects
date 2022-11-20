@@ -1,7 +1,7 @@
 import a200dkserial
 
 
-ser = a200dkserial.Serial(1,115200)  # open serial port
+ser = a200dkserial.Serial(1, 115200)
 
 a = ser.readline(2000)
 if a:
@@ -19,4 +19,4 @@ print(ser.rtscts)
 print(ser.vtime)
 print(ser.vmin)
 print(ser.stopbits)
-ser.close()             # close port
+ser.close()

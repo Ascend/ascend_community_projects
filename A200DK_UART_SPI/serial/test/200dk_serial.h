@@ -10,7 +10,8 @@ extern "C" {
 #include <stdbool.h>
 
 #define INFO_LOG(fmt, args...) fprintf(stdout, "[INFO]  " fmt "\n", ##args)
-#define WARN_LOG(fmt, args...) if (EnableWarnings) fprintf(stdout, "[WARN]  " fmt "\n", ##args)
+#define WARN_LOG(fmt, args...) \
+    if (EnableWarnings) fprintf(stdout, "[WARN]  " fmt "\n", ##args)
 #define ERROR_LOG(fmt, args...) fprintf(stderr, "[ERROR]  " fmt "\n", ##args)
 
 #define PARITY_NONE 0
@@ -40,7 +41,7 @@ int serial_get_stopbits(int fd, unsigned int *stopbits);
 int serial_get_xonxoff(int fd, bool *xonxoff);
 int serial_get_rtscts(int fd, bool *rtscts);
 int serial_get_vmin(int fd, unsigned int *vmin);
-int serial_get_vtime(int fd, float* vtime);
+int serial_get_vtime(int fd, float *vtime);
 
 /*	Setters	*/
 int serial_set_baudrate(int fd, uint32_t baudrate);
@@ -60,4 +61,3 @@ int serial_tostring(int fd, char *str, size_t len);
 #endif
 
 #endif
-

@@ -2,29 +2,27 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-
 #include "../src/a200dkspi.h"
 
 int main(void) {
-    int fd,res;
+    int fd, res;
     uint8_t new[1024];
-    uint8_t buf[4] = { 0xaa, 0xbb, 0xcc, 0xdd };
+    uint8_t buf[4] = {0xaa, 0xbb, 0xcc, 0xdd};
 
-    memset(new,0,1024);
-    /* Open spidev1.0 with mode 0 and max speed 1MHz */
+    memset(new, 0, 1024);
+
     if ((fd = spi_open("/dev/spidev0.0", 0, 1000000)) < 0) {
         printf("failed to open\n");
         exit(1);
     } else {
-    	printf("%d\n", fd);
+        printf("%d\n", fd);
     }
 
-    res= spi_tostring(fd,new,1024);
-    printf("%s\n",new);
+    res = spi_tostring(fd, new, 1024);
+    printf("%s\n", new);
 
-    /* Shift out and in 4 bytes */
     if (spi_xfer(fd, buf, buf, sizeof(buf)) < 0) {
-		printf("failed to transfer\n");
+        printf("failed to transfer\n");
         exit(1);
     }
 

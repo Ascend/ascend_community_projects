@@ -1,5 +1,6 @@
 /.backup
 /.vs
-/serial/src/.vscode
+/*/*/.vscode
+/*/*/.clang-format
 /*/build
 /*/dist

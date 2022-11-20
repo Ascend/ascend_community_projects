@@ -1,9 +1,8 @@
 import a200dkserial
 
 
-ser = a200dkserial.Serial(1,115200)  # open serial port
-
-a = ser.read(10,2000)
+ser = a200dkserial.Serial(1, 115200)
+a = ser.read(10, 2000)
 if a:
     print(f"输入： {a}")
 
@@ -20,4 +19,4 @@ print(f"vtime: {ser.vtime}")
 print(f"vim: {ser.vmin}")
 print(f"停止位: {ser.stopbits}")
 print(str(ser))
-ser.close()             # close port
+ser.close()
