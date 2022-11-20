@@ -793,7 +793,7 @@ void inita200dkserial(void)
 
 #if PY_MAJOR_VERSION >= PY_VERSION_3
     m = PyModule_Create(&moduledef);
-    PyObject *version = PyUnicode_FromString(_VERSION_);
+    PyObject *version = PyUnicode_FromString(VERSION);
 #else
     m = Py_InitModule3("a200dkserial", Serial_module_methods, Serial_module_doc);
     PyObject *version = PyString_FromString(VERSION);
