@@ -17,23 +17,27 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include "../src/a200dkspi.h"
+#include "a200dkspi.h"
+
+#define SPI_SPEED 1000000
+#define LEN_MAX 1024
+#define BUF_LEN 4
 
 int main(void) {
     int fd, res;
-    uint8_t new[1024];
-    uint8_t buf[4] = {0xaa, 0xbb, 0xcc, 0xdd};
+    uint8_t new[LEN_MAX];
+    uint8_t buf[BUF_LEN] = {0xaa, 0xbb, 0xcc, 0xdd};
 
-    memset(new, 0, 1024);
+    memset(new, 0, LEN_MAX);
 
-    if ((fd = spi_open("/dev/spidev0.0", 0, 1000000)) < 0) {
+    if ((fd = spi_open("/dev/spidev0.0", 0, SPI_SPEED)) < 0) {
         printf("failed to open\n");
         exit(1);
     } else {
         printf("%d\n", fd);
     }
 
-    res = spi_tostring(fd, new, 1024);
+    res = spi_tostring(fd, new, SPI_SPEED);
     printf("%s\n", new);
 
     if (spi_xfer(fd, buf, buf, sizeof(buf)) < 0) {
