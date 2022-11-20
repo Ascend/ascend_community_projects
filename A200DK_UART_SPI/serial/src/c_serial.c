@@ -110,7 +110,7 @@ static int _serial_bits_to_baudrate(uint32_t bits) {
 }
 
 int serial_open(const char *path, uint32_t baudrate) {
-    return serial_open_advanced(path, baudrate, 8, PARITY_NONE, 1, false, false);
+    return serial_open_advanced(path, baudrate, DATABITS_8, PARITY_NONE, STOPBITS_1, false, false);
 }
 
 int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int databits, uint32_t parity, unsigned int stopbits, bool xonxoff, bool rtscts) {
@@ -118,7 +118,7 @@ int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int datab
     int fd;
 
     /*	Validate args	*/
-    if (databits != 5 && databits != 6 && databits != 7 && databits != 8) {
+    if (databits != DATABITS_5 && databits != DATABITS_6 && databits != DATABITS_7 && databits != DATABITS_8) {
         ERROR_LOG("Invalid data bits (can be 5,6,7,8)");
         return -1;
     }
@@ -126,7 +126,7 @@ int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int datab
         ERROR_LOG("Invalid parity (can be PARITY_NONE,PARITY_ODD,PARITY_EVEN)");
         return -1;
     }
-    if (stopbits != 1 && stopbits != 2) {
+    if (stopbits != STOPBITS_1 && stopbits != STOPBITS_2) {
         ERROR_LOG("Invalid stop bits (can be 1,2)");
         return -1;
     }
@@ -147,7 +147,7 @@ int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int datab
         termios_settings.c_iflag |= INPCK;
     }
     /*	Only use ISTRIP when less than 8 bits as it strips the 8th bit	*/
-    if (parity != PARITY_NONE && databits != 8) {
+    if (parity != PARITY_NONE && databits != DATABITS_8) {
         termios_settings.c_iflag |= ISTRIP;
     }
     if (xonxoff) { termios_settings.c_iflag |= (IXON | IXOFF); }
@@ -163,13 +163,13 @@ int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int datab
     termios_settings.c_cflag = CREAD | CLOCAL;
 
     /*	Databits	*/
-    if (databits == 5) {
+    if (databits == DATABITS_5) {
         termios_settings.c_cflag |= CS5;
-    } else if (databits == 6) {
+    } else if (databits == DATABITS_6) {
         termios_settings.c_cflag |= CS6;
-    } else if (databits == 7) {
+    } else if (databits == DATABITS_7) {
         termios_settings.c_cflag |= CS7;
-    } else if (databits == 8) {
+    } else if (databits == DATABITS_8) {
         termios_settings.c_cflag |= CS8;
     }
 
@@ -181,7 +181,7 @@ int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int datab
     }
 
     /*	Stopbits	*/
-    if (stopbits == 2) { termios_settings.c_cflag |= CSTOPB; }
+    if (stopbits == STOPBITS_2) { termios_settings.c_cflag |= CSTOPB; }
 
     /*	RTS/CTS	*/
     if (rtscts) { termios_settings.c_cflag |= CRTSCTS; }
@@ -401,10 +401,10 @@ int serial_get_databits(int fd, unsigned int *databits) {
     }
 
     switch (termios_settings.c_cflag & CSIZE) {
-    case CS5: *databits = 5; break;
-    case CS6: *databits = 6; break;
-    case CS7: *databits = 7; break;
-    case CS8: *databits = 8; break;
+    case CS5: *databits = DATABITS_5; break;
+    case CS6: *databits = DATABITS_6; break;
+    case CS7: *databits = DATABITS_7; break;
+    case CS8: *databits = DATABITS_8; break;
     default: break;
     }
 
@@ -438,7 +438,7 @@ int serial_get_stopbits(int fd, unsigned int *stopbits) {
         return -1;
     }
 
-    *stopbits = (termios_settings.c_cflag & CSTOPB) ? 2 : 1;
+    *stopbits = (termios_settings.c_cflag & CSTOPB) ? STOPBITS_2 : STOPBITS_1;
 
     return 0;
 }
@@ -504,7 +504,7 @@ int serial_set_baudrate(int fd, uint32_t baudrate) {
 int serial_set_databits(int fd, unsigned int databits) {
     struct termios termios_settings;
 
-    if (databits != 5 && databits != 6 && databits != 7 && databits != 8) {
+    if (databits != DATABITS_5 && databits != DATABITS_6 && databits != DATABITS_7 && databits != DATABITS_8) {
         ERROR_LOG("Invalid data bits (can be 5,6,7,8)");
         return -1;
     }
@@ -516,18 +516,10 @@ int serial_set_databits(int fd, unsigned int databits) {
 
     termios_settings.c_cflag &= ~CSIZE;
     switch (databits) {
-    case 5:
-        termios_settings.c_cflag |= CS5;
-        break;
-    case 6:
-        termios_settings.c_cflag |= CS6;
-        break;
-    case 7:
-        termios_settings.c_cflag |= CS7;
-        break;
-    case 8:
-        termios_settings.c_cflag |= CS8;
-        break;
+    case DATABITS_5: termios_settings.c_cflag |= CS5; break;
+    case DATABITS_6: termios_settings.c_cflag |= CS6; break;
+    case DATABITS_7: termios_settings.c_cflag |= CS7; break;
+    case DATABITS_8: termios_settings.c_cflag |= CS8; break;
     default:
         break;
     }
@@ -574,7 +566,7 @@ int serial_set_parity(int fd, uint32_t parity) {
 int serial_set_stopbits(int fd, unsigned int stopbits) {
     struct termios termios_settings;
 
-    if (stopbits != 1 && stopbits != 2) {
+    if (stopbits != 1 && stopbits != STOPBITS_2) {
         ERROR_LOG("Invalid stop bits (can be 1,2)");
         return -1;
     }
@@ -585,7 +577,7 @@ int serial_set_stopbits(int fd, unsigned int stopbits) {
     }
 
     termios_settings.c_cflag &= ~(CSTOPB);
-    if (stopbits == 2) { termios_settings.c_cflag |= CSTOPB; }
+    if (stopbits == STOPBITS_2) { termios_settings.c_cflag |= CSTOPB; }
 
     if (tcsetattr(fd, TCSANOW, &termios_settings) < 0) {
         ERROR_LOG("Setting serial port attributes stopbits");
@@ -688,8 +680,9 @@ int serial_tostring(int fd, char *str, size_t len) {
     /*	Instead of calling all of our individual getter functions, let's poll
      * termios attributes once to be efficient.	*/
 
-    if (tcgetattr(fd, &termios_settings) < 0)
+    if (tcgetattr(fd, &termios_settings) < 0) {
         return snprintf(str, len, "Serial (baudrate=?, databits=?, parity=?, stopbits=?, xonxoff=?, rtscts=?)");
+    }
 
     baudrate = _serial_bits_to_baudrate(cfgetospeed(&termios_settings));
 

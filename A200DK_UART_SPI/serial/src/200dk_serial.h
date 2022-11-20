@@ -73,6 +73,16 @@ extern "C" {
 #define BAUDRATES_BITS_3500000 B3500000
 #define BAUDRATES_BITS_4000000 B4000000
 
+#define PY_VERSION_3 3
+
+#define DATABITS_5 5
+#define DATABITS_6 6
+#define DATABITS_7 7
+#define DATABITS_8 8
+
+#define STOPBITS_1 1
+#define STOPBITS_2 2
+
 #define INFO_LOG(fmt, args...) fprintf(stdout, "[INFO]  " fmt "\n", ##args)
 #define WARN_LOG(fmt, args...) \
     if (EnableWarnings) fprintf(stdout, "[WARN]  " fmt "\n", ##args)

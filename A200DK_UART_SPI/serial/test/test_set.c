@@ -29,8 +29,8 @@ int main(int argc, char const *argv[]) {
     memset(read_buf, 0, 276);
 
     fd = serial_open("/dev/ttyAMA1", 115200);
-    if (fd == -1)
-        return 0;
+    if (fd == -1) { return 0; }
+    
     res = serial_tostring(fd, new, 1024);
     printf("打开的默认配置：%s\n", new);
     printf("fd %d\r\n", fd);

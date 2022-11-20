@@ -29,8 +29,7 @@ int main(int argc, char const *argv[]) {
     memset(read_buf, 0, 276);
 
     fd = serial_open("/dev/ttyAMA1", 115200);
-    if (fd == -1)
-        return 0;
+    if (fd == -1) { return 0; }
 
     printf("fd %d\r\n", fd);
     serial_write(fd, buf, strlen(buf));

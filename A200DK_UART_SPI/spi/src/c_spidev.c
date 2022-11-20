@@ -226,10 +226,8 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
             ERROR_LOG("SPI transfer len < 0 or len > SPIDEV_MAXPATH");
             return -1;
         }
-        if (spi_get_max_speed(fd, &max_speed) < 0)
-            return -1;
-        if (spi_get_bits_per_word(fd, &bpw) < 0)
-            return -1;
+        if (spi_get_max_speed(fd, &max_speed) < 0) { return -1; }
+        if (spi_get_bits_per_word(fd, &bpw) < 0) { return -1; }
 
         bufsize = get_xfer3_block_size();
         if (bufsize > len) {
@@ -353,10 +351,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
             return -1;
         }
 
-        if (data8)
-            *bit_order = LSB_FIRST;
-        else
-            *bit_order = MSB_FIRST;
+        *bit_order = (data8) ? LSB_FIRST : MSB_FIRST;
 
         return 0;
     }

@@ -1122,8 +1122,7 @@ static int SpiDev_init(SpiDevObject *self, PyObject *args, PyObject *kwds) {
 
     if (bus >= 0) {
         SpiDev_open(self, args, kwds);
-        if (PyErr_Occurred())
-            return -1;
+        if (PyErr_Occurred()) { return -1; }
     }
 
     return 0;

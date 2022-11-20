@@ -19,13 +19,12 @@
 #include "structmember.h"
 #include "200dk_serial.h"
 
-#define _VERSION_ "0.0.1"
-#if PY_MAJOR_VERSION < 3
+#define VERSION "0.0.1"
+#if PY_MAJOR_VERSION < PY_VERSION_3
 #define PyLong_AS_LONG(val) PyInt_AS_LONG(val)
 #define PyLong_AsLong(val) PyInt_AsLong(val)
 #endif
 
-//	Macros needed for Python 3
 #ifndef PyInt_Check
 #define PyInt_Check PyLong_Check
 #define PyInt_FromLong PyLong_FromLong
@@ -63,8 +62,8 @@ static PyObject *Serial_new(PyTypeObject *type, PyObject *args, PyObject *kwds) 
 
     self->fd = -1;
     self->use_termios_timeout = false;
-    self->baudrate = 115200;
-    self->databits = 8;
+    self->baudrate = BAUDRATES_115200;
+    self->databits = DATABITS_8;
     self->parity = 0;
     self->stopbits = 1;
     self->xonxoff = false;
@@ -84,8 +83,8 @@ static PyObject *Serial_close(SerialObject *self) {
 
     self->fd = -1;
     self->use_termios_timeout = false;
-    self->baudrate = 115200;
-    self->databits = 8;
+    self->baudrate = BAUDRATES_115200;
+    self->databits = DATABITS_8;
     self->parity = 0;
     self->stopbits = 1;
     self->xonxoff = false;
@@ -321,7 +320,7 @@ static int Serial_set_baudrate(SerialObject *self, PyObject *val, void *closure)
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         baudrate = PyInt_AS_LONG(val);
     } else
@@ -351,7 +350,7 @@ static int Serial_set_databits(SerialObject *self, PyObject *val, void *closure)
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         databits = PyInt_AS_LONG(val);
     } else
@@ -379,7 +378,7 @@ static int Serial_set_parity(SerialObject *self, PyObject *val, void *closure) {
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         parity = PyInt_AS_LONG(val);
     } else
@@ -407,7 +406,7 @@ static int Serial_set_stopbits(SerialObject *self, PyObject *val, void *closure)
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         stopbits = PyInt_AS_LONG(val);
     } else
@@ -476,7 +475,7 @@ static int Serial_set_vmin(SerialObject *self, PyObject *val, void *closure) {
                         "Cannot delete attribute");
         return -1;
     }
-#if PY_MAJOR_VERSION < 3
+#if PY_MAJOR_VERSION < PY_VERSION_3
     if (PyInt_Check(val)) {
         vmin = PyInt_AS_LONG(val);
     } else
@@ -602,7 +601,7 @@ static PyObject *Serial_open(SerialObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    if ((self->fd = serial_open_advanced(path, baudrate, 8,
+    if ((self->fd = serial_open_advanced(path, baudrate, DATABITS_8,
                                          PARITY_NONE, 1, false, false))
         < 0) {
         PyErr_SetFromErrno(PyExc_IOError);
@@ -611,7 +610,7 @@ static PyObject *Serial_open(SerialObject *self, PyObject *args, PyObject *kwds)
 
     self->use_termios_timeout = false;
     self->baudrate = baudrate;
-    self->databits = 8;
+    self->databits = DATABITS_8;
     self->parity = 0;
     self->stopbits = 1;
     self->xonxoff = false;
@@ -634,8 +633,7 @@ static int Serial_init(SerialObject *self, PyObject *args, PyObject *kwds) {
 
     if (baudrate > 0) {
         Serial_open(self, args, kwds);
-        if (PyErr_Occurred())
-            return -1;
+        if (PyErr_Occurred()) { return -1; }
     }
 
     return 0;
@@ -707,7 +705,7 @@ static PyMethodDef Serial_methods[] = {
 };
 
 static PyTypeObject SerialObjectType = {
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
     PyVarObject_HEAD_INIT(NULL, 0)
 #else
     PyObject_HEAD_INIT(NULL) 0, /*	ob_size	*/
@@ -754,7 +752,7 @@ static PyTypeObject SerialObjectType = {
 static PyMethodDef Serial_module_methods[] = {
     {NULL}};
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     "a200dkserial",
@@ -772,7 +770,7 @@ static struct PyModuleDef moduledef = {
 #endif
 #endif
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
 PyMODINIT_FUNC
 PyInit_a200dkserial(void)
 #else
@@ -782,18 +780,18 @@ void inita200dkserial(void)
     PyObject *m;
 
     if (PyType_Ready(&SerialObjectType) < 0)
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
         return NULL;
 #else
         return;
 #endif
 
-#if PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= PY_VERSION_3
     m = PyModule_Create(&moduledef);
     PyObject *version = PyUnicode_FromString(_VERSION_);
 #else
     m = Py_InitModule3("a200dkserial", Serial_module_methods, Serial_module_doc);
-    PyObject *version = PyString_FromString(_VERSION_);
+    PyObject *version = PyString_FromString(VERSION);
 #endif
 
     PyObject *dict = PyModule_GetDict(m);
