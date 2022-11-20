@@ -170,6 +170,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
             ERROR_LOG("SPI transfer");
             return -1;
         }
+    }
 #else
     struct spi_ioc_transfer spi_xfer;
     memset(&spi_xfer, 0, sizeof(struct spi_ioc_transfer));
@@ -190,11 +191,10 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     }
 #endif
 
-        spi_get_mode(fd, &mode);
-        if (mode & SPI_CS_HIGH) { status = read(fd, &rxbuf[0], 0); }
+    spi_get_mode(fd, &mode);
+    if (mode & SPI_CS_HIGH) { status = read(fd, &rxbuf[0], 0); }
 
-        return 0;
-    }
+    return 0;
 }
 
 int spi_xfer(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len) {
