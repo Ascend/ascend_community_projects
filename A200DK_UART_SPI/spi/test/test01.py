@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import spidev
+
+
 spi = spidev.SpiDev()
 spi.open(0, 0)
 
-spi.max_speed_hz = 5000
+SPI_SPEED = 1000000
+spi.max_speed_hz = SPI_SPEED
 spi.mode = 0b01
 spi.writebytes2([01, 01])
 
