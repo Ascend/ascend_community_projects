@@ -210,7 +210,7 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
 **步骤8** 执行如下命令，编译测试代码。
 
-    gcc serial_test.c -L. -lserial -o test
+    gcc c_test.c -L. -lserial -o test
 
 **步骤9** 执行如下命令，运行测试代码。
 
@@ -248,7 +248,7 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
 **步骤8** 执行如下命令，编译并运行测试代码。
 
-    python test01.py
+    python py_test.py
 
 ### 4.3 SPI C示例步骤
 
@@ -282,11 +282,11 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
 **步骤8** 执行如下命令，编译测试代码。
 
-    gcc spitest.c -L. -lspidev -o test
+    gcc c_test.c -L. -lspidev -o test
 
 **步骤9** 执行如下命令，运行测试代码。
 
-    ./serial_test
+    ./test
 
 ### 4.4 SPI Python示例步骤
 
@@ -320,7 +320,7 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
 **步骤8** 执行如下命令，编译并运行测试代码。
 
-    python test01.py
+    python py_test.py
 
 ## 5 参考链接
 

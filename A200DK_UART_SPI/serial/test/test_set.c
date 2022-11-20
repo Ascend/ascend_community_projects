@@ -24,38 +24,34 @@ int main(int argc, char const *argv[])
     const char *buf = "nihao\r\n";
     uint8_t new[1024];
     uint8_t read_buf[276];
-    int cc[100];
     int i=0,res=0;
-    printf("sizeof %llu\r\n",sizeof(cc)/sizeof(cc[0]));
     memset(new,0,1024);
     memset(read_buf,0,276);
     fd = serial_open("/dev/ttyAMA1",115200);
     if(fd == -1)
         return 0;
+    res= serial_tostring(fd,new,1024);
+    printf("打开的默认配置：%s\n",new);
     //serial_set_vmin(fd,200);
     //serial_set_vtime(fd,20);
-    printf("%d\r\n",fd);
+    printf("fd %d\r\n",fd);
+    serial_set_baudrate(fd,115200);
+    serial_set_databits(fd,7);
+    serial_set_parity(fd,PARITY_ODD);
+    serial_set_stopbits(fd,2);
+    serial_set_xonxoff(fd,false);
+    serial_set_rtscts(fd,false);
+    serial_set_vmin(fd,233);
+    serial_set_vtime(fd,25.5);
     //write(fd,buf,strlen(buf));
-    serial_write(fd, buf, strlen(buf));
-    res= serial_tostring(fd,new,1024);
-    printf("%s\n",new);
-    while(1)
-    {
-        res = serial_readline(fd, read_buf, 276);
-	if(res>0)
-        {
-            if(i++>=4)
-            {
-	        break;
-	    }
-	    printf("%d %d\r\n",i,res);
-	    serial_write(fd, read_buf, sizeof(read_buf));
-	    memset(read_buf,0,276);
-	}
-    }
+    serial_write(fd, buf, sizeof(buf));
+    res = serial_readline(fd, read_buf, 276,2000);
+    printf("接收： %d\r\n",res);
+    serial_write(fd, read_buf, sizeof(read_buf));
+    memset(read_buf,0,276);
     memset(new,0,1024);
     res= serial_tostring(fd,new,1024);
-    printf("%s\r\n",new);
+    printf("设置后：%s\r\n",new);
     serial_close(&fd);
     return 0;
 }

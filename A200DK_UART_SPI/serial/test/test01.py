@@ -3,20 +3,11 @@ import a200dkserial
 
 ser = a200dkserial.Serial(1,115200)  # open serial port
 
-ser.write(b"hello")     # write a string
+a = ser.readline(2000)
+if a:
+    print(f"输入： {a}")
 
-while True:
-    a = ser.read(9)
-    if(a is not None):
-        print(a)
-        break;
-
-while True:
-    a = ser.readline()
-    if(a is not None):
-        print(a)
-        break;
-
+ser.write(b"hello\r\n")
 ser.input_waiting(3)
 ser.output_waiting(3)
 ser.poll(10)

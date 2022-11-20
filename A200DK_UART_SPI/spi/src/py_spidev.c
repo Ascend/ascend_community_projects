@@ -18,7 +18,7 @@
 #define PyLong_AsLong(val) PyInt_AsLong(val)
 #endif
 
-// Macros needed for Python 3
+//	Macros needed for Python 3
 #ifndef PyInt_Check
 #define PyInt_Check			PyLong_Check
 #define PyInt_FromLong	PyLong_FromLong
@@ -34,10 +34,10 @@ PyDoc_STRVAR(SpiDev_module_doc,
 typedef struct {
 	PyObject_HEAD
 
-	int fd;	/* open file descriptor: /dev/spidevX.Y */
-	uint8_t mode;	/* current SPI mode */
-	uint8_t bits_per_word;	/* current SPI bits per word setting */
-	uint32_t max_speed_hz;	/* current SPI max speed setting in Hz */
+	int fd;	/*	open file descriptor: /dev/spidevX.Y	*/
+	uint8_t mode;	/*	current SPI mode	*/
+	uint8_t bits_per_word;	/*	current SPI bits per word setting	*/
+	uint32_t max_speed_hz;	/*	current SPI max speed setting in Hz	*/
 } SpiDevObject;
 
 static PyObject *
@@ -160,7 +160,7 @@ SpiDev_readbytes(SpiDevObject *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "i:read", &len))
 		return NULL;
 
-	/* read at least 1 byte, no more than SPIDEV_MAXPATH */
+	/*	read at least 1 byte, no more than SPIDEV_MAXPATH	*/
 	if (len < 1)
 		len = 1;
 	else if ((unsigned)len > sizeof(rxbuf))
@@ -183,7 +183,7 @@ SpiDev_readbytes(SpiDevObject *self, PyObject *args)
 
 	for (ii = 0; ii < len; ii++) {
 		PyObject *val = PyLong_FromLong((long)rxbuf[ii]);
-		PyList_SET_ITEM(list, ii, val);  // Steals reference, no need to Py_DECREF(val)
+		PyList_SET_ITEM(list, ii, val);  //	Steals reference, no need to Py_DECREF(val)
 	}
 
 	return list;
@@ -275,8 +275,8 @@ SpiDev_writebytes2_seq_internal(SpiDevObject *self, PyObject *seq, Py_ssize_t le
 	return Py_None;
 }
 
-// In writebytes2 we try to avoild doing malloc/free on each tiny block.
-// So for any transfer below this size we will use on-stack local buffer instead of allocating one on the heap.
+//	In writebytes2 we try to avoild doing malloc/free on each tiny block.
+//	So for any transfer below this size we will use on-stack local buffer instead of allocating one on the heap.
 #define SMALL_BUFFER_SIZE 128
 
 static PyObject *
@@ -296,12 +296,12 @@ SpiDev_writebytes2_seq(SpiDevObject *self, PyObject *seq)
 	bufsize = (len < spi_max_block) ? len : spi_max_block;
 
 	if (bufsize <= SMALL_BUFFER_SIZE) {
-		// The data size is very small so we can avoid malloc/free completely
-		// by using a small local buffer instead
+		//	The data size is very small so we can avoid malloc/free completely
+		//	by using a small local buffer instead
 		uint8_t buf[SMALL_BUFFER_SIZE];
 		result = SpiDev_writebytes2_seq_internal(self, seq, len, buf, SMALL_BUFFER_SIZE);
 	} else {
-		// Large data, need to allocate buffer on heap
+		//	Large data, need to allocate buffer on heap
 		uint8_t	*buf;
 		Py_BEGIN_ALLOW_THREADS
 		buf = malloc(sizeof(__u8) * bufsize);
@@ -333,7 +333,7 @@ SpiDev_writebytes2(SpiDevObject *self, PyObject *args)
 		return NULL;
 	}
 
-	// Try using buffer protocol if object supports it.
+	//	Try using buffer protocol if object supports it.
 	if (PyObject_CheckBuffer(obj) && 1) {
 		Py_buffer	buffer;
 		if (PyObject_GetBuffer(obj, &buffer, PyBUF_SIMPLE) != -1) {
@@ -344,7 +344,7 @@ SpiDev_writebytes2(SpiDevObject *self, PyObject *args)
 	}
 
 
-	// Otherwise, fall back to sequence protocol
+	//	Otherwise, fall back to sequence protocol
 	seq = PySequence_Fast(obj, "expected a sequence");
 	if (seq == NULL) {
 		PyErr_SetString(PyExc_TypeError, wrmsg_list0);
@@ -504,14 +504,14 @@ SpiDev_xfer(SpiDevObject *self, PyObject *args)
 	for (ii = 0; ii < len; ii++) {
 		PyObject *val = PyLong_FromLong((long)rxbuf[ii]);
 		PySequence_SetItem(seq, ii, val);
-		Py_DECREF(val); // PySequence_SetItem does not steal reference, must Py_DECREF(val)
+		Py_DECREF(val); //	PySequence_SetItem does not steal reference, must Py_DECREF(val)
 	}
 
-	// WA:
-	// in CS_HIGH mode CS isn't pulled to low after transfer, but after read
-	// reading 0 bytes doesnt matter but brings cs down
-	// tomdean:
-	// Stop generating an extra CS except in mode CS_HOGH
+	//	WA:
+	//	in CS_HIGH mode CS isn't pulled to low after transfer, but after read
+	//	reading 0 bytes doesnt matter but brings cs down
+	//	tomdean:
+	//	Stop generating an extra CS except in mode CS_HOGH
 	if (self->mode & SPI_CS_HIGH) status = read(self->fd, &rxbuf[0], 0);
 
 	free(txbuf);
@@ -618,13 +618,13 @@ SpiDev_xfer2(SpiDevObject *self, PyObject *args)
 	for (ii = 0; ii < len; ii++) {
 		PyObject *val = PyLong_FromLong((long)rxbuf[ii]);
 		PySequence_SetItem(seq, ii, val);
-		Py_DECREF(val); // PySequence_SetItem does not steal reference, must Py_DECREF(val)
+		Py_DECREF(val); //	PySequence_SetItem does not steal reference, must Py_DECREF(val)
 	}
-	// WA:
-	// in CS_HIGH mode CS isnt pulled to low after transfer
-	// reading 0 bytes doesn't really matter but brings CS down
-	// tomdean:
-	// Stop generating an extra CS except in mode CS_HOGH
+	//	WA:
+	//	in CS_HIGH mode CS isnt pulled to low after transfer
+	//	reading 0 bytes doesn't really matter but brings CS down
+	//	tomdean:
+	//	Stop generating an extra CS except in mode CS_HOGH
 	if (self->mode & SPI_CS_HIGH) status = read(self->fd, &rxbuf[0], 0);
 
 	Py_BEGIN_ALLOW_THREADS
@@ -688,22 +688,22 @@ SpiDev_xfer3(SpiDevObject *self, PyObject *args)
 	}
 
 	Py_BEGIN_ALLOW_THREADS
-	// Allocate tx and rx buffers immediately releasing them if any allocation fails
+	//	Allocate tx and rx buffers immediately releasing them if any allocation fails
 	if ((txbuf = malloc(sizeof(__u8) * bufsize)) != NULL) {
 		if ((rxbuf = malloc(sizeof(__u8) * bufsize)) != NULL) {
-			// All good, both buffers allocated
+			//	All good, both buffers allocated
 		} else {
-			// rxbuf allocation failed while txbuf succeeded
+			//	rxbuf allocation failed while txbuf succeeded
 			free(txbuf);
 			txbuf = NULL;
 		}
 	} else {
-		// txbuf allocation failed
+		//	txbuf allocation failed
 		rxbuf = NULL;
 	}
 	Py_END_ALLOW_THREADS
 	if (!txbuf || !rxbuf) {
-		// Allocation failed. Buffers has been freed already
+		//	Allocation failed. Buffers has been freed already
 		Py_DECREF(seq);
 		Py_DECREF(rx_tuple);
 		PyErr_SetString(PyExc_OverflowError, wrmsg_oom);
@@ -759,18 +759,18 @@ SpiDev_xfer3(SpiDevObject *self, PyObject *args)
 		}
 		for (ii = 0, jj = block_start; ii < block_size; ii++, jj++) {
 			PyObject *val = PyLong_FromLong((long)rxbuf[ii]);
-			PyTuple_SetItem(rx_tuple, jj, val);  // Steals reference, no need to Py_DECREF(val)
+			PyTuple_SetItem(rx_tuple, jj, val);  //	Steals reference, no need to Py_DECREF(val)
 		}
 
 		block_start += block_size;
 	}
 
 
-	// WA:
-	// in CS_HIGH mode CS isnt pulled to low after transfer
-	// reading 0 bytes doesn't really matter but brings CS down
-	// tomdean:
-	// Stop generating an extra CS except in mode CS_HIGH
+	//	WA:
+	//	in CS_HIGH mode CS isnt pulled to low after transfer
+	//	reading 0 bytes doesn't really matter but brings CS down
+	//	tomdean:
+	//	Stop generating an extra CS except in mode CS_HIGH
 	if (self->mode & SPI_CS_HIGH) status = read(self->fd, &rxbuf[0], 0);
 
 	Py_BEGIN_ALLOW_THREADS
@@ -921,7 +921,7 @@ SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure)
 		return -1;
 	}
 
-	// clean and set CPHA and CPOL bits
+	//	clean and set CPHA and CPOL bits
 	tmp = ( self->mode & ~(SPI_CPHA | SPI_CPOL) ) | mode ;
 
 	ret = __spidev_set_mode(self->fd, tmp);
@@ -1312,45 +1312,45 @@ static PyTypeObject SpiDevObjectType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 #else
 	PyObject_HEAD_INIT(NULL)
-	0,				/* ob_size */
+	0,				/*	ob_size	*/
 #endif
-	"SpiDev",			/* tp_name */
-	sizeof(SpiDevObject),		/* tp_basicsize */
-	0,				/* tp_itemsize */
-	(destructor)SpiDev_dealloc,	/* tp_dealloc */
-	0,				/* tp_print */
-	0,				/* tp_getattr */
-	0,				/* tp_setattr */
-	0,				/* tp_compare */
-	0,				/* tp_repr */
-	0,				/* tp_as_number */
-	0,				/* tp_as_sequence */
-	0,				/* tp_as_mapping */
-	0,				/* tp_hash */
-	0,				/* tp_call */
-	0,				/* tp_str */
-	0,				/* tp_getattro */
-	0,				/* tp_setattro */
-	0,				/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-	SpiDevObjectType_doc,		/* tp_doc */
-	0,				/* tp_traverse */
-	0,				/* tp_clear */
-	0,				/* tp_richcompare */
-	0,				/* tp_weaklistoffset */
-	0,				/* tp_iter */
-	0,				/* tp_iternext */
-	SpiDev_methods,			/* tp_methods */
-	0,				/* tp_members */
-	SpiDev_getset,			/* tp_getset */
-	0,				/* tp_base */
-	0,				/* tp_dict */
-	0,				/* tp_descr_get */
-	0,				/* tp_descr_set */
-	0,				/* tp_dictoffset */
-	(initproc)SpiDev_init,		/* tp_init */
-	0,				/* tp_alloc */
-	SpiDev_new,			/* tp_new */
+	"SpiDev",			/*	tp_name	*/
+	sizeof(SpiDevObject),		/*	tp_basicsize	*/
+	0,				/*	tp_itemsize	*/
+	(destructor)SpiDev_dealloc,	/*	tp_dealloc	*/
+	0,				/*	tp_print	*/
+	0,				/*	tp_getattr	*/
+	0,				/*	tp_setattr	*/
+	0,				/*	tp_compare	*/
+	0,				/*	tp_repr	*/
+	0,				/*	tp_as_number	*/
+	0,				/*	tp_as_sequence	*/
+	0,				/*	tp_as_mapping	*/
+	0,				/*	tp_hash	*/
+	0,				/*	tp_call	*/
+	0,				/*	tp_str	*/
+	0,				/*	tp_getattro	*/
+	0,				/*	tp_setattro	*/
+	0,				/*	tp_as_buffer	*/
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*	tp_flags	*/
+	SpiDevObjectType_doc,		/*	tp_doc	*/
+	0,				/*	tp_traverse	*/
+	0,				/*	tp_clear	*/
+	0,				/*	tp_richcompare	*/
+	0,				/*	tp_weaklistoffset	*/
+	0,				/*	tp_iter	*/
+	0,				/*	tp_iternext	*/
+	SpiDev_methods,			/*	tp_methods	*/
+	0,				/*	tp_members	*/
+	SpiDev_getset,			/*	tp_getset	*/
+	0,				/*	tp_base	*/
+	0,				/*	tp_dict	*/
+	0,				/*	tp_descr_get	*/
+	0,				/*	tp_descr_set	*/
+	0,				/*	tp_dictoffset	*/
+	(initproc)SpiDev_init,		/*	tp_init	*/
+	0,				/*	tp_alloc	*/
+	SpiDev_new,			/*	tp_new	*/
 };
 
 static PyMethodDef SpiDev_module_methods[] = {
@@ -1370,7 +1370,7 @@ static struct PyModuleDef moduledef = {
 	NULL,
 };
 #else
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
+#ifndef PyMODINIT_FUNC	/*	declarations for DLL import/export	*/
 #define PyMODINIT_FUNC void
 #endif
 #endif

@@ -24,9 +24,7 @@ int main(int argc, char const *argv[])
     const char *buf = "nihao\r\n";
     uint8_t new[1024];
     uint8_t read_buf[276];
-    int cc[100];
     int i=0,res=0;
-    printf("sizeof %llu\r\n",sizeof(cc)/sizeof(cc[0]));
     memset(new,0,1024);
     memset(read_buf,0,276);
     fd = serial_open("/dev/ttyAMA1",115200);
@@ -34,25 +32,15 @@ int main(int argc, char const *argv[])
         return 0;
     //serial_set_vmin(fd,200);
     //serial_set_vtime(fd,20);
-    printf("%d\r\n",fd);
+    printf("fd %d\r\n",fd);
     //write(fd,buf,strlen(buf));
     serial_write(fd, buf, strlen(buf));
     res= serial_tostring(fd,new,1024);
     printf("%s\n",new);
-    while(1)
-    {
-        res = serial_readline(fd, read_buf, 276);
-	if(res>0)
-        {
-            if(i++>=4)
-            {
-	        break;
-	    }
-	    printf("%d %d\r\n",i,res);
-	    serial_write(fd, read_buf, sizeof(read_buf));
-	    memset(read_buf,0,276);
-	}
-    }
+    res = serial_readline(fd, read_buf, 276,2000);
+    printf("%d\r\n",res);
+    serial_write(fd, read_buf, sizeof(read_buf));
+    memset(read_buf,0,276);
     memset(new,0,1024);
     res= serial_tostring(fd,new,1024);
     printf("%s\r\n",new);

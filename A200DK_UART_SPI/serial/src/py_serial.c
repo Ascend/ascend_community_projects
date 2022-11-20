@@ -25,7 +25,7 @@
 #define PyLong_AsLong(val) PyInt_AsLong(val)
 #endif
 
-// Macros needed for Python 3
+//	Macros needed for Python 3
 #ifndef PyInt_Check
 #define PyInt_Check			PyLong_Check
 #define PyInt_FromLong	PyLong_FromLong
@@ -105,34 +105,9 @@ Serial_dealloc(SerialObject *self)
 {
 	PyObject *ref = Serial_close(self);
 	Py_XDECREF(ref);
-
 	Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-// static int
-// __set_real(PyObject *val, uint32_t *mode, const char *string)
-// {
-// 	if (val == NULL) {
-// 		PyErr_SetString(PyExc_TypeError,
-// 			"Cannot delete attribute");
-// 		return -1;
-// 	}
-// #if PY_MAJOR_VERSION < 3
-// 	if (PyInt_Check(val)) {
-// 		*mode = PyInt_AS_LONG(val);
-// 	} else
-// #endif
-// 	{
-// 		if (PyLong_Check(val)) {
-// 			*mode = PyLong_AsUnsignedLong(val);
-// 		} else {
-// 			PyErr_SetString(PyExc_TypeError,
-// 				string);
-// 			return -1;
-// 		}
-// 	}
-// 	return 0;
-// }
 
 static PyObject *
 Serial_write(SerialObject *self, PyObject *seq)
@@ -141,17 +116,20 @@ Serial_write(SerialObject *self, PyObject *seq)
 	PyObject *uni;
 	char *p;
 
-	if (!PyArg_ParseTuple(seq, "S:write", &uni))
-	{
+	if (!PyArg_ParseTuple(seq, "S:buf", &uni)) {
 		PyErr_SetString(PyExc_TypeError,
 			"failed to parse S");
 		return NULL;
 	}
 
-	if(!PyBytes_AsStringAndSize(uni,&p,&len)) {
+	if(!PyBytes_Check(uni)) {
 		PyErr_SetString(PyExc_TypeError,
-			"failed to PyBytes_AsStringAndSize");
+			"failed to pass PyBytes_Check");
+		return NULL;
 	}
+
+	p = PyBytes_AsString(uni);
+	len = sizeof(p);
 
 	if(serial_write(self->fd,(uint8_t *)p,(size_t)len)<0) {
 		PyErr_SetString(PyExc_TypeError,
@@ -168,55 +146,56 @@ static PyObject *
 Serial_read(SerialObject *self, PyObject *args)
 {
 	uint8_t	rxbuf[SERIAL_MAXPATH];
-	int		status, len;
-	PyObject	*list;
+	int		status, len, timeout = 0;
+	PyObject	*py_str;
 
-	if (!PyArg_ParseTuple(args, "i:read", &len))
+	if (!PyArg_ParseTuple(args, "i|I:buf timeout", &len, &timeout))
 	{
 		PyErr_SetString(PyExc_TypeError,
 			"failed to parse i");
 		return NULL;
 	}
 
-	/* read at least 1 byte, no more than SERIAL_MAXPATH */
+	/*	read at least 1 byte, no more than SERIAL_MAXPATH	*/
 	if (len < 1)
 		len = 1;
 	else if ((unsigned)len > sizeof(rxbuf))
 		len = sizeof(rxbuf);
 
 	memset(rxbuf, 0, sizeof(rxbuf));
-	// status = read(self->fd, &rxbuf[0], len);
-	status = serial_read(self->fd, rxbuf, len, 0);
+
+	status = serial_read(self->fd, rxbuf, len, timeout);
 	if (status < 0) {
 		PyErr_SetString(PyExc_IOError,
 			"failed to read");
 		return NULL;
 	}
 
-	// uint8_t err[50] = {0};
-	// memset(err,0,50);
-	// sprintf(err,"short read %d", status);
 	if (status <= 0) {
-		// PyErr_SetString(PyExc_TypeError,
-		// 	err);
-		// return NULL;
 		Py_INCREF(Py_None);
 		return Py_None;
 	}
 
-	list = PyUnicode_FromStringAndSize((const char*)(char*)rxbuf,status);
+	py_str = PyUnicode_FromStringAndSize((const char*)(char*)rxbuf,status);
 
-	return list;
+	return py_str;
 }
 
 static PyObject *
-Serial_readline(SerialObject *self)
+Serial_readline(SerialObject *self, PyObject *args)
 {
 	uint8_t	rxbuf[SERIAL_MAXPATH];
-	int		status;
-	PyObject	*list;
+	int		status, timeout_ms;
+	PyObject	*py_str;
 
-    status = readline(self->fd, rxbuf, SERIAL_MAXPATH);
+	if (!PyArg_ParseTuple(args, "|I:timeout", &timeout_ms))
+	{
+		PyErr_SetString(PyExc_TypeError,
+			"failed to parse I (readline)");
+		return NULL;
+	}
+
+    status = serial_readline(self->fd, rxbuf, SERIAL_MAXPATH,timeout_ms);
 
 	if(status < 0) {
 		PyErr_SetString(PyExc_IOError,
@@ -229,9 +208,9 @@ Serial_readline(SerialObject *self)
 		return Py_None;
 	}
 
-	list = PyUnicode_FromStringAndSize((const char*)(char*)rxbuf,status);
+	py_str = PyUnicode_FromStringAndSize((const char*)(char*)rxbuf,status);
 
-	return list;
+	return py_str;
 }
 
 static PyObject *
@@ -288,7 +267,7 @@ static PyObject *
 Serial_poll(SerialObject *self, PyObject *args) {
 	int timeout_ms = 0;
 
-	if (!PyArg_ParseTuple(args, "i:poll", &timeout_ms))
+	if (!PyArg_ParseTuple(args, "i:timeout_ms", &timeout_ms))
 		return NULL;
 	
     PyObject *result;
@@ -361,20 +340,6 @@ Serial_get_rtscts(SerialObject *self, void *closure) {
 	Py_INCREF(result);
 	return result;
 }
-
-// static PyObject *
-// Serial_get_use_termios_timeout(SerialObject *self, void *closure) {
-// 	PyObject *result;
-
-//     if (self->use_termios_timeout == true)
-//         result = Py_True;
-//     else
-//         result = Py_False;
-// 	return result;
-
-// 	Py_INCREF(result);
-// 	return result;
-// }
 
 static PyObject *
 Serial_get_vtime(SerialObject *self, void *closure) {
@@ -646,7 +611,7 @@ Serial_open2(SerialObject *self, PyObject *args, PyObject *kwds)
     uint32_t baudrate,databits,parity,stopbits,vmin;
     bool xonxoff,rtscts;
     float vtime;
-	// uint32_t temp_xonxoff,temp_rtscts;
+
 	static char *kwlist[] = {"num","xonxoff","rtscts","vmin","stopbits","parity","baudrate","databits","vtime",NULL};
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "ippIIIIIf:open2", 
 			kwlist,&num,&xonxoff,&rtscts,&baudrate,&databits,&parity,&stopbits,&vmin,&vtime))
@@ -656,10 +621,6 @@ Serial_open2(SerialObject *self, PyObject *args, PyObject *kwds)
 			"num number is invalid.");
 		return NULL;
 	}
-	// if ((self->fd = open(path, O_RDWR | O_NOCTTY)) == -1) {
-	// 	PyErr_SetFromErrno(PyExc_IOError);
-	// 	return NULL;
-	// }
 	if((self->fd = serial_open_advanced(path, baudrate, databits, 
 		parity, stopbits, xonxoff, rtscts))<0) {
 		PyErr_SetFromErrno(PyExc_IOError);
@@ -686,20 +647,20 @@ Serial_open(SerialObject *self, PyObject *args, PyObject *kwds)
 	int num;
 	char path[SERIAL_MAXPATH];
     uint32_t baudrate;
-    // float vtime;
-	// uint8_t tmp8;
-	// uint32_t tmp32,temp_xonxoff,temp_rtscts;
-	static char *kwlist[] = {"num","baudrate",NULL};
-	// Py_UNICODE *temp;
-	// char *_path;
+    //	float vtime;
+	//	uint8_t tmp8;
+	//	uint32_t tmp32,temp_xonxoff,temp_rtscts;
+	static char *kwlist[]={"num","baudrate",NULL};
+	//	Py_UNICODE *temp;
+	//	char *_path;
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "iI:open", 
 			kwlist,&num,&baudrate))
 		return NULL;
-	// if (!PyArg_ParseTupleAndKeywords(args, kwds, "u:open", 
-	// 		kwlist,temp))
-	// 	return NULL;
-	// if(PyUnicode_Check(temp))
-	// 	_path = PyUnicode_AS_DATA(temp)；
+	//	if (!PyArg_ParseTupleAndKeywords(args, kwds, "u:open", 
+	//			kwlist,temp))
+	//		return NULL;
+	//	if(PyUnicode_Check(temp))
+	//		_path = PyUnicode_AS_DATA(temp)；
 		
 	if (snprintf(path, SERIAL_MAXPATH, "/dev/ttyAMA%d", num) >= SERIAL_MAXPATH) {
 		PyErr_SetString(PyExc_OverflowError,
@@ -732,7 +693,7 @@ Serial_init(SerialObject *self, PyObject *args, PyObject *kwds)
 {
 	int num = -1;
     uint32_t baudrate = -1;
-	static char *kwlist[] = {"num", "baudrate", NULL};
+	static char *kwlist[]={"num", "baudrate", NULL};
 
 	if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iI:__init__",
 			kwlist, &num, &baudrate))
@@ -777,6 +738,16 @@ PyObject *Serial_exit(SerialObject *self, PyObject *args)
     Py_RETURN_FALSE;
 }
 
+static char to_str_buf[SERIAL_MAXPATH];
+
+static 
+PyObject *Serial_str(PyObject *self)
+{
+	memset(to_str_buf, 0, SERIAL_MAXPATH);
+	serial_tostring(((SerialObject *)self)->fd,to_str_buf,SERIAL_MAXPATH);
+    return Py_BuildValue("s", "to_str_buf");
+}
+
 static PyMethodDef Serial_methods[] = {
 	{"open", (PyCFunction)Serial_open, METH_VARARGS | METH_KEYWORDS,
 		"Serial_open_doc"},
@@ -812,45 +783,45 @@ static PyTypeObject SerialObjectType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 #else
 	PyObject_HEAD_INIT(NULL)
-	0,				/* ob_size */
+	0,				/*	ob_size	*/
 #endif
-	"Serial",			/* tp_name */
-	sizeof(SerialObject),		/* tp_basicsize */
-	0,				/* tp_itemsize */
-	(destructor)Serial_dealloc,	/* tp_dealloc */
-	0,				/* tp_print */
-	0,				/* tp_getattr */
-	0,				/* tp_setattr */
-	0,				/* tp_compare */
-	0,				/* tp_repr */
-	0,				/* tp_as_number */
-	0,				/* tp_as_sequence */
-	0,				/* tp_as_mapping */
-	0,				/* tp_hash */
-	0,				/* tp_call */
-	0,				/* tp_str */
-	0,				/* tp_getattro */
-	0,				/* tp_setattro */
-	0,				/* tp_as_buffer */
-	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-	SerialObjectType_doc,		/* tp_doc */
-	0,				/* tp_traverse */
-	0,				/* tp_clear */
-	0,				/* tp_richcompare */
-	0,				/* tp_weaklistoffset */
-	0,				/* tp_iter */
-	0,				/* tp_iternext */
-	Serial_methods,			/* tp_methods */
-	0,				/* tp_members */
-	Serial_getset,			/* tp_getset */
-	0,				/* tp_base */
-	0,				/* tp_dict */
-	0,				/* tp_descr_get */
-	0,				/* tp_descr_set */
-	0,				/* tp_dictoffset */
-	(initproc)Serial_init,		/* tp_init */
-	0,				/* tp_alloc */
-	Serial_new,			/* tp_new */
+	"Serial",			/*	tp_name	*/
+	sizeof(SerialObject),		/*	tp_basicsize	*/
+	0,				/*	tp_itemsize	*/
+	(destructor)Serial_dealloc,	/*	tp_dealloc	*/
+	0,				/*	tp_print	*/
+	0,				/*	tp_getattr	*/
+	0,				/*	tp_setattr	*/
+	0,				/*	tp_compare	*/
+	0,				/*	tp_repr	*/
+	0,				/*	tp_as_number	*/
+	0,				/*	tp_as_sequence	*/
+	0,				/*	tp_as_mapping	*/
+	0,				/*	tp_hash	*/
+	0,				/*	tp_call	*/
+	(reprfunc)Serial_str,				/*	tp_str	*/
+	0,				/*	tp_getattro	*/
+	0,				/*	tp_setattro	*/
+	0,				/*	tp_as_buffer	*/
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*	tp_flags	*/
+	SerialObjectType_doc,		/*	tp_doc	*/
+	0,				/*	tp_traverse	*/
+	0,				/*	tp_clear	*/
+	0,				/*	tp_richcompare	*/
+	0,				/*	tp_weaklistoffset	*/
+	0,				/*	tp_iter	*/
+	0,				/*	tp_iternext	*/
+	Serial_methods,			/*	tp_methods	*/
+	0,				/*	tp_members	*/
+	Serial_getset,			/*	tp_getset	*/
+	0,				/*	tp_base	*/
+	0,				/*	tp_dict	*/
+	0,				/*	tp_descr_get	*/
+	0,				/*	tp_descr_set	*/
+	0,				/*	tp_dictoffset	*/
+	(initproc)Serial_init,		/*	tp_init	*/
+	0,				/*	tp_alloc	*/
+	Serial_new,			/*	tp_new	*/
 };
 
 static PyMethodDef Serial_module_methods[] = {
@@ -870,7 +841,7 @@ static struct PyModuleDef moduledef = {
 	NULL,
 };
 #else
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
+#ifndef PyMODINIT_FUNC	/*	declarations for DLL import/export	*/
 #define PyMODINIT_FUNC void
 #endif
 #endif

@@ -24,14 +24,17 @@ CFLAGS= -Wall
 CFLAGS += $(DEBFLAGS)
 LDFLAGS = 
 
-all: spitest
+cname?=test01
+oname=$(cname).o
+targetname = $(cname)
+all: $(targetname)
 
 #compiler ruler
-spitest:test01.o  c_spidev.o 
+$(targetname):$(oname)  c_spidev.o 
 	$(CC) $(CFLAGS) -o $@ $? $(LDFLAGS)
 	rm  *.o  
 	rm -f *.bak
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
 clean:
-	rm -f spitest 
+	rm -f targetname 

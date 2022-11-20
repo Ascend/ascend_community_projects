@@ -12,19 +12,19 @@
 #include <linux/spi/spidev.h>
 #include "a200dkspi.h"
 
-// Maximum block size for xfer3
-// Initialised once by get_xfer3_block_size
+//	Maximum block size for xfer3
+//	Initialised once by get_xfer3_block_size
 static uint32_t xfer3_block_size = 0;
-// static spi_t *spihandle=NULL;
+//	static spi_t *spihandle=NULL;
 uint32_t get_xfer3_block_size(void) {
 	int value;
 
-	// If value was already initialised, just use it
+	//	If value was already initialised, just use it
 	if (xfer3_block_size != 0) {
 		return xfer3_block_size;
 	}
 
-	// Start with the default
+	//	Start with the default
 	xfer3_block_size = XFER3_DEFAULT_BLOCK_SIZE;
 
 	FILE *file = fopen(BLOCK_SIZE_CONTROL_FILE,"r");
@@ -55,7 +55,7 @@ int spi_open_advanced2(const char *path, unsigned int mode, uint32_t max_speed, 
     uint8_t data8;
     int fd;
 
-    /* Validate arguments */
+   /*	Validate arguments	*/
     if (mode & ~0x3)
     {
         ERROR_LOG("Invalid mode (can be 0,1,2,3)");
@@ -73,59 +73,54 @@ int spi_open_advanced2(const char *path, unsigned int mode, uint32_t max_speed, 
     }
 #endif
 
-    /* Open device */
+   /*	Open device	*/
     if ((fd = open(path, O_RDWR)) < 0)
     {
         ERROR_LOG("Opening SPI device \"%s\"", path);
         return -1;
     }
 
-    /* Set mode, bit order, extra flags */
+   /*	Set mode, bit order, extra flags	*/
 #ifndef SPI_IOC_WR_MODE32
     (void)data32;
 
     data8 = mode | ((bit_order == LSB_FIRST) ? SPI_LSB_FIRST : 0) | extra_flags;
     if (ioctl(fd, SPI_IOC_WR_MODE, &data8) < 0) {
         close(fd);
-        // spi ->fd = -1;
         ERROR_LOG("Failed to SPI mode");
         return -1;
     }
 #else
     if (extra_flags > 0xff) {
-        /* Use 32-bit mode if extra_flags is wider than 8-bits */
+       /*	Use 32-bit mode if extra_flags is wider than 8-bits	*/
         data32 = mode | ((bit_order == LSB_FIRST) ? SPI_LSB_FIRST : 0) | extra_flags;
         if (ioctl(fd, SPI_IOC_WR_MODE32, &data32) < 0) {
             close(fd);
-            // spi ->fd = -1;
             ERROR_LOG("Failed to SPI mode");
             return -1;
         }
     } else {
-        /* Prefer 8-bit mode, in case this library is inadvertently used on an
-         * older kernel. */
+       /*	Prefer 8-bit mode, in case this library is inadvertently used on an
+         * older kernel.	*/
         data8 = mode | ((bit_order == LSB_FIRST) ? SPI_LSB_FIRST : 0) | extra_flags;
         if (ioctl(fd, SPI_IOC_WR_MODE, &data8) < 0) {
             close(fd);
-            // spi ->fd = -1;
             ERROR_LOG("Failed to SPI mode");
             return -1;
         }
     }
 #endif
 
-    /* Set max speed */
+   /*	Set max speed	*/
     if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &max_speed) < 0) {
         close(fd);
-        // spi ->fd = -1;
         ERROR_LOG("Failed to set SPI max speed");
         return -1;
     }
 
-    /* Set bits per word */
+   /*	Set bits per word	*/
     if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits_per_word) < 0) {
         close(fd);
-        // spi ->fd = -1;
         ERROR_LOG("Setting SPI bits per word");
         return -1;
     }
@@ -148,7 +143,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     if(spi_get_bits_per_word(fd,&bpw)<0)
         return -1;
 
-    /* Prepare SPI transfer structure */
+   /*	Prepare SPI transfer structure	*/
 #ifdef SPIDEV_SINGLE
     size_t ii;
 	struct spi_ioc_transfer *xferptr;
@@ -187,7 +182,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     spi_xfer.bits_per_word = bits_per_word ? bits_per_word : bpw;
     spi_xfer.cs_change = 0;
 
-    /* Transfer */
+   /*	Transfer	*/
     status = ioctl(fd, SPI_IOC_MESSAGE(1), &spi_xfer);
     if (status < 1)
     {
@@ -213,7 +208,7 @@ int spi_xfer(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len)
 
     struct spi_ioc_transfer spi_xfer;
 
-    /* Prepare SPI transfer structure */
+   /*	Prepare SPI transfer structure	*/
     memset(&spi_xfer, 0, sizeof(struct spi_ioc_transfer));
     spi_xfer.tx_buf = (uint64_t)txbuf;
     spi_xfer.rx_buf = (uint64_t)rxbuf;
@@ -223,7 +218,7 @@ int spi_xfer(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len)
     spi_xfer.bits_per_word = 0;
     spi_xfer.cs_change = 0;
 
-    /* Transfer */
+   /*	Transfer	*/
     status = ioctl(fd, SPI_IOC_MESSAGE(1), &spi_xfer);
     if (status < 1)
     {
@@ -260,7 +255,7 @@ int spi_xfer3(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
 		bufsize = len;
 	}
 
-    /* Prepare SPI transfer structure */
+   /*	Prepare SPI transfer structure	*/
     memset(&spi_xfer, 0, sizeof(struct spi_ioc_transfer));
     spi_xfer.tx_buf = (uint64_t)txbuf;
     spi_xfer.rx_buf = (uint64_t)rxbuf;
@@ -270,7 +265,7 @@ int spi_xfer3(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     spi_xfer.bits_per_word = bits_per_word ? bits_per_word : bpw;
     spi_xfer.cs_change = 0;
 
-    /* Transfer */
+   /*	Transfer	*/
     status = ioctl(fd, SPI_IOC_MESSAGE(1), &spi_xfer);
     if (status < 1)
     {
@@ -314,7 +309,7 @@ int spi_close(int *fd) {
     if (*fd < 0)
         return 0;
 
-    /* Close fd */
+   /*	Close fd	*/
     if (close(*fd) < 0)
     {
         ERROR_LOG("Closing SPI device");
@@ -418,7 +413,7 @@ int spi_get_extra_flags(int fd, uint8_t *extra_flags) {
         ERROR_LOG("Getting SPI mode flags");
         return -1;
     }
-    /* Extra mode flags without mode 0-3 and bit order */
+   /*	Extra mode flags without mode 0-3 and bit order	*/
     *extra_flags = data8 & ~( SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST );
 
     return 0;
@@ -526,9 +521,9 @@ int spi_set_extra_flags(int fd, uint8_t extra_flags) {
         ERROR_LOG("Getting SPI mode flags");
         return -1;
     }
-    /* Keep mode 0-3 and bit order */
+   /*	Keep mode 0-3 and bit order	*/
     data8 &= (SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST);
-    /* Set extra flags */
+   /*	Set extra flags	*/
     data8 |= extra_flags;
 
     if (ioctl(fd, SPI_IOC_WR_MODE, &data8) < 0)

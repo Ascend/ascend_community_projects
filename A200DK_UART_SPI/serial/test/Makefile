@@ -1,12 +1,3 @@
-#
-#	Description:
-#		Makefile for 2.6 device-drivers tests		
-#
-#	Copyright (C), 2005-2010, Embedded System of China Tech. Co., Ltd.
-#
-#	Author: Casiawu(wujh@emsyschina.com)
-
-# Comment/uncomment the following line to disable/enable debugging
 #DEBUG = y
 
 # Add your debugging flag (or not) to CFLAGS
@@ -24,14 +15,17 @@ CFLAGS= -Wall
 CFLAGS += $(DEBFLAGS)
 LDFLAGS = 
 
-all: serialtest
+cname?=serial_test
+oname=$(cname).o
+targetname = $(cname)
+all: $(targetname)
 
 #compiler ruler
-serialtest:serial_test.o  c_serial.o 
+$(targetname):$(oname)  c_serial.o 
 	$(CC) $(CFLAGS) -o $@ $? $(LDFLAGS)
 	rm  *.o  
 	rm -f *.bak
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
 clean:
-	rm -f serialtest 
+	rm -f targetname 
