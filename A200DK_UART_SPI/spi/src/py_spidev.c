@@ -25,7 +25,7 @@
 #include "structmember.h"
 #include "a200dkspi.h"
 
-#define _VERSION_ "0.0.1"
+#define VERSION "0.0.1"
 
 #if PY_MAJOR_VERSION < 3
 #define PyLong_AS_LONG(val) PyInt_AS_LONG(val)
@@ -1266,10 +1266,10 @@ void initspidev(void)
 
 #if PY_MAJOR_VERSION >= 3
     m = PyModule_Create(&moduledef);
-    PyObject *version = PyUnicode_FromString(_VERSION_);
+    PyObject *version = PyUnicode_FromString(VERSION);
 #else
     m = Py_InitModule3("spidev", SpiDev_module_methods, SpiDev_module_doc);
-    PyObject *version = PyString_FromString(_VERSION_);
+    PyObject *version = PyString_FromString(VERSION);
 #endif
 
     PyObject *dict = PyModule_GetDict(m);
