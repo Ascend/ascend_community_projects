@@ -16,9 +16,7 @@ static uint32_t xfer3_block_size = 0;
 uint32_t get_xfer3_block_size(void) {
     int value;
 
-    if (xfer3_block_size != 0) {
-        return xfer3_block_size;
-    }
+    if (xfer3_block_size != 0) { return xfer3_block_size; }
 
     xfer3_block_size = XFER3_DEFAULT_BLOCK_SIZE;
 
@@ -127,12 +125,10 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
         ERROR_LOG("SPI transfer len < 0 or len > SPIDEV_MAXPATH");
         return -1;
     }
-    if (spi_get_max_speed(fd, &max_speed) < 0)
-        return -1;
-    if (spi_get_bits_per_word(fd, &bpw) < 0)
-        return -1;
+    if (spi_get_max_speed(fd, &max_speed) < 0) { return -1; }
+    if (spi_get_bits_per_word(fd, &bpw) < 0) { return -1; }
 
-        /*	Prepare SPI transfer structure	*/
+    /*	Prepare SPI transfer structure	*/
 #ifdef SPIDEV_SINGLE
     size_t ii;
     struct spi_ioc_transfer *xferptr;
@@ -180,7 +176,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
 #endif
 
         spi_get_mode(fd, &mode);
-        if (mode & SPI_CS_HIGH) status = read(fd, &rxbuf[0], 0);
+        if (mode & SPI_CS_HIGH) { status = read(fd, &rxbuf[0], 0); }
 
         return 0;
     }
@@ -214,7 +210,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
 
         uint8_t mode;
         spi_get_mode(fd, &mode);
-        if (mode & SPI_CS_HIGH) status = read(fd, &rxbuf[0], 0);
+        if (mode & SPI_CS_HIGH) { status = read(fd, &rxbuf[0], 0); }
 
         return 0;
     }
@@ -258,7 +254,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
         }
 
         spi_get_mode(fd, &mode);
-        if (mode & SPI_CS_HIGH) status = read(fd, &rxbuf[0], 0);
+        if (mode & SPI_CS_HIGH) { status = read(fd, &rxbuf[0], 0); }
 
         return 0;
     }
@@ -286,8 +282,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     }
 
     int spi_close(int *fd) {
-        if (*fd < 0)
-            return 0;
+        if (*fd < 0) { return 0; }
 
         /*	Close fd	*/
         if (close(*fd) < 0) {
@@ -394,41 +389,27 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
 
     int spi_get_cshigh(int fd, bool *cs) {
         uint8_t mode = 0;
-        if (__spi_get_mode(fd, &mode) < 0) {
-            return -1;
-        }
+        if (__spi_get_mode(fd, &mode) < 0) { return -1; }
 
-        if (mode & SPI_CS_HIGH)
-            *cs = true;
-        else
-            *cs = false;
+        *cs = (mode & SPI_CS_HIGH) ? true : false;
+
         return 0;
     }
 
     int spi_get_loop(int fd, bool *result) {
         uint8_t mode = 0;
-        if (__spi_get_mode(fd, &mode) < 0) {
-            return -1;
-        }
+        if (__spi_get_mode(fd, &mode) < 0) { return -1; }
 
-        if (mode & SPI_LOOP)
-            *result = true;
-        else
-            *result = false;
+        *result = (mode & SPI_LOOP) ? true : false;
 
         return 0;
     }
 
     int spi_get_no_cs(int fd, bool *result) {
         uint8_t mode = 0;
-        if (__spi_get_mode(fd, &mode) < 0) {
-            return -1;
-        }
+        if (__spi_get_mode(fd, &mode) < 0) { return -1; }
 
-        if (mode & SPI_NO_CS)
-            *result = true;
-        else
-            *result = false;
+        *result = (mode & SPI_NO_CS) ? true : false;
 
         return 0;
     }
@@ -465,10 +446,7 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
             return -1;
         }
 
-        if (bit_order == LSB_FIRST)
-            data8 = 1;
-        else
-            data8 = 0;
+        data8 = (bit_order == LSB_FIRST) ? 1 : 0;
 
         if (ioctl(fd, SPI_IOC_WR_LSB_FIRST, &data8) < 0) {
             ERROR_LOG("Setting SPI bit order");
@@ -515,14 +493,11 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     int spi_set_cshigh(int fd, bool val) {
         uint8_t tmp, mode = 0;
 
-        if (__spi_get_mode(fd, &mode) != 0) {
-            return -1;
-        }
+        if (__spi_get_mode(fd, &mode) != 0) { return -1; }
 
         tmp = (val == true) ? (mode | SPI_CS_HIGH) : (mode & ~SPI_CS_HIGH);
 
-        if (spi_set_m(fd, tmp) < 0)
-            return -1;
+        if (spi_set_m(fd, tmp) < 0) { return -1; }
 
         return 0;
     }
@@ -530,14 +505,11 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     int spi_set_no_cs(int fd, bool val) {
         uint8_t tmp, mode;
 
-        if (__spi_get_mode(fd, &mode) < 0) {
-            return -1;
-        }
+        if (__spi_get_mode(fd, &mode) < 0) { return -1; }
 
         tmp = (val == true) ? (mode | SPI_NO_CS) : (mode & ~SPI_NO_CS);
 
-        if (spi_set_m(fd, tmp) < 0)
-            return -1;
+        if (spi_set_m(fd, tmp) < 0) { return -1; }
 
         return 0;
     }
@@ -545,17 +517,11 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
     int spi_set_loop(int fd, bool val) {
         uint8_t tmp, mode;
 
-        if (__spi_get_mode(fd, &mode) < 0) {
-            return -1;
-        }
+        if (__spi_get_mode(fd, &mode) < 0) { return -1; }
 
-        if (val == true)
-            tmp = mode | SPI_LOOP;
-        else
-            tmp = mode & ~SPI_LOOP;
+        tmp = (val == true) ? (mode | SPI_LOOP) : mode & ~SPI_LOOP;
 
-        if (spi_set_m(fd, tmp) < 0)
-            return -1;
+        if (spi_set_m(fd, tmp) < 0) { return -1; }
 
         return 0;
     }
@@ -571,30 +537,35 @@ int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len, uint16_t
         uint8_t extra_flags, mode;
         char extra_flags_str[4];
 
-        if (spi_get_mode(fd, &mode) < 0)
+        if (spi_get_mode(fd, &mode) < 0) {
             strncpy(mode_str, "?", sizeof(mode_str));
-        else
+        } else {
             snprintf(mode_str, sizeof(mode_str), "%d", mode);
+        }
 
-        if (spi_get_max_speed(fd, &max_speed) < 0)
+        if (spi_get_max_speed(fd, &max_speed) < 0) {
             strncpy(max_speed_str, "?", sizeof(max_speed_str));
-        else
+        } else {
             snprintf(max_speed_str, sizeof(max_speed_str), "%u", max_speed);
+        }
 
-        if (spi_get_bit_order(fd, &bit_order) < 0)
+        if (spi_get_bit_order(fd, &bit_order) < 0) {
             strncpy(bit_order_str, "?", sizeof(bit_order_str));
-        else
+        } else {
             strncpy(bit_order_str, (bit_order == LSB_FIRST) ? "LSB first" : "MSB first", sizeof(bit_order_str));
+        }
 
-        if (spi_get_bits_per_word(fd, &bits_per_word) < 0)
+        if (spi_get_bits_per_word(fd, &bits_per_word) < 0) {
             strncpy(bits_per_word_str, "?", sizeof(bits_per_word_str));
-        else
+        } else {
             snprintf(bits_per_word_str, sizeof(bits_per_word_str), "%u", bits_per_word);
+        }
 
-        if (spi_get_extra_flags(fd, &extra_flags) < 0)
+        if (spi_get_extra_flags(fd, &extra_flags) < 0) {
             strncpy(extra_flags_str, "?", sizeof(extra_flags_str));
-        else
+        } else {
             snprintf(extra_flags_str, sizeof(extra_flags_str), "%02x", extra_flags);
+        }
 
         return snprintf(str, len, "SPI (fd=%d, mode=%s, max_speed=%s, bit_order=%s, bits_per_word=%s, extra_flags=%s)", fd, mode_str, max_speed_str, bit_order_str, bits_per_word_str, extra_flags_str);
     }

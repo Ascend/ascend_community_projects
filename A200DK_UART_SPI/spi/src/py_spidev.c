@@ -39,11 +39,9 @@ typedef struct {
     uint32_t max_speed_hz; /*	current SPI max speed setting in Hz	*/
 } SpiDevObject;
 
-static PyObject *
-SpiDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+static PyObject *SpiDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
     SpiDevObject *self;
-    if ((self = (SpiDevObject *)type->tp_alloc(type, 0)) == NULL)
-        return NULL;
+    if ((self = (SpiDevObject *)type->tp_alloc(type, 0)) == NULL) { return NULL; }
 
     self->fd = -1;
     self->mode = 0;
@@ -54,8 +52,7 @@ SpiDev_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
     return (PyObject *)self;
 }
 
-static PyObject *
-SpiDev_close(SpiDevObject *self) {
+static PyObject *SpiDev_close(SpiDevObject *self) {
     if ((self->fd != -1) && (close(self->fd) == -1)) {
         PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
@@ -70,8 +67,7 @@ SpiDev_close(SpiDevObject *self) {
     return Py_None;
 }
 
-static void
-SpiDev_dealloc(SpiDevObject *self) {
+static void SpiDev_dealloc(SpiDevObject *self) {
     PyObject *ref = SpiDev_close(self);
     Py_XDECREF(ref);
 
@@ -83,8 +79,7 @@ static char *wrmsg_listmax = "Argument list size exceeds %d bytes.";
 static char *wrmsg_val = "Non-Int/Long value in arguments: %x.";
 static char *wrmsg_oom = "Out of memory.";
 
-static PyObject *
-SpiDev_writebytes(SpiDevObject *self, PyObject *args) {
+static PyObject *SpiDev_writebytes(SpiDevObject *self, PyObject *args) {
     int status;
     uint16_t ii, len;
     uint8_t buf[SPIDEV_MAXPATH];
@@ -92,8 +87,7 @@ SpiDev_writebytes(SpiDevObject *self, PyObject *args) {
     PyObject *seq;
     char wrmsg_text[4096];
 
-    if (!PyArg_ParseTuple(args, "O:write", &obj))
-        return NULL;
+    if (!PyArg_ParseTuple(args, "O:write", &obj)) { return NULL; }
 
     seq = PySequence_Fast(obj, "expected a sequence");
     len = PySequence_Fast_GET_SIZE(seq);
@@ -144,8 +138,7 @@ SpiDev_writebytes(SpiDevObject *self, PyObject *args) {
     return Py_None;
 }
 
-static PyObject *
-SpiDev_readbytes(SpiDevObject *self, PyObject *args) {
+static PyObject *SpiDev_readbytes(SpiDevObject *self, PyObject *args) {
     uint8_t rxbuf[SPIDEV_MAXPATH];
     int status, len, ii;
     PyObject *list;
@@ -154,10 +147,11 @@ SpiDev_readbytes(SpiDevObject *self, PyObject *args) {
         return NULL;
 
     /*	read at least 1 byte, no more than SPIDEV_MAXPATH	*/
-    if (len < 1)
+    if (len < 1) {
         len = 1;
-    else if ((unsigned)len > sizeof(rxbuf))
+    } else if ((unsigned)len > sizeof(rxbuf)) {
         len = sizeof(rxbuf);
+    }
 
     memset(rxbuf, 0, sizeof rxbuf);
     status = read(self->fd, &rxbuf[0], len);
@@ -182,8 +176,7 @@ SpiDev_readbytes(SpiDevObject *self, PyObject *args) {
     return list;
 }
 
-static PyObject *
-SpiDev_writebytes2_buffer(SpiDevObject *self, Py_buffer *buffer) {
+static PyObject *SpiDev_writebytes2_buffer(SpiDevObject *self, Py_buffer *buffer) {
     int status;
     Py_ssize_t remain, block_size, block_start, spi_max_block;
 
@@ -216,8 +209,7 @@ SpiDev_writebytes2_buffer(SpiDevObject *self, Py_buffer *buffer) {
     return Py_None;
 }
 
-static PyObject *
-SpiDev_writebytes2_seq_internal(SpiDevObject *self, PyObject *seq, Py_ssize_t len, uint8_t *buf, Py_ssize_t bufsize) {
+static PyObject *SpiDev_writebytes2_seq_internal(SpiDevObject *self, PyObject *seq, Py_ssize_t len, uint8_t *buf, Py_ssize_t bufsize) {
     int status;
     Py_ssize_t ii, jj, remain, block_size;
     char wrmsg_text[4096];
@@ -270,8 +262,7 @@ SpiDev_writebytes2_seq_internal(SpiDevObject *self, PyObject *seq, Py_ssize_t le
 //	So for any transfer below this size we will use on-stack local buffer instead of allocating one on the heap.
 #define SMALL_BUFFER_SIZE 128
 
-static PyObject *
-SpiDev_writebytes2_seq(SpiDevObject *self, PyObject *seq) {
+static PyObject *SpiDev_writebytes2_seq(SpiDevObject *self, PyObject *seq) {
     Py_ssize_t len, bufsize, spi_max_block;
     PyObject *result = NULL;
 
@@ -312,8 +303,7 @@ SpiDev_writebytes2_seq(SpiDevObject *self, PyObject *seq) {
     return result;
 }
 
-static PyObject *
-SpiDev_writebytes2(SpiDevObject *self, PyObject *args) {
+static PyObject *SpiDev_writebytes2(SpiDevObject *self, PyObject *args) {
     PyObject *obj, *seq;
     ;
     PyObject *result = NULL;
@@ -346,8 +336,7 @@ SpiDev_writebytes2(SpiDevObject *self, PyObject *args) {
     return result;
 }
 
-static PyObject *
-SpiDev_xfer(SpiDevObject *self, PyObject *args) {
+static PyObject *SpiDev_xfer(SpiDevObject *self, PyObject *args) {
     uint16_t ii, len;
     int status;
     uint16_t delay_usecs = 0;
@@ -365,8 +354,7 @@ SpiDev_xfer(SpiDevObject *self, PyObject *args) {
     uint8_t *txbuf, *rxbuf;
     char wrmsg_text[4096];
 
-    if (!PyArg_ParseTuple(args, "O|IHB:xfer", &obj, &speed_hz, &delay_usecs, &bits_per_word))
-        return NULL;
+    if (!PyArg_ParseTuple(args, "O|IHB:xfer", &obj, &speed_hz, &delay_usecs, &bits_per_word)) { return NULL; }
 
     seq = PySequence_Fast(obj, "expected a sequence");
     if (!seq) {
@@ -512,8 +500,7 @@ SpiDev_xfer(SpiDevObject *self, PyObject *args) {
     return seq;
 }
 
-static PyObject *
-SpiDev_xfer2(SpiDevObject *self, PyObject *args) {
+static PyObject *SpiDev_xfer2(SpiDevObject *self, PyObject *args) {
     int status;
     uint16_t delay_usecs = 0;
     uint32_t speed_hz = 0;
@@ -529,8 +516,7 @@ SpiDev_xfer2(SpiDevObject *self, PyObject *args) {
         *rxbuf;
     char wrmsg_text[4096];
 
-    if (!PyArg_ParseTuple(args, "O|IHB:xfer2", &obj, &speed_hz, &delay_usecs, &bits_per_word))
-        return NULL;
+    if (!PyArg_ParseTuple(args, "O|IHB:xfer2", &obj, &speed_hz, &delay_usecs, &bits_per_word)) { return NULL; }
 
     seq = PySequence_Fast(obj, "expected a sequence");
     if (!seq) {
@@ -626,8 +612,7 @@ SpiDev_xfer2(SpiDevObject *self, PyObject *args) {
     return seq;
 }
 
-static PyObject *
-SpiDev_xfer3(SpiDevObject *self, PyObject *args) {
+static PyObject *SpiDev_xfer3(SpiDevObject *self, PyObject *args) {
     int status;
     uint16_t delay_usecs = 0;
     uint32_t speed_hz = 0;
@@ -644,8 +629,7 @@ SpiDev_xfer3(SpiDevObject *self, PyObject *args) {
         *rxbuf;
     char wrmsg_text[4096];
 
-    if (!PyArg_ParseTuple(args, "O|IHB:xfer3", &obj, &speed_hz, &delay_usecs, &bits_per_word))
-        return NULL;
+    if (!PyArg_ParseTuple(args, "O|IHB:xfer3", &obj, &speed_hz, &delay_usecs, &bits_per_word)) { return NULL; }
 
     seq = PySequence_Fast(obj, "expected a sequence");
     if (!seq) {
@@ -661,9 +645,7 @@ SpiDev_xfer3(SpiDevObject *self, PyObject *args) {
     }
 
     bufsize = get_xfer3_block_size();
-    if (bufsize > len) {
-        bufsize = len;
-    }
+    if (bufsize > len) { bufsize = len; }
 
     rx_tuple = PyTuple_New(len);
     if (!rx_tuple) {
@@ -781,87 +763,64 @@ static int __spidev_set_mode(int fd, uint8_t mode) {
     return 0;
 }
 
-static PyObject *
-SpiDev_fileno(SpiDevObject *self) {
+static PyObject *SpiDev_fileno(SpiDevObject *self) {
     PyObject *result = Py_BuildValue("i", self->fd);
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-SpiDev_get_mode(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_mode(SpiDevObject *self, void *closure) {
     PyObject *result = Py_BuildValue("i", (self->mode & (SPI_CPHA | SPI_CPOL)));
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-SpiDev_get_cshigh(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_cshigh(SpiDevObject *self, void *closure) {
     PyObject *result;
 
-    if (self->mode & SPI_CS_HIGH)
-        result = Py_True;
-    else
-        result = Py_False;
+    result = (self->mode & SPI_CS_HIGH) ? Py_True : Py_False;
 
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-SpiDev_get_lsbfirst(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_lsbfirst(SpiDevObject *self, void *closure) {
     PyObject *result;
 
-    if (self->mode & SPI_LSB_FIRST)
-        result = Py_True;
-    else
-        result = Py_False;
+    result = (self->mode & SPI_LSB_FIRST) ? Py_True : Py_False;
 
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-SpiDev_get_3wire(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_3wire(SpiDevObject *self, void *closure) {
     PyObject *result;
 
-    if (self->mode & SPI_3WIRE)
-        result = Py_True;
-    else
-        result = Py_False;
+    result = (self->mode & SPI_3WIRE) ? Py_True : Py_False;
 
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-SpiDev_get_loop(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_loop(SpiDevObject *self, void *closure) {
     PyObject *result;
 
-    if (self->mode & SPI_LOOP)
-        result = Py_True;
-    else
-        result = Py_False;
+    result = (self->mode & SPI_LOOP) ? Py_True : Py_False;
 
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-SpiDev_get_no_cs(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_no_cs(SpiDevObject *self, void *closure) {
     PyObject *result;
 
-    if (self->mode & SPI_NO_CS)
-        result = Py_True;
-    else
-        result = Py_False;
+    result = (self->mode & SPI_NO_CS) ? Py_True : Py_False;
 
     Py_INCREF(result);
     return result;
 }
 
-static int
-SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure) {
     uint8_t mode, tmp;
     int ret;
 
@@ -897,13 +856,11 @@ SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure) {
 
     ret = __spidev_set_mode(self->fd, tmp);
 
-    if (ret != -1)
-        self->mode = tmp;
+    if (ret != -1) { self->mode = tmp; }
     return ret;
 }
 
-static int
-SpiDev_set_cshigh(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_cshigh(SpiDevObject *self, PyObject *val, void *closure) {
     uint8_t tmp;
     int ret;
 
@@ -917,20 +874,15 @@ SpiDev_set_cshigh(SpiDevObject *self, PyObject *val, void *closure) {
         return -1;
     }
 
-    if (val == Py_True)
-        tmp = self->mode | SPI_CS_HIGH;
-    else
-        tmp = self->mode & ~SPI_CS_HIGH;
+    tmp = (val == Py_True) ? (self->mode | SPI_CS_HIGH) : (tmp = self->mode & ~SPI_CS_HIGH);
 
     ret = __spidev_set_mode(self->fd, tmp);
 
-    if (ret != -1)
-        self->mode = tmp;
+    if (ret != -1) { self->mode = tmp; }
     return ret;
 }
 
-static int
-SpiDev_set_lsbfirst(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_lsbfirst(SpiDevObject *self, PyObject *val, void *closure) {
     uint8_t tmp;
     int ret;
 
@@ -944,20 +896,15 @@ SpiDev_set_lsbfirst(SpiDevObject *self, PyObject *val, void *closure) {
         return -1;
     }
 
-    if (val == Py_True)
-        tmp = self->mode | SPI_LSB_FIRST;
-    else
-        tmp = self->mode & ~SPI_LSB_FIRST;
+    tmp = (val == Py_True) ? (self->mode | SPI_LSB_FIRST) : (self->mode & ~SPI_LSB_FIRST);
 
     ret = __spidev_set_mode(self->fd, tmp);
 
-    if (ret != -1)
-        self->mode = tmp;
+    if (ret != -1) { self->mode = tmp; }
     return ret;
 }
 
-static int
-SpiDev_set_3wire(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_3wire(SpiDevObject *self, PyObject *val, void *closure) {
     uint8_t tmp;
     int ret;
 
@@ -971,20 +918,13 @@ SpiDev_set_3wire(SpiDevObject *self, PyObject *val, void *closure) {
         return -1;
     }
 
-    if (val == Py_True)
-        tmp = self->mode | SPI_3WIRE;
-    else
-        tmp = self->mode & ~SPI_3WIRE;
+    tmp = (val == Py_True) ? (self->mode | SPI_3WIRE) : (self->mode & ~SPI_3WIRE);
 
-    ret = __spidev_set_mode(self->fd, tmp);
-
-    if (ret != -1)
-        self->mode = tmp;
+    if (ret != -1) { self->mode = tmp; }
     return ret;
 }
 
-static int
-SpiDev_set_no_cs(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_no_cs(SpiDevObject *self, PyObject *val, void *closure) {
     uint8_t tmp;
     int ret;
 
@@ -998,20 +938,15 @@ SpiDev_set_no_cs(SpiDevObject *self, PyObject *val, void *closure) {
         return -1;
     }
 
-    if (val == Py_True)
-        tmp = self->mode | SPI_NO_CS;
-    else
-        tmp = self->mode & ~SPI_NO_CS;
+    tmp = (val == Py_True) ? (self->mode | SPI_NO_CS) : (self->mode & ~SPI_NO_CS);
 
     ret = __spidev_set_mode(self->fd, tmp);
 
-    if (ret != -1)
-        self->mode = tmp;
+    if (ret != -1) { self->mode = tmp; }
     return ret;
 }
 
-static int
-SpiDev_set_loop(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_loop(SpiDevObject *self, PyObject *val, void *closure) {
     uint8_t tmp;
     int ret;
 
@@ -1025,27 +960,21 @@ SpiDev_set_loop(SpiDevObject *self, PyObject *val, void *closure) {
         return -1;
     }
 
-    if (val == Py_True)
-        tmp = self->mode | SPI_LOOP;
-    else
-        tmp = self->mode & ~SPI_LOOP;
+    tmp = (val == Py_True) ? (self->mode | SPI_LOOP) : (self->mode & ~SPI_LOOP);
 
     ret = __spidev_set_mode(self->fd, tmp);
 
-    if (ret != -1)
-        self->mode = tmp;
+    if (ret != -1) { self->mode = tmp; }
     return ret;
 }
 
-static PyObject *
-SpiDev_get_bits_per_word(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_bits_per_word(SpiDevObject *self, void *closure) {
     PyObject *result = Py_BuildValue("i", self->bits_per_word);
     Py_INCREF(result);
     return result;
 }
 
-static int
-SpiDev_set_bits_per_word(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_bits_per_word(SpiDevObject *self, PyObject *val, void *closure) {
     uint8_t bits;
 
     if (val == NULL) {
@@ -1084,15 +1013,13 @@ SpiDev_set_bits_per_word(SpiDevObject *self, PyObject *val, void *closure) {
     return 0;
 }
 
-static PyObject *
-SpiDev_get_max_speed_hz(SpiDevObject *self, void *closure) {
+static PyObject *SpiDev_get_max_speed_hz(SpiDevObject *self, void *closure) {
     PyObject *result = Py_BuildValue("i", self->max_speed_hz);
     Py_INCREF(result);
     return result;
 }
 
-static int
-SpiDev_set_max_speed_hz(SpiDevObject *self, PyObject *val, void *closure) {
+static int SpiDev_set_max_speed_hz(SpiDevObject *self, PyObject *val, void *closure) {
     uint32_t max_speed_hz;
 
     if (val == NULL) {
@@ -1147,8 +1074,7 @@ static PyGetSetDef SpiDev_getset[] = {
     {NULL},
 };
 
-static PyObject *
-SpiDev_open(SpiDevObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *SpiDev_open(SpiDevObject *self, PyObject *args, PyObject *kwds) {
     int bus, device;
     char path[SPIDEV_MAXPATH];
     uint8_t tmp8;
@@ -1185,8 +1111,7 @@ SpiDev_open(SpiDevObject *self, PyObject *args, PyObject *kwds) {
     return Py_None;
 }
 
-static int
-SpiDev_init(SpiDevObject *self, PyObject *args, PyObject *kwds) {
+static int SpiDev_init(SpiDevObject *self, PyObject *args, PyObject *kwds) {
     int bus = -1;
     int client = -1;
     static char *kwlist[] = {"bus", "client", NULL};

@@ -55,11 +55,11 @@ typedef struct python_serial {
     float vtime;
 } SerialObject;
 
-static PyObject *
-Serial_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+static PyObject *Serial_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
     SerialObject *self;
-    if ((self = (SerialObject *)type->tp_alloc(type, 0)) == NULL)
+    if ((self = (SerialObject *)type->tp_alloc(type, 0)) == NULL) {
         return NULL;
+    }
 
     self->fd = -1;
     self->use_termios_timeout = false;
@@ -76,8 +76,7 @@ Serial_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
     return (PyObject *)self;
 }
 
-static PyObject *
-Serial_close(SerialObject *self) {
+static PyObject *Serial_close(SerialObject *self) {
     if ((self->fd != -1) && (close(self->fd) == -1)) {
         PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
@@ -98,15 +97,13 @@ Serial_close(SerialObject *self) {
     return Py_None;
 }
 
-static void
-Serial_dealloc(SerialObject *self) {
+static void Serial_dealloc(SerialObject *self) {
     PyObject *ref = Serial_close(self);
     Py_XDECREF(ref);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static PyObject *
-Serial_write(SerialObject *self, PyObject *seq) {
+static PyObject *Serial_write(SerialObject *self, PyObject *seq) {
     Py_ssize_t len;
     PyObject *uni;
     char *p;
@@ -137,8 +134,7 @@ Serial_write(SerialObject *self, PyObject *seq) {
     return Py_None;
 }
 
-static PyObject *
-Serial_read(SerialObject *self, PyObject *args) {
+static PyObject *Serial_read(SerialObject *self, PyObject *args) {
     uint8_t rxbuf[SERIAL_MAXPATH];
     int status, len, timeout = 0;
     PyObject *py_str;
@@ -150,10 +146,11 @@ Serial_read(SerialObject *self, PyObject *args) {
     }
 
     /*	read at least 1 byte, no more than SERIAL_MAXPATH	*/
-    if (len < 1)
+    if (len < 1) {
         len = 1;
-    else if ((unsigned)len > sizeof(rxbuf))
+    } else if ((unsigned)len > sizeof(rxbuf)) {
         len = sizeof(rxbuf);
+    }
 
     memset(rxbuf, 0, sizeof(rxbuf));
 
@@ -174,8 +171,7 @@ Serial_read(SerialObject *self, PyObject *args) {
     return py_str;
 }
 
-static PyObject *
-Serial_readline(SerialObject *self, PyObject *args) {
+static PyObject *Serial_readline(SerialObject *self, PyObject *args) {
     uint8_t rxbuf[SERIAL_MAXPATH];
     int status, timeout_ms;
     PyObject *py_str;
@@ -189,8 +185,7 @@ Serial_readline(SerialObject *self, PyObject *args) {
     status = serial_readline(self->fd, rxbuf, SERIAL_MAXPATH, timeout_ms);
 
     if (status < 0) {
-        PyErr_SetString(PyExc_IOError,
-                        "failed to read");
+        PyErr_SetString(PyExc_IOError, "failed to read");
         return NULL;
     }
 
@@ -204,8 +199,7 @@ Serial_readline(SerialObject *self, PyObject *args) {
     return py_str;
 }
 
-static PyObject *
-Serial_flush(SerialObject *self) {
+static PyObject *Serial_flush(SerialObject *self) {
     PyObject *result;
 
     result = (serial_flush(self->fd) < 0) ? Py_True : Py_False;
@@ -213,12 +207,12 @@ Serial_flush(SerialObject *self) {
     Py_INCREF(result);
     return result;
 }
-static PyObject *
-Serial_input_waiting(SerialObject *self, PyObject *args) {
+static PyObject *Serial_input_waiting(SerialObject *self, PyObject *args) {
     uint32_t count = 0;
 
-    if (!PyArg_ParseTuple(args, "I:inputwaiting", &count))
+    if (!PyArg_ParseTuple(args, "I:inputwaiting", &count)) {
         return NULL;
+    }
 
     PyObject *result;
 
@@ -228,12 +222,12 @@ Serial_input_waiting(SerialObject *self, PyObject *args) {
     return result;
 }
 
-static PyObject *
-Serial_output_waiting(SerialObject *self, PyObject *args) {
+static PyObject *Serial_output_waiting(SerialObject *self, PyObject *args) {
     uint32_t count = 0;
 
-    if (!PyArg_ParseTuple(args, "I:outputwaiting", &count))
+    if (!PyArg_ParseTuple(args, "I:outputwaiting", &count)) {
         return NULL;
+    }
 
     PyObject *result;
 
@@ -243,12 +237,12 @@ Serial_output_waiting(SerialObject *self, PyObject *args) {
     return result;
 }
 
-static PyObject *
-Serial_poll(SerialObject *self, PyObject *args) {
+static PyObject *Serial_poll(SerialObject *self, PyObject *args) {
     int timeout_ms = 0;
 
-    if (!PyArg_ParseTuple(args, "i:timeout_ms", &timeout_ms))
+    if (!PyArg_ParseTuple(args, "i:timeout_ms", &timeout_ms)) {
         return NULL;
+    }
 
     PyObject *result;
 
@@ -258,43 +252,37 @@ Serial_poll(SerialObject *self, PyObject *args) {
     return result;
 }
 
-static PyObject *
-Serial_fileno(SerialObject *self) {
+static PyObject *Serial_fileno(SerialObject *self) {
     PyObject *result = Py_BuildValue("i", self->fd);
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-Serial_get_baudrate(SerialObject *self, void *closure) {
+static PyObject *Serial_get_baudrate(SerialObject *self, void *closure) {
     PyObject *result = Py_BuildValue("I", self->baudrate);
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-Serial_get_databits(SerialObject *self, void *closure) {
+static PyObject *Serial_get_databits(SerialObject *self, void *closure) {
     PyObject *result = Py_BuildValue("I", self->databits);
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-Serial_get_parity(SerialObject *self, void *closure) {
+static PyObject *Serial_get_parity(SerialObject *self, void *closure) {
     PyObject *result = Py_BuildValue("I", self->parity);
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-Serial_get_stopbits(SerialObject *self, void *closure) {
+static PyObject *Serial_get_stopbits(SerialObject *self, void *closure) {
     PyObject *result = Py_BuildValue("I", self->stopbits);
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-Serial_get_xonxoff(SerialObject *self, void *closure) {
+static PyObject *Serial_get_xonxoff(SerialObject *self, void *closure) {
     PyObject *result;
 
     result = (self->xonxoff == true) ? Py_True : Py_False;
@@ -303,8 +291,7 @@ Serial_get_xonxoff(SerialObject *self, void *closure) {
     return result;
 }
 
-static PyObject *
-Serial_get_rtscts(SerialObject *self, void *closure) {
+static PyObject *Serial_get_rtscts(SerialObject *self, void *closure) {
     PyObject *result;
 
     result = (self->rtscts == true) ? Py_True : Py_False;
@@ -313,22 +300,19 @@ Serial_get_rtscts(SerialObject *self, void *closure) {
     return result;
 }
 
-static PyObject *
-Serial_get_vtime(SerialObject *self, void *closure) {
+static PyObject *Serial_get_vtime(SerialObject *self, void *closure) {
     PyObject *result = Py_BuildValue("f", self->vtime);
     Py_INCREF(result);
     return result;
 }
 
-static PyObject *
-Serial_get_vmin(SerialObject *self, void *closure) {
+static PyObject *Serial_get_vmin(SerialObject *self, void *closure) {
     PyObject *result = Py_BuildValue("I", self->vmin);
     Py_INCREF(result);
     return result;
 }
 
-static int
-Serial_set_baudrate(SerialObject *self, PyObject *val, void *closure) {
+static int Serial_set_baudrate(SerialObject *self, PyObject *val, void *closure) {
     uint32_t baudrate;
     int ret;
 
@@ -358,8 +342,7 @@ Serial_set_baudrate(SerialObject *self, PyObject *val, void *closure) {
     return ret;
 }
 
-static int
-Serial_set_databits(SerialObject *self, PyObject *val, void *closure) {
+static int Serial_set_databits(SerialObject *self, PyObject *val, void *closure) {
     uint32_t databits;
     int ret;
 
@@ -387,8 +370,7 @@ Serial_set_databits(SerialObject *self, PyObject *val, void *closure) {
     return ret;
 }
 
-static int
-Serial_set_parity(SerialObject *self, PyObject *val, void *closure) {
+static int Serial_set_parity(SerialObject *self, PyObject *val, void *closure) {
     uint32_t parity;
     int ret;
 
@@ -416,8 +398,7 @@ Serial_set_parity(SerialObject *self, PyObject *val, void *closure) {
     return ret;
 }
 
-static int
-Serial_set_stopbits(SerialObject *self, PyObject *val, void *closure) {
+static int Serial_set_stopbits(SerialObject *self, PyObject *val, void *closure) {
     uint32_t stopbits;
     int ret;
 
@@ -446,8 +427,7 @@ Serial_set_stopbits(SerialObject *self, PyObject *val, void *closure) {
     return ret;
 }
 
-static int
-Serial_set_xonxoff(SerialObject *self, PyObject *val, void *closure) {
+static int Serial_set_xonxoff(SerialObject *self, PyObject *val, void *closure) {
     int ret;
 
     if (val == NULL) {
@@ -467,8 +447,7 @@ Serial_set_xonxoff(SerialObject *self, PyObject *val, void *closure) {
     return ret;
 }
 
-static int
-Serial_set_rtscts(SerialObject *self, PyObject *val, void *closure) {
+static int Serial_set_rtscts(SerialObject *self, PyObject *val, void *closure) {
     int ret;
 
     if (val == NULL) {
@@ -488,8 +467,7 @@ Serial_set_rtscts(SerialObject *self, PyObject *val, void *closure) {
     return ret;
 }
 
-static int
-Serial_set_vmin(SerialObject *self, PyObject *val, void *closure) {
+static int Serial_set_vmin(SerialObject *self, PyObject *val, void *closure) {
     uint32_t vmin;
     int ret;
 
@@ -519,8 +497,7 @@ Serial_set_vmin(SerialObject *self, PyObject *val, void *closure) {
     return ret;
 }
 
-static float
-Serial_set_vtime(SerialObject *self, PyObject *val, void *closure) {
+static float Serial_set_vtime(SerialObject *self, PyObject *val, void *closure) {
     float vtime;
     int ret;
 
@@ -563,8 +540,7 @@ static PyGetSetDef Serial_getset[] = {
     {NULL},
 };
 
-static PyObject *
-Serial_open2(SerialObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Serial_open2(SerialObject *self, PyObject *args, PyObject *kwds) {
     int num;
     char path[SERIAL_MAXPATH];
     uint32_t baudrate, databits, parity, stopbits, vmin;
@@ -601,8 +577,7 @@ Serial_open2(SerialObject *self, PyObject *args, PyObject *kwds) {
     return Py_None;
 }
 
-static PyObject *
-Serial_open(SerialObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Serial_open(SerialObject *self, PyObject *args, PyObject *kwds) {
     int num;
     char path[SERIAL_MAXPATH];
     uint32_t baudrate;
@@ -612,9 +587,9 @@ Serial_open(SerialObject *self, PyObject *args, PyObject *kwds) {
     static char *kwlist[] = {"num", "baudrate", NULL};
     //	Py_UNICODE *temp;
     //	char *_path;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iI:open",
-                                     kwlist, &num, &baudrate))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iI:open", kwlist, &num, &baudrate)) {
         return NULL;
+    }
     //	if (!PyArg_ParseTupleAndKeywords(args, kwds, "u:open",
     //			kwlist,temp))
     //		return NULL;
@@ -648,15 +623,14 @@ Serial_open(SerialObject *self, PyObject *args, PyObject *kwds) {
     return Py_None;
 }
 
-static int
-Serial_init(SerialObject *self, PyObject *args, PyObject *kwds) {
+static int Serial_init(SerialObject *self, PyObject *args, PyObject *kwds) {
     int num = -1;
     uint32_t baudrate = -1;
     static char *kwlist[] = {"num", "baudrate", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iI:__init__",
-                                     kwlist, &num, &baudrate))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iI:__init__", kwlist, &num, &baudrate)) {
         return -1;
+    }
 
     if (baudrate > 0) {
         Serial_open(self, args, kwds);
@@ -673,8 +647,9 @@ PyDoc_STRVAR(SerialObjectType_doc,
              "specified Serial device interface.\n");
 
 static PyObject *Serial_enter(PyObject *self, PyObject *args) {
-    if (!PyArg_ParseTuple(args, ""))
+    if (!PyArg_ParseTuple(args, "")) {
         return NULL;
+    }
 
     Py_INCREF(self);
     return self;

@@ -1,5 +1,5 @@
-#ifndef _PERIPHERY_SPI_H
-#define _PERIPHERY_SPI_H
+#ifndef PERIPHERY_SPI_H
+#define PERIPHERY_SPI_H
 
 #include <stdint.h>
 #include <stddef.h>

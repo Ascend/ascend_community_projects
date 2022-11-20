@@ -19,43 +19,45 @@
 
 static int _serial_baudrate_to_bits(uint32_t baudrate) {
     switch (baudrate) {
-    case 50: return B50;
-    case 75: return B75;
-    case 110: return B110;
-    case 134: return B134;
-    case 150: return B150;
-    case 200: return B200;
-    case 300: return B300;
-    case 600: return B600;
-    case 1200: return B1200;
-    case 1800: return B1800;
-    case 2400: return B2400;
-    case 4800: return B4800;
-    case 9600: return B9600;
-    case 19200: return B19200;
-    case 38400: return B38400;
-    case 57600: return B57600;
-    case 115200: return B115200;
-    case 230400: return B230400;
-    case 460800: return B460800;
-    case 500000: return B500000;
-    case 576000: return B576000;
-    case 921600: return B921600;
-    case 1000000: return B1000000;
-    case 1152000: return B1152000;
-    case 1500000: return B1500000;
-    case 2000000: return B2000000;
+    case BAUDRATES_0: return BAUDRATES_BITS_0;
+    case BAUDRATES_50: return BAUDRATES_BITS_50;
+    case BAUDRATES_75: return BAUDRATES_BITS_75;
+    case BAUDRATES_110: return BAUDRATES_BITS_110;
+    case BAUDRATES_134: return BAUDRATES_BITS_134;
+    case BAUDRATES_150: return BAUDRATES_BITS_150;
+    case BAUDRATES_200: return BAUDRATES_BITS_200;
+    case BAUDRATES_300: return BAUDRATES_BITS_300;
+    case BAUDRATES_600: return BAUDRATES_BITS_600;
+    case BAUDRATES_1200: return BAUDRATES_BITS_1200;
+    case BAUDRATES_1800: return BAUDRATES_BITS_1800;
+    case BAUDRATES_2400: return BAUDRATES_BITS_2400;
+    case BAUDRATES_4800: return BAUDRATES_BITS_4800;
+    case BAUDRATES_9600: return BAUDRATES_BITS_9600;
+    case BAUDRATES_19200: return BAUDRATES_BITS_19200;
+    case BAUDRATES_38400: return BAUDRATES_BITS_38400;
+    case BAUDRATES_57600: return BAUDRATES_BITS_57600;
+    case BAUDRATES_115200: return BAUDRATES_BITS_115200;
+    case BAUDRATES_230400: return BAUDRATES_BITS_230400;
+    case BAUDRATES_460800: return BAUDRATES_BITS_460800;
+    case BAUDRATES_500000: return BAUDRATES_BITS_500000;
+    case BAUDRATES_576000: return BAUDRATES_BITS_576000;
+    case BAUDRATES_921600: return BAUDRATES_BITS_921600;
+    case BAUDRATES_1000000: return BAUDRATES_BITS_1000000;
+    case BAUDRATES_1152000: return BAUDRATES_BITS_1152000;
+    case BAUDRATES_1500000: return BAUDRATES_BITS_1500000;
+    case BAUDRATES_2000000: return BAUDRATES_BITS_2000000;
+
 #ifdef B2500000
-    case 2500000: return B2500000;
+    case BAUDRATES_2500000: return BAUDRATES_BITS_2500000;
 #endif
 #ifdef B3000000
-    case 3000000: return B3000000;
+    case BAUDRATES_3000000: return BAUDRATES_BITS_3000000;
 #endif
 #ifdef B3500000
-    case 3500000: return B3500000;
+    case BAUDRATES_3500000: return BAUDRATES_BITS_3500000;
 #endif
 #ifdef B4000000
-    case 4000000: return B4000000;
+    case BAUDRATES_4000000: return BAUDRATES_BITS_4000000;
 #endif
     default: return -1;
     }
@@ -63,44 +65,45 @@ static int _serial_baudrate_to_bits(uint32_t baudrate) {
 
 static int _serial_bits_to_baudrate(uint32_t bits) {
     switch (bits) {
-    case B0: return 0;
-    case B50: return 50;
-    case B75: return 75;
-    case B110: return 110;
-    case B134: return 134;
-    case B150: return 150;
-    case B200: return 200;
-    case B300: return 300;
-    case B600: return 600;
-    case B1200: return 1200;
-    case B1800: return 1800;
-    case B2400: return 2400;
-    case B4800: return 4800;
-    case B9600: return 9600;
-    case B19200: return 19200;
-    case B38400: return 38400;
-    case B57600: return 57600;
-    case B115200: return 115200;
-    case B230400: return 230400;
-    case B460800: return 460800;
-    case B500000: return 500000;
-    case B576000: return 576000;
-    case B921600: return 921600;
-    case B1000000: return 1000000;
-    case B1152000: return 1152000;
-    case B1500000: return 1500000;
-    case B2000000: return 2000000;
+    case BAUDRATES_BITS_0: return BAUDRATES_0;
+    case BAUDRATES_BITS_50: return BAUDRATES_50;
+    case BAUDRATES_BITS_75: return BAUDRATES_75;
+    case BAUDRATES_BITS_110: return BAUDRATES_110;
+    case BAUDRATES_BITS_134: return BAUDRATES_134;
+    case BAUDRATES_BITS_150: return BAUDRATES_150;
+    case BAUDRATES_BITS_200: return BAUDRATES_200;
+    case BAUDRATES_BITS_300: return BAUDRATES_300;
+    case BAUDRATES_BITS_600: return BAUDRATES_600;
+    case BAUDRATES_BITS_1200: return BAUDRATES_1200;
+    case BAUDRATES_BITS_1800: return BAUDRATES_1800;
+    case BAUDRATES_BITS_2400: return BAUDRATES_2400;
+    case BAUDRATES_BITS_4800: return BAUDRATES_4800;
+    case BAUDRATES_BITS_9600: return BAUDRATES_9600;
+    case BAUDRATES_BITS_19200: return BAUDRATES_19200;
+    case BAUDRATES_BITS_38400: return BAUDRATES_38400;
+    case BAUDRATES_BITS_57600: return BAUDRATES_57600;
+    case BAUDRATES_BITS_115200: return BAUDRATES_115200;
+    case BAUDRATES_BITS_230400: return BAUDRATES_230400;
+    case BAUDRATES_BITS_460800: return BAUDRATES_460800;
+    case BAUDRATES_BITS_500000: return BAUDRATES_500000;
+    case BAUDRATES_BITS_576000: return BAUDRATES_576000;
+    case BAUDRATES_BITS_921600: return BAUDRATES_921600;
+    case BAUDRATES_BITS_1000000: return BAUDRATES_1000000;
+    case BAUDRATES_BITS_1152000: return BAUDRATES_1152000;
+    case BAUDRATES_BITS_1500000: return BAUDRATES_1500000;
+    case BAUDRATES_BITS_2000000: return BAUDRATES_2000000;
+
 #ifdef B2500000
-    case B2500000: return 2500000;
+    case BAUDRATES_BITS_2500000: return BAUDRATES_2500000;
 #endif
 #ifdef B3000000
-    case B3000000: return 3000000;
+    case BAUDRATES_BITS_3000000: return BAUDRATES_3000000;
 #endif
 #ifdef B3500000
-    case B3500000: return 3500000;
+    case BAUDRATES_BITS_3500000: return BAUDRATES_3500000;
 #endif
 #ifdef B4000000
-    case B4000000: return 4000000;
+    case BAUDRATES_BITS_4000000: return BAUDRATES_4000000;
 #endif
     default: return -1;
     }
@@ -140,13 +143,14 @@ int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int datab
 
     /*	Ignore break characters	*/
     termios_settings.c_iflag = IGNBRK;
-    if (parity != PARITY_NONE)
+    if (parity != PARITY_NONE) {
         termios_settings.c_iflag |= INPCK;
+    }
     /*	Only use ISTRIP when less than 8 bits as it strips the 8th bit	*/
-    if (parity != PARITY_NONE && databits != 8)
+    if (parity != PARITY_NONE && databits != 8) {
         termios_settings.c_iflag |= ISTRIP;
-    if (xonxoff)
-        termios_settings.c_iflag |= (IXON | IXOFF);
+    }
+    if (xonxoff) { termios_settings.c_iflag |= (IXON | IXOFF); }
 
     /*	c_oflag	*/
     termios_settings.c_oflag = 0;
@@ -159,28 +163,28 @@ int serial_open_advanced(const char *path, uint32_t baudrate, unsigned int datab
     termios_settings.c_cflag = CREAD | CLOCAL;
 
     /*	Databits	*/
-    if (databits == 5)
+    if (databits == 5) {
         termios_settings.c_cflag |= CS5;
-    else if (databits == 6)
+    } else if (databits == 6) {
         termios_settings.c_cflag |= CS6;
-    else if (databits == 7)
+    } else if (databits == 7) {
         termios_settings.c_cflag |= CS7;
-    else if (databits == 8)
+    } else if (databits == 8) {
         termios_settings.c_cflag |= CS8;
+    }
 
     /*	Parity	*/
-    if (parity == PARITY_EVEN)
+    if (parity == PARITY_EVEN) {
         termios_settings.c_cflag |= PARENB;
-    else if (parity == PARITY_ODD)
+    } else if (parity == PARITY_ODD) {
         termios_settings.c_cflag |= (PARENB | PARODD);
+    }
 
     /*	Stopbits	*/
-    if (stopbits == 2)
-        termios_settings.c_cflag |= CSTOPB;
+    if (stopbits == 2) { termios_settings.c_cflag |= CSTOPB; }
 
     /*	RTS/CTS	*/
-    if (rtscts)
-        termios_settings.c_cflag |= CRTSCTS;
+    if (rtscts) { termios_settings.c_cflag |= CRTSCTS; }
 
     /*	Baudrate	*/
     cfsetispeed(&termios_settings, _serial_baudrate_to_bits(baudrate));
@@ -237,8 +241,7 @@ int serial_read(int fd, uint8_t *buf, size_t len, int timeout_ms) {
             return -1;
         }
         /*	Timeout	*/
-        if (ret == 0)
-            break;
+        if (ret == 0) { break; }
 
         if ((ret = read(fd, buf + bytes_read, len - bytes_read)) < 0) {
             ERROR_LOG("Reading serial port");
@@ -246,8 +249,7 @@ int serial_read(int fd, uint8_t *buf, size_t len, int timeout_ms) {
         }
 
         /*	If we're using VMIN or VMIN+VTIME semantics for end of read, return now	*/
-        if (value_use_termios_timeout(fd))
-            return ret;
+        if (value_use_termios_timeout(fd)) { return ret; }
 
         /*	Empty read	*/
         if (ret == 0 && len != 0) {
@@ -280,8 +282,7 @@ int serial_readline(int fd, uint8_t *buf, size_t maxlen, int timeout_ms) {
             return -1;
         }
         /*	Timeout	*/
-        if (ret == 0)
-            break;
+        if (ret == 0) { break; }
 
         if ((ret = read(fd, buf + bytes_read, maxlen - bytes_read)) < 0) {
             ERROR_LOG("Reading serial port");
@@ -289,8 +290,7 @@ int serial_readline(int fd, uint8_t *buf, size_t maxlen, int timeout_ms) {
         }
 
         /*	If we're using VMIN or VMIN+VTIME semantics for end of read, return now	*/
-        if (value_use_termios_timeout(fd))
-            return ret;
+        if (value_use_termios_timeout(fd)) { return ret; }
 
         /*	Empty read	*/
         if (ret == 0 && maxlen != 0) {
@@ -300,8 +300,7 @@ int serial_readline(int fd, uint8_t *buf, size_t maxlen, int timeout_ms) {
 
         bytes_read += ret;
 
-        if ((buf)[bytes_read] == '\n')
-            break;
+        if ((buf)[bytes_read] == '\n') { break; }
     }
 
     return bytes_read;
@@ -357,16 +356,18 @@ int serial_poll(int fd, int timeout_ms) {
         return -1;
     }
 
-    if (ret)
+    if (ret) {
         return 1;
+    }
 
     /*	Timed out	*/
     return 0;
 }
 
 int serial_close(int *fd) {
-    if (*fd < 0)
+    if (*fd < 0) {
         return 0;
+    }
 
     if (close(*fd) < 0) {
         ERROR_LOG("Closing serial port");
@@ -400,18 +401,11 @@ int serial_get_databits(int fd, unsigned int *databits) {
     }
 
     switch (termios_settings.c_cflag & CSIZE) {
-    case CS5:
-        *databits = 5;
-        break;
-    case CS6:
-        *databits = 6;
-        break;
-    case CS7:
-        *databits = 7;
-        break;
-    case CS8:
-        *databits = 8;
-        break;
+    case CS5: *databits = 5; break;
+    case CS6: *databits = 6; break;
+    case CS7: *databits = 7; break;
+    case CS8: *databits = 8; break;
+    default: break;
     }
 
     return 0;
@@ -425,12 +419,13 @@ int serial_get_parity(int fd, uint32_t *parity) {
         return -1;
     }
 
-    if ((termios_settings.c_cflag & PARENB) == 0)
+    if ((termios_settings.c_cflag & PARENB) == 0) {
         *parity = PARITY_NONE;
-    else if ((termios_settings.c_cflag & PARODD) == 0)
+    } else if ((termios_settings.c_cflag & PARODD) == 0) {
         *parity = PARITY_EVEN;
-    else
+    } else {
         *parity = PARITY_ODD;
+    }
 
     return 0;
 }
@@ -443,10 +438,7 @@ int serial_get_stopbits(int fd, unsigned int *stopbits) {
         return -1;
     }
 
-    if (termios_settings.c_cflag & CSTOPB)
-        *stopbits = 2;
-    else
-        *stopbits = 1;
+    *stopbits = (termios_settings.c_cflag & CSTOPB) ? 2 : 1;
 
     return 0;
 }
@@ -459,10 +451,7 @@ int serial_get_xonxoff(int fd, bool *xonxoff) {
         return -1;
     }
 
-    if (termios_settings.c_iflag & (IXON | IXOFF))
-        *xonxoff = true;
-    else
-        *xonxoff = false;
+    *xonxoff = (termios_settings.c_iflag & (IXON | IXOFF)) ? true : false;
 
     return 0;
 }
@@ -475,10 +464,7 @@ int serial_get_rtscts(int fd, bool *rtscts) {
         return -1;
     }
 
-    if (termios_settings.c_cflag & CRTSCTS)
-        *rtscts = true;
-    else
-        *rtscts = false;
+    *rtscts = (termios_settings.c_cflag & CRTSCTS) ? true : false;
 
     return 0;
 }
@@ -529,14 +515,22 @@ int serial_set_databits(int fd, unsigned int databits) {
     }
 
     termios_settings.c_cflag &= ~CSIZE;
-    if (databits == 5)
+    switch (databits) {
+    case 5:
         termios_settings.c_cflag |= CS5;
-    else if (databits == 6)
+        break;
+    case 6:
         termios_settings.c_cflag |= CS6;
-    else if (databits == 7)
+        break;
+    case 7:
         termios_settings.c_cflag |= CS7;
-    else if (databits == 8)
+        break;
+    case 8:
         termios_settings.c_cflag |= CS8;
+        break;
+    default:
+        break;
+    }
 
     if (tcsetattr(fd, TCSANOW, &termios_settings) < 0) {
         ERROR_LOG("Getting serial port attributes databits");
@@ -560,14 +554,14 @@ int serial_set_parity(int fd, uint32_t parity) {
     }
 
     termios_settings.c_iflag &= ~(INPCK | ISTRIP);
-    if (parity != PARITY_NONE)
-        termios_settings.c_iflag |= (INPCK | ISTRIP);
+    if (parity != PARITY_NONE) { termios_settings.c_iflag |= (INPCK | ISTRIP); }
 
     termios_settings.c_cflag &= ~(PARENB | PARODD);
-    if (parity == PARITY_EVEN)
+    if (parity == PARITY_EVEN) {
         termios_settings.c_cflag |= PARENB;
-    else if (parity == PARITY_ODD)
+    } else if (parity == PARITY_ODD) {
         termios_settings.c_cflag |= (PARENB | PARODD);
+    }
 
     if (tcsetattr(fd, TCSANOW, &termios_settings) < 0) {
         ERROR_LOG("Setting serial port attributes parity");
@@ -591,8 +585,7 @@ int serial_set_stopbits(int fd, unsigned int stopbits) {
     }
 
     termios_settings.c_cflag &= ~(CSTOPB);
-    if (stopbits == 2)
-        termios_settings.c_cflag |= CSTOPB;
+    if (stopbits == 2) { termios_settings.c_cflag |= CSTOPB; }
 
     if (tcsetattr(fd, TCSANOW, &termios_settings) < 0) {
         ERROR_LOG("Setting serial port attributes stopbits");
@@ -611,8 +604,7 @@ int serial_set_xonxoff(int fd, bool enabled) {
     }
 
     termios_settings.c_iflag &= ~(IXON | IXOFF | IXANY);
-    if (enabled)
-        termios_settings.c_iflag |= (IXON | IXOFF);
+    if (enabled) { termios_settings.c_iflag |= (IXON | IXOFF); }
 
     if (tcsetattr(fd, TCSANOW, &termios_settings) < 0) {
         ERROR_LOG("Getting serial port attributes enabled");
@@ -631,8 +623,7 @@ int serial_set_rtscts(int fd, bool enabled) {
     }
 
     termios_settings.c_cflag &= ~CRTSCTS;
-    if (enabled)
-        termios_settings.c_cflag |= CRTSCTS;
+    if (enabled) { termios_settings.c_cflag |= CRTSCTS; }
 
     if (tcsetattr(fd, TCSANOW, &termios_settings) < 0) {
         ERROR_LOG("Getting serial port attributes enabled");
@@ -710,28 +701,17 @@ int serial_tostring(int fd, char *str, size_t len) {
     default: databits_str = "?";
     }
 
-    if ((termios_settings.c_cflag & PARENB) == 0)
+    if ((termios_settings.c_cflag & PARENB) == 0) {
         parity_str = "none";
-    else if ((termios_settings.c_cflag & PARODD) == 0)
+    } else if ((termios_settings.c_cflag & PARODD) == 0) {
         parity_str = "even";
-    else
+    } else {
         parity_str = "odd";
+    }
 
-    if (termios_settings.c_cflag & CSTOPB)
-        stopbits_str = "2";
-    else
-        stopbits_str = "1";
-
-    if (termios_settings.c_iflag & (IXON | IXOFF))
-        xonxoff_str = "true";
-    else
-        xonxoff_str = "false";
-
-    if (termios_settings.c_cflag & CRTSCTS)
-        rtscts_str = "true";
-    else
-        rtscts_str = "false";
-
+    stopbits_str = (termios_settings.c_cflag & CSTOPB) ? "2" : "1";
+    xonxoff_str = (termios_settings.c_iflag & (IXON | IXOFF)) ? "true" : "false";
+    rtscts_str = (termios_settings.c_cflag & CRTSCTS) ? "true" : "false";
     vmin = termios_settings.c_cc[VMIN];
     vtime = ((float)termios_settings.c_cc[VTIME]) / 10;
 
