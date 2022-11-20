@@ -1,3 +1,18 @@
+/**
+* Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 #include <Python.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -121,9 +136,7 @@ static PyObject *SpiDev_writebytes(SpiDevObject *self, PyObject *args) {
     }
 
     Py_DECREF(seq);
-
     status = write(self->fd, &buf[0], len);
-
     if (status < 0) {
         PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
@@ -155,7 +168,6 @@ static PyObject *SpiDev_readbytes(SpiDevObject *self, PyObject *args) {
 
     memset(rxbuf, 0, sizeof rxbuf);
     status = read(self->fd, &rxbuf[0], len);
-
     if (status < 0) {
         PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
@@ -853,9 +865,7 @@ static int SpiDev_set_mode(SpiDevObject *self, PyObject *val, void *closure) {
 
     //	clean and set CPHA and CPOL bits
     tmp = (self->mode & ~(SPI_CPHA | SPI_CPOL)) | mode;
-
     ret = __spidev_set_mode(self->fd, tmp);
-
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -875,9 +885,7 @@ static int SpiDev_set_cshigh(SpiDevObject *self, PyObject *val, void *closure) {
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_CS_HIGH) : (tmp = self->mode & ~SPI_CS_HIGH);
-
     ret = __spidev_set_mode(self->fd, tmp);
-
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -897,9 +905,7 @@ static int SpiDev_set_lsbfirst(SpiDevObject *self, PyObject *val, void *closure)
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_LSB_FIRST) : (self->mode & ~SPI_LSB_FIRST);
-
     ret = __spidev_set_mode(self->fd, tmp);
-
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -939,9 +945,7 @@ static int SpiDev_set_no_cs(SpiDevObject *self, PyObject *val, void *closure) {
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_NO_CS) : (self->mode & ~SPI_NO_CS);
-
     ret = __spidev_set_mode(self->fd, tmp);
-
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }
@@ -961,9 +965,7 @@ static int SpiDev_set_loop(SpiDevObject *self, PyObject *val, void *closure) {
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_LOOP) : (self->mode & ~SPI_LOOP);
-
     ret = __spidev_set_mode(self->fd, tmp);
-
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }

@@ -1,3 +1,18 @@
+/**
+* Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -226,8 +241,8 @@ int serial_read(int fd, uint8_t *buf, size_t len, int timeout_ms) {
     ssize_t ret;
 
     struct timeval tv_timeout;
-    tv_timeout.tv_sec = timeout_ms / 1000;
-    tv_timeout.tv_usec = (timeout_ms % 1000) * 1000;
+    tv_timeout.tv_sec = timeout_ms / ONE_THOUSAND;
+    tv_timeout.tv_usec = (timeout_ms % ONE_THOUSAND) * ONE_THOUSAND;
 
     size_t bytes_read = 0;
 
@@ -267,8 +282,8 @@ int serial_readline(int fd, uint8_t *buf, size_t maxlen, int timeout_ms) {
     ssize_t ret;
 
     struct timeval tv_timeout;
-    tv_timeout.tv_sec = timeout_ms / 1000;
-    tv_timeout.tv_usec = (timeout_ms % 1000) * 1000;
+    tv_timeout.tv_sec = timeout_ms / ONE_THOUSAND;
+    tv_timeout.tv_usec = (timeout_ms % ONE_THOUSAND) * ONE_THOUSAND;
 
     size_t bytes_read = 0;
 
@@ -477,7 +492,7 @@ int serial_get_vtime(int fd, float *vtime) {
         return -1;
     }
 
-    *vtime = ((float)termios_settings.c_cc[VTIME]) / 10;
+    *vtime = ((float)termios_settings.c_cc[VTIME]) / TEN;
 
     return 0;
 }
@@ -628,7 +643,7 @@ int serial_set_rtscts(int fd, bool enabled) {
 int serial_set_vmin(int fd, unsigned int vmin) {
     struct termios termios_settings;
 
-    if (vmin > 255) {
+    if (vmin > VMIN_MAX) {
         ERROR_LOG("Invalid vmin (can be 0-255)");
         return -1;
     }
@@ -650,7 +665,7 @@ int serial_set_vmin(int fd, unsigned int vmin) {
 int serial_set_vtime(int fd, float vtime) {
     struct termios termios_settings;
 
-    if (vtime < 0.0 || vtime > 25.5) {
+    if (vtime < 0.0 || vtime > VTIME_MAX) {
         ERROR_LOG("Invalid vtime (can be 0-25.5)");
         return -1;
     }
@@ -660,7 +675,7 @@ int serial_set_vtime(int fd, float vtime) {
         return -1;
     }
 
-    termios_settings.c_cc[VTIME] = ((unsigned int)(vtime * 10));
+    termios_settings.c_cc[VTIME] = ((unsigned int)(vtime * TEN));
 
     if (tcsetattr(fd, TCSANOW, &termios_settings) < 0) {
         ERROR_LOG("Getting serial port attributes vtime");
@@ -706,7 +721,7 @@ int serial_tostring(int fd, char *str, size_t len) {
     xonxoff_str = (termios_settings.c_iflag & (IXON | IXOFF)) ? "true" : "false";
     rtscts_str = (termios_settings.c_cflag & CRTSCTS) ? "true" : "false";
     vmin = termios_settings.c_cc[VMIN];
-    vtime = ((float)termios_settings.c_cc[VTIME]) / 10;
+    vtime = ((float)termios_settings.c_cc[VTIME]) / TEN;
 
     return snprintf(str, len, "Serial (fd=%d, baudrate=%u, databits=%s, parity=%s, stopbits=%s, xonxoff=%s, rtscts=%s, vmin=%u, vtime=%.1f)",
                     fd, baudrate, databits_str, parity_str, stopbits_str, xonxoff_str, rtscts_str, vmin, vtime);

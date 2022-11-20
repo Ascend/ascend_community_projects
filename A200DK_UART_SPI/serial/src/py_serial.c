@@ -1,3 +1,18 @@
+/**
+* Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 #include <Python.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -182,7 +197,6 @@ static PyObject *Serial_readline(SerialObject *self, PyObject *args) {
     }
 
     status = serial_readline(self->fd, rxbuf, SERIAL_MAXPATH, timeout_ms);
-
     if (status < 0) {
         PyErr_SetString(PyExc_IOError, "failed to read");
         return NULL;
@@ -580,20 +594,11 @@ static PyObject *Serial_open(SerialObject *self, PyObject *args, PyObject *kwds)
     int num;
     char path[SERIAL_MAXPATH];
     uint32_t baudrate;
-    //	float vtime;
-    //	uint8_t tmp8;
-    //	uint32_t tmp32,temp_xonxoff,temp_rtscts;
     static char *kwlist[] = {"num", "baudrate", NULL};
-    //	Py_UNICODE *temp;
-    //	char *_path;
+
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "iI:open", kwlist, &num, &baudrate)) {
         return NULL;
     }
-    //	if (!PyArg_ParseTupleAndKeywords(args, kwds, "u:open",
-    //			kwlist,temp))
-    //		return NULL;
-    //	if(PyUnicode_Check(temp))
-    //		_path = PyUnicode_AS_DATA(temp)；
 
     if (snprintf(path, SERIAL_MAXPATH, "/dev/ttyAMA%d", num) >= SERIAL_MAXPATH) {
         PyErr_SetString(PyExc_OverflowError,
@@ -657,7 +662,7 @@ static PyObject *Serial_exit(SerialObject *self, PyObject *args) {
     PyObject *exc_type = 0;
     PyObject *exc_value = 0;
     PyObject *traceback = 0;
-    if (!PyArg_UnpackTuple(args, "__exit__", 3, 3, &exc_type, &exc_value,
+    if (!PyArg_UnpackTuple(args, "__exit__", EXIT_ARGS_LEN_MIN, EXIT_ARGS_LEN_MAX, &exc_type, &exc_value,
                            &traceback)) {
         return 0;
     }
