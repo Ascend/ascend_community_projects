@@ -427,7 +427,6 @@ if __name__ == '__main__':
 
     train_results = {"imgs": {}}
     for k, img_path in enumerate(Image_[:]):
-        try:
             img_id = img_path.split('/')[-1].split('.')[0]
             if os.path.exists(img_path) != 1:
                 print("The test image does not exist.")
@@ -509,7 +508,7 @@ if __name__ == '__main__':
                 objects = []
                 img_copy = Image.open(img_path)
                 detections = rescale_boxes(detections, opt.img_size, img_copy.size)
-                img_path_save = 'tmp.jpg'
+                IMGPATH = 'tmp.jpg'
                 for i, (x1, y1, x2, y2, conf, cls_conf, cls_pred) in enumerate(
                         detections):
 
@@ -528,7 +527,7 @@ if __name__ == '__main__':
                             w, h = crop_sign_org.size
                             n = 32 // min(crop_sign_org.size) + 1
                             crop_sign_org = crop_sign_org.resize((w * n, h * n))
-                        crop_sign_org.save(img_path_save)
+                        crop_sign_org.save(IMGPATH)
                         time.sleep(0.05)
                         if opt.draw:
                             draw = ImageDraw.Draw(img_copy)  # 在上面画画
@@ -537,11 +536,11 @@ if __name__ == '__main__':
 
                         STREAMNAME = b'classication'
                         INPLUGINLD = 0
-                        if os.path.exists(img_path_save) != 1:
+                        if os.path.exists(IMGPATH) != 1:
                             continue
                             print("The test image does not exist.")
 
-                        with open(img_path_save, 'rb') as f:
+                        with open(IMGPATH, 'rb') as f:
                             dataInput.data = f.read()
                         unique_Id_tmp = streamManagerApi.SendData(
                             STREAMNAME, INPLUGINLD, dataInput)
@@ -567,17 +566,15 @@ if __name__ == '__main__':
                         _2 = np.argmax(prediction)
                         objects.append({'category': Class_Label.get(_2), 'score': 848.0, 'bbox': {
                             'xmin': x1, 'ymin': y1, 'ymax': y2, 'xmax': x2}})
-                os.remove(img_path_save)
+                os.remove(IMGPATH)
                 if opt.draw:
-                    img_path_save = os.path.join(
+                    IMGPATH = os.path.join(
                         opt.save_image, str(img_id) + '.png')
-                    img_copy.save(img_path_save)
+                    img_copy.save(IMGPATH)
                 try:
                     train_results["imgs"][img_id] = {"objects": objects}
                 except KeyError:
                     print('error')
-        except:
-            pass
 
     FLAGS = os.O_WRONLY | os.O_CREAT | os.O_EXCL
     MOD = stat.S_IWUSR | stat.S_IRUSR
