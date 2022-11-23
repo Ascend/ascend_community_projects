@@ -5,6 +5,7 @@
 
 #include <boost/filesystem.hpp>
 #include <fstream>
+#include <iostream>
 
 #include "MxBase/DeviceManager/DeviceManager.h"
 #include "MxBase/Log/Log.h"
