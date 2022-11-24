@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-import torch
 import io
 import pickle
+import torch
 import numpy as np
 
 from srcs.nets.drow_net import DrowNet

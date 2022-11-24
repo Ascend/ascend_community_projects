@@ -101,11 +101,12 @@ $(PROJECT_DIR)
 
 ### 1.5 技术实现流程图
 
-DROW/DR-SPAAM模型前处理流程为：
+DROW/DR-SPAAM模型**前处理**流程为：
 - 读取输入激光雷达点阵序列，根据预设的参数对序列进行裁剪和变换，得到原始模型支持的输入格式。
 - 得到的模型输入按时间顺序排列。
 
-后处理插件的整体思路为：
+**后处理**的整体思路为：
+
 - 读取模型推理插件输出的帧中行人的位置信息，对位置信息进行坐标变换。
 - 进行NMS，通过空间距离作为两个点是否重合的度量标准，给定最小距离冗余阈值，移除可能重复检测点，提高置信度。
 
@@ -125,19 +126,7 @@ Ubuntu | 18.0.4 LTS
 Ascend-CANN-toolkit | 5.0.4
 Python | 3.9.2
 
-在编译运行项目前，先设置环境变量：
 
->``` bash
-> # please create your own set_env.sh
->export MX_SDK_HOME="${PATH_TO_MX_SDK}/MindX_SDK/mxVision"
->export LD_LIBRARY_PATH=${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:/usr/local/Ascend/ascend-toolkit/latest/acllib/lib64:/usr/local/Ascend/driver/lib64/
->export GST_PLUGIN_SCANNER=${MX_SDK_HOME}/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
->export GST_PLUGIN_PATH=${MX_SDK_HOME}/opensource/lib/gstreamer-1.0:${MX_SDK_HOME}/lib/plugins
->export PYTHONPATH=${MX_SDK_HOME}/python
->export PYTHONPATH=$PYTHONPATH:${PROJECT_PATH}/dr_spaam
->```
-
-方便起见，环境变量设置部分可以在运行的lidar_*.sh文件中找到。
 
 ## 3 软件依赖
 
@@ -161,6 +150,7 @@ https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_
 
 将.pth模型下载并解压到(PROJECT_PATH)/dr\_spaam/ckpts/路径下，修改(PROJECT_PATH)/LaserDet/scripts/det.py代码中的参数ckpt,model,和panoramic_scan。模型名称model应与ckpt对应。
 需要修改的参数共计6个，即
+
 - 类Detector()中的ckpt_path: {PATH_TO_UNZIPPED_CHECKPOINTS}
 - 类Detector()中的dataset: "DROW"或"JRDB"
 - 类Detector()中的model: "DROW3"或"DR-SPAAM
@@ -170,13 +160,12 @@ https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_
 
 为了简化执行步骤，前往det.py文件所在路径，执行以下步骤：
 ```
-$ cd ${PATH_TO_PROJECT}/LaserDet/scripts
+$ cd ${PATH_TO_PROJECT}/LaserDet/
 # activate any torch env
 # make sure you check the args, ckpt, model, and panoramic_scan, of class Detector in det.py
-$ python det.py --ckpt_path ${PATH_TO_UNZIPPED_CHECKPOINTS}
+$ python scripts/det.py --ckpt_path ${PATH_TO_UNZIPPED_CHECKPOINTS}
 ```
 该步骤后，生成的onnx默认保存在当前文件夹下。
-
 
 <em>4.1.2 onnx文件转om文件</em>
 
@@ -204,6 +193,7 @@ $ python det.py --ckpt_path ${PATH_TO_UNZIPPED_CHECKPOINTS}
 
 <em>4.2.2 onnx文件转om文件</em>
 进入onnx所在文件夹，执行以下步骤：
+
 >``` bash
 ># onnx_om_convertor.sh
 >atc --model=$(PATH_TO_YOUR_DR_SPAAM_ONNX)/(DR_SPAAM_MODEL_NAME).onnx --framework=5 --output={OUTPUT_NAME} -soc_version=Ascend310
@@ -232,12 +222,15 @@ $(PROJECT_DIR)
 │   │   ├── train_dataset
 ...
 ```
-数据集下载地址：
+数据集DROWv2下载地址：
 - [DROW dataset](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/DROWv2-data.zip)
-- [JackRabbot dataset - train](https://jrdb.erc.monash.edu/static/downloads/jrdb_train.zip)
+
+数据集JRDB下载地址：
+
 - [JackRabbot dataset - train with activity](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/train_dataset_with_activity/train_dataset_with_activity.zip)
 - [jrdb22_test.zip](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/test_dataset_without_labels/jrdb22_test.zip)
-- [JackRabbot dataset - test]( https://jrdb.erc.monash.edu/static/downloads/jrdb_test.zip)
+
+请注意，通过上述两个链接下载的数据集原名为test_dataset_without_labels与train_dataset_with_activity，请按照上述的目录结构更改为test_dataset及train_dataset。
 
 <em>5.1.2 预处理 JRDB 数据集</em>
 
@@ -248,8 +241,9 @@ $ pip install python-lzf
 $ pip install lz4
 $ pip install --extra-index-url https://rospypi.github.io/simple/ rosbag
 $ pip install roslz4 --extra-index-url https://rospypi.github.io/simple/
+
 # extract laser measurements from raw rosbag and synchronize with images
-$ python bin/setup_jrdb_dataset.py
+$ python LaserDet/scripts/setup_jrdb_dataset.py
 ```
 
 ### 5.2 pipeline文件准备
@@ -282,6 +276,7 @@ $ cd $(PROJECT_PATH)
 
 ### 7.1 性能测试
 执行 __6 编译与运行__ 中 S1-S3步骤完成准备工作，执行以下命令：
+
 首先确保lidar_quicktest.sh中的python命令行如下：
 
 >```bash
@@ -304,9 +299,13 @@ $ bash lidar_quicktest.sh dataset/{DATASET_NAME} pipelines/{NAME.pipeline} {VAL_
 # e.g. bash lidar_quicktest.sh dataset/JRDB pipelines/dr_spaam_jrdb_e40.pipeline val
 ```
 经测试，推理性能可达到如下表所示，满足性能要求。实际推理速度与输入帧每一行的点数、数据集的大小有关，同时也与CPU的可分配资源有关。
+
 该命令不包含可视化输出。
 
-On DROW val dataset (450 points, 225 degrees field of view)
+**性能推理结果如下：**
+
+**1）**On DROW val dataset (450 points, 225 degrees field of view)
+
 |        | FPS (Ascend 310) |
 |--------|------------------|
 |DROW3   | 6.6274 |
@@ -314,7 +313,10 @@ On DROW val dataset (450 points, 225 degrees field of view)
 
 [^注] 因为预处理方式不同，DR-SPAAM模型的输入是DROW3的十倍，模型本身体量差异不大，执行性能体现在FPS上。
 
-On JackRabbot (JRDB) val dataset (1091 points, 360 degrees field of view)
+
+
+**2）**On JackRabbot (JRDB) val dataset (1091 points, 360 degrees field of view)
+
 |        | FPS (Ascend 310) |
 |--------|------------------|
 |DROW3   | 11.0865 |
@@ -326,7 +328,7 @@ On JackRabbot (JRDB) val dataset (1091 points, 360 degrees field of view)
 
 执行 __6 编译与运行__ 中 S1-S3步骤完成准备工作。
 
-<em>7.2.1 DROWv2数据集测试</em>
+#### <em>7.2.1 DROWv2数据集测试</em>
 
 ** 基于序的评价指标 **
 
@@ -369,9 +371,9 @@ On DROW val dataset (450 points, 225 degrees field of view)
 
 [^注] DROWv2数据集的val部分比test部分包含更多hard samples，故两个推理模型的val检测结果比test检测结果差。
 
-<em>7.2.2 JRDB数据集测试</em>
+#### <em>7.2.2 JRDB数据集测试</em>
 
-若选择测试数据集为JRDB，因计算精度时几何增加的运算复杂度，执行命令后会将检测结果保存在路径下，需要切换测试环境（任意支持scipy和sklearn依赖的环境）以获得最终测试精度。首先执行以下命令
+若选择测试数据集为JRDB，因计算精度是几何增加的运算复杂度，执行命令后会将检测结果保存在路径下，需要切换测试环境（任意支持scipy和sklearn依赖的环境）以获得最终测试精度。首先执行以下命令
 ```
 $ cd $(PROJECT_PATH)
 $ bash lidar_submit.sh dataset/JRDB pipelines/{NAME.pipeline} {VAL_OR_TEST} False
@@ -452,7 +454,10 @@ On JackRabbot(JRDB) test dataset (1091 points, 360 degrees field of view)
 [^注] 验证DROWv2和JRDB的精度值不能跨数据集比较。
 
 ### 7.2 可视化测试
-需要提前安装安装matplotlib。运行脚本 lidar_submit.sh 时,在该script中的指令中加上--visu True （示例中，--visu为bash命令的第四个arg）。安装matplotlib命令如下：
+**需要提前安装安装matplotlib。**
+
+运行脚本 lidar_submit.sh 时,在该script中的指令中加上--visu True （示例中，--visu为bash命令的第四个arg）。安装matplotlib命令如下：
+
 ```
 $ pip3 install matplotlib
 ```
