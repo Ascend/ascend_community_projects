@@ -70,7 +70,7 @@ $(PROJECT_DIR)
 │   │   ├── det.py
 │   │   ├── eval_external.py
 │   │   ├── onnx_om_convertor.sh
-│   │   ├── setup_jrdb_dataset.py
+│   │   ├── setup_jrdb_dataset.py(自行下载)
 │   ├── srcs
 │   │   ├── data_handle
 │   │   │   ├── __init__.py
@@ -230,11 +230,11 @@ $(PROJECT_DIR)
 - [JackRabbot dataset - train with activity](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/train_dataset_with_activity/train_dataset_with_activity.zip)
 - [jrdb22_test.zip](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/test_dataset_without_labels/jrdb22_test.zip)
 
-请注意，通过上述两个链接下载的数据集原名为test_dataset_without_labels与train_dataset_with_activity，请按照上述的目录结构更改为test_dataset及train_dataset。
+请注意，通过上述两个链接下载的数据集原名为test_dataset_without_labels与train_dataset_with_activity，请按照上述的目录结构更改为test_dataset及train_dataset。下载后请确保文件夹内包含rosbags文件夹，且内包含.bag原文件。
 
 <em>5.1.2 预处理 JRDB 数据集</em>
 
-即将激光测量数据从RAW格式的rosbag中提取出来，并且按时间轴与摄像头获取的图像对其，执行以下步骤：
+即将激光测量数据从RAW格式的rosbag中提取出来，并且按时间轴与摄像头获取的图像对其，先安装必要的包：
 ```
 # install required dependencies
 $ pip install python-lzf
@@ -242,11 +242,19 @@ $ pip install lz4
 $ pip install --extra-index-url https://rospypi.github.io/simple/ rosbag
 $ pip install roslz4 --extra-index-url https://rospypi.github.io/simple/
 
+```
+
+接下来请从[2D_lidar_person_detection/setup_jrdb_dataset.py at master · VisualComputingInstitute/2D_lidar_person_detection · GitHub](https://github.com/VisualComputingInstitute/2D_lidar_person_detection/blob/master/dr_spaam/bin/setup_jrdb_dataset.py)上下载setup_jrdb_dataset.py脚本，放置于LaserDet/scripts文件夹下，并修改代码的第8行，使`_jrdb_dir`指向5.1.1下载的JRDB数据集。然后执行该脚本。
+
+```
 # extract laser measurements from raw rosbag and synchronize with images
 $ python LaserDet/scripts/setup_jrdb_dataset.py
 ```
 
+
+
 ### 5.2 pipeline文件准备
+
 本项目提供了四个pipeline文件以满足测试要求，请将pipelines文件保存在以下路径。
 ```
 $(PROJECT_DIR)
@@ -298,6 +306,8 @@ $ bash lidar_quicktest.sh dataset/{DATASET_NAME} pipelines/{NAME.pipeline} {VAL_
 # e.g. bash lidar_quicktest.sh dataset/JRDB pipelines/drow3_jrdb_e40.pipeline val
 # e.g. bash lidar_quicktest.sh dataset/JRDB pipelines/dr_spaam_jrdb_e40.pipeline val
 ```
+（注意：关于指令`split`，在drowv2数据集下可选择val或者test,在jrdb数据集下仅可选择test)
+
 经测试，推理性能可达到如下表所示，满足性能要求。实际推理速度与输入帧每一行的点数、数据集的大小有关，同时也与CPU的可分配资源有关。
 
 该命令不包含可视化输出。
