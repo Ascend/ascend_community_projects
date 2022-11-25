@@ -251,7 +251,7 @@ $ pip install roslz4 --extra-index-url https://rospypi.github.io/simple/
 $ python LaserDet/scripts/setup_jrdb_dataset.py
 ```
 
-
+(可根据需要，只处理test测试集的部分，删除setup_jrdb_dataset.py文件的166与167行代码即可。)
 
 ### 5.2 pipeline文件准备
 
@@ -463,30 +463,34 @@ On JackRabbot(JRDB) test dataset (1091 points, 360 degrees field of view)
 
 [^注] 验证DROWv2和JRDB的精度值不能跨数据集比较。
 
-### 7.2 可视化测试
+### 7.3 可视化测试
 **需要提前安装安装matplotlib。**
 
-运行脚本 lidar_submit.sh 时,在该script中的指令中加上--visu True （示例中，--visu为bash命令的第四个arg）。安装matplotlib命令如下：
+运行脚本 lidar_submit.sh 时,在该script中的指令中加上--visu True （示例中，--visu为bash命令的第四个arg）。
+
+安装matplotlib命令如下：
 
 ```
 $ pip3 install matplotlib
 ```
 确保lidar_submit.sh的python命令行修改如下，本例设置了6个外部输入变量。
+
+请注意，**本节主要用于对单帧进行可视化的分析**，如需进行完整测试集的可视化测试请在7.2节中修改`visu`指令为True即可。
+
 >``` bash
 > # lidar_submit.sh
 >python -u release_lidar_main.py --data_path $1 --pipe_store $2 --split $3 --visu $4 --seq_name $5 --frame_id $6
 >```
 
-执行命令：
-$ bash lidar_submit.sh \
-$(path_to_dataset)/dataset/JRDB \ # Dataset: JRDB
-$(path_to_pipeline)/pipelines/drow3_jrdb_e40.pipeline \ # Model name: DROW3 Or DR-SPAAM
-train_single \
-True \
-cubberly-auditorium-2019-04-22_0 \
-1234
+执行命令示例(对cubberly-auditorium-2019-04-22_0序列的1234帧进行可视化操作）
 
-可视化结果将保存在项目根目录的./fig文件下。
+（请注意：`split指令`需写成train_single或者test_single的形式，`visu指令`保持为True）
+
+```
+bash lidar_submit.sh ./dataset/JRDB ./pipelines/drow3_jrdb_e40.pipeline train_single True cubberly-auditorium-2019-04-22_0 1234
+```
+
+可视化结果将保存在项目根目录的./fig文件夹下。
 ```
 $(PROJECT_DIR)
 ├── figs
