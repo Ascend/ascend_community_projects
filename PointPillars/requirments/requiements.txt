@@ -1,0 +1,7 @@
+fire
+numpy
+torch
+PyQt5
+traits
+VTK
+mayavi
