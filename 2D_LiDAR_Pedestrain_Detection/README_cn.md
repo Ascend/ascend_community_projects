@@ -482,15 +482,30 @@ $ pip3 install matplotlib
 >python -u release_lidar_main.py --data_path $1 --pipe_store $2 --split $3 --visu $4 --seq_name $5 --frame_id $6
 >```
 
-执行命令示例(对cubberly-auditorium-2019-04-22_0序列的1234帧进行可视化操作）
+请注意：
 
-（请注意：`split指令`需写成train_single或者test_single的形式，`visu指令`保持为True）
+`指令split`需写成train_single(val_single)或者test_single的形式。
+
+`指令visu`保持为True。
+
+`指令seq_name`在DROW数据集下为.bag.csv结尾的文件；在JRDB数据集下为lasers文件夹下的文件夹名称。
+
+`指令frame_id`在DROW数据集下为按时间顺序的帧编号；在JRDB数据集下为seq_name文件夹下的txt文件名。
+
+执行命令示例1(对JRDB数据集下的train数据集下cubberly-auditorium-2019-04-22_0序列的1234帧进行可视化操作）
 
 ```
 bash lidar_submit.sh ./dataset/JRDB ./pipelines/drow3_jrdb_e40.pipeline train_single True cubberly-auditorium-2019-04-22_0 1234
 ```
 
+执行命令示例2(对DROWv2数据集下的test数据集下run_t_2015-11-26-11-22-03.bag.csv序列的第10帧进行可视化操作）
+
+```
+bash lidar_submit.sh ./dataset/DROWv2 ./pipelines/drow3_drow_e40.pipeline test_single True run_t_2015-11-26-11-22-03.bag.csv 10
+```
+
 可视化结果将保存在项目根目录的./fig文件夹下。
+
 ```
 $(PROJECT_DIR)
 ├── figs

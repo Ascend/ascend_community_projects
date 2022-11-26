@@ -678,7 +678,7 @@ def main():
             plt.close(fig)
 
     # evaluate
-    if "DROW" in args.data_path or args.frame_id is not None:
+    if "DROW" in args.data_path and args.frame_id is None:
         for key in [*dets_cls_accum]:
             dets_xy = np.concatenate(dets_xy_accum.get(key, "abc"), axis=0)
             dets_cls = np.concatenate(dets_cls_accum.get(key, "abc"))
