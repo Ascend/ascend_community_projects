@@ -1,0 +1,12 @@
+setup.py
+a200dksmbus/__init__.py
+a200dksmbus.egg-info/PKG-INFO
+a200dksmbus.egg-info/SOURCES.txt
+a200dksmbus.egg-info/dependency_links.txt
+a200dksmbus.egg-info/top_level.txt
+src/py_smbus.c
+src/smbus.c
+test/test_6.py
+test/test_7.py
+test/test_8.py
+test/test_9.py
