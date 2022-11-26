@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# load envs
-# source ./envs/env.sh
-
 
 export PYTHONPATH=$PYTHONPATH:./LaserDet
 

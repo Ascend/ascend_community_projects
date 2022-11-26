@@ -142,7 +142,7 @@ python-lzf | 0.2.4 | 压缩/解压缩.pcd格式的点云数据。
 ## 4 模型转换
 
 本项目使用的模型checkpoints可通过[here](
-https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/Archive_pth_om_v2.zip)获取。压缩文件下载后解压，checkpoints文件后缀是.pth，下载后先将checkpoints转换成onnx格式，再使用模型转换工具[ATC](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)将onnx转换成om模型。
+https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/Archive_pth_om_v2.zip)获取。压缩文件下载后解压，checkpoints文件后缀是.pth，下载后先将checkpoints转换成onnx格式(由于原ckpt依赖GPU实现，在NPU上无法进行转换，在此提供[onnx]()版本供开发者使用），再使用模型转换工具[ATC](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)将onnx转换成om模型。
 
 ### 4.1 DROW3 模型转换
 
@@ -204,6 +204,18 @@ $ python det.py --ckpt_path ${PATH_TO_UNZIPPED_CHECKPOINTS}
 ATC run success, welcome to the next use.
 ```
 表示模型转换流程完成。
+
+### 4.3 onnx转om一步转换
+
+在此提供简易版本。可不执行4.1与4.2。
+
+进入`LaserDet/scripts/`文件夹下，可直接运行`onnx_om_convertor.sh`文件，即可对四个模型进行一步转换。命令如下：
+
+```
+bash onnx_om_convertor.sh ${path_to_onnx_model}
+```
+
+最后的指令为四个onnx模型的存放路径（需存于同一位置）。
 
 ## 5 准备
 ### 5.1 数据集准备
@@ -303,8 +315,8 @@ $ cd $(PROJECT_PATH)
 $ bash lidar_quicktest.sh dataset/{DATASET_NAME} pipelines/{NAME.pipeline} {VAL_OR_TEST}
 # e.g. bash lidar_quicktest.sh dataset/DROWv2 pipelines/drow3_drow_e40.pipeline val
 # e.g. bash lidar_quicktest.sh dataset/DROWv2 pipelines/dr_spaam_drow_e40.pipeline val
-# e.g. bash lidar_quicktest.sh dataset/JRDB pipelines/drow3_jrdb_e40.pipeline val
-# e.g. bash lidar_quicktest.sh dataset/JRDB pipelines/dr_spaam_jrdb_e40.pipeline val
+# e.g. bash lidar_quicktest.sh dataset/JRDB pipelines/drow3_jrdb_e40.pipeline test
+# e.g. bash lidar_quicktest.sh dataset/JRDB pipelines/dr_spaam_jrdb_e40.pipeline test
 ```
 （注意：关于指令`split`，在drowv2数据集下可选择val或者test,在jrdb数据集下仅可选择test)
 
@@ -386,11 +398,9 @@ On DROW val dataset (450 points, 225 degrees field of view)
 若选择测试数据集为JRDB，因计算精度是几何增加的运算复杂度，执行命令后会将检测结果保存在路径下，需要切换测试环境（任意支持scipy和sklearn依赖的环境）以获得最终测试精度。首先执行以下命令
 ```
 $ cd $(PROJECT_PATH)
-$ bash lidar_submit.sh dataset/JRDB pipelines/{NAME.pipeline} {VAL_OR_TEST} False
+$ bash lidar_submit.sh dataset/JRDB pipelines/{NAME.pipeline} test False
 # e.g. bash lidar_submit.sh dataset/JRDB pipelines/drow3_jrdb_e40.pipeline test False
 # e.g. bash lidar_submit.sh dataset/JRDB pipelines/dr_spaam_jrdb_e40.pipeline test False
-# e.g. bash lidar_submit.sh dataset/JRDB pipelines/drow3_jrdb_e40.pipeline val False
-# e.g. bash lidar_submit.sh dataset/JRDB pipelines/dr_spaam_jrdb_e40.pipeline val False
 ```
 默认的检测结果和对应的groundtruth将会被保存到$(PROJECT_PATH)/outputs_{MODEL_NAME}_JRDB/下，保存的结果如下所示：
 ```
@@ -519,7 +529,7 @@ $(PROJECT_DIR)
 │ │ ├── ...
 ```
 
-![visulization](imgs/001217.png)
+![visulization](./imgs/001217.png)
 
 ## 8 ROS环境下的测试
 
@@ -579,20 +589,24 @@ $(LaserDet)
 
 #### 8.2.2 运行ROS节点
 
-我们假设读者已正常执行步骤1-7，所需模型与数据集已就位。默认在ROS环境下，每开启一个新的终端都在路径$(PATH_TO_LASERDET)/LaserDet/dr_spaam_ros下，并执行source devel/setup.bash添加ROS环境路径。至目前该ROS节点支持JRDB数据集，模型输入为.bag文件，一般位于JRDB/(train OR test)/rosbag/SEQUENCE_NAME.bag，同时需要时间戳文件，一般位于JRDB/(train OR test)/timestamps/SEQUENCE_NAME/frames_pc_im_laser.json。测试用bag文件和json文件的序列名称SEQUENCE_NAME是一一对应的。
+我们假设读者已正常执行步骤1-7，所需模型与数据集已就位。
+
+默认在ROS环境下，每开启一个新的终端都在路径$(PATH_TO_LASERDET)/LaserDet/dr_spaam_ros下，并执行source devel/setup.bash添加ROS环境路径。至目前该ROS节点支持JRDB数据集，模型输入为.bag文件，一般位于JRDB/(train OR test)/rosbag/SEQUENCE_NAME.bag，同时需要时间戳文件，一般位于JRDB/(train OR test)/timestamps/SEQUENCE_NAME/frames_pc_im_laser.json。**测试用bag文件和json文件的序列名称SEQUENCE_NAME是一一对应的。**
 
 首先编辑LaserDet/dr_spaam_ros/src/dr_spaam_ros/node.py主程序中的
 >```python
 >if __name__ == '__main__':
->    # init ros node here
->    rospy.init_node("dr_spaam_ros")
->    mode = 1 # 1: eval , 2: render
->    seq_name = # TODO BAGFILE_NAME (.bag) and the model detection outputs will be saved under the folder named by seq_name
->    timestamps_path = # TODO $(PATH_TO_TIMESTAMP_FILE)/frames_pc_im_laser.json
->    pipe_store = # TODO $(PATH_TO_MODEL_PIPELINES)/XXX.pipeline
->    is_rviz_supported = False # TODO if you have rviz-supported env or not
+># init ros node here
+>rospy.init_node("dr_spaam_ros")
+>mode = 1 # 1: eval , 2: render
+>seq_name = # TODO BAGFILE_NAME (.bag) and the model detection outputs will be saved under the folder named by seq_name
+>timestamps_path = # TODO $(PATH_TO_TIMESTAMP_FILE)/frames_pc_im_laser.json
+>pipe_store = # TODO $(PATH_TO_MODEL_PIPELINES)/XXX.pipeline
+>is_rviz_supported = False # TODO if you have rviz-supported env or not
 >```
-若mode为1，模型推理结果将保存在LaserDet/dr_spaam_ros/src/outputs/seq_name下，按时间戳文件中的顺序逐帧写入txt文件，当rosbag play（步骤3）正常结束后，roslaunch（步骤2）也会正常退出。同时，也可以设置is_rviz_supported为False，每一帧的可视化结果将会保存到LaserDet/dr_spaam_ros/src/bag2png下。若mode为2，则节点会一直处于等待接收sensor message的状态，rosbag play（步骤3）结束后，roslaunch（步骤2）不会自动退出，必须手动ctrl+C。
+>若mode为1，模型推理结果将保存在LaserDet/dr_spaam_ros/src/outputs/seq_name下，按时间戳文件中的顺序逐帧写入txt文件，当rosbag play（步骤3）正常结束后，roslaunch（步骤2）也会正常退出。同时，也可以设置is_rviz_supported为False，每一帧的可视化结果将会保存到LaserDet/dr_spaam_ros/src/bag2png下。
+>
+>若mode为2，则节点会一直处于等待接收sensor message的状态，rosbag play（步骤3）结束后，roslaunch（步骤2）不会自动退出，必须手动ctrl+C。
 
 运行步骤如下：
 

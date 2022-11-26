@@ -12,17 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# load envs
-# source ./envs/env.sh
-
-
-export MX_SDK_HOME="/home/HwHiAiUser/mindx_sdk/mxVision"
-export LD_LIBRARY_PATH=${MX_SDK_HOME}/lib:${MX_SDK_HOME}/opensource/lib:/usr/local/Ascend/ascend-toolkit/latest/acllib/lib64:/usr/local/Ascend/driver/lib64/
-export GST_PLUGIN_SCANNER=${MX_SDK_HOME}/opensource/libexec/gstreamer-1.0/gst-plugin-scanner
-export GST_PLUGIN_PATH=${MX_SDK_HOME}/opensource/lib/gstreamer-1.0:${MX_SDK_HOME}/lib/plugins
-export PYTHONPATH=${MX_SDK_HOME}/python
-
-export PYTHONPATH=$PYTHONPATH:./LaserDet
 
 # running inference process
 nohup python -u release_lidar_speedtest.py --data_path $1 --pipe_store $2 --split $3 >> rounding_error.log 2>&1 &
