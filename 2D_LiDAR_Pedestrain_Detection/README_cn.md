@@ -141,73 +141,9 @@ python-lzf | 0.2.4 | 压缩/解压缩.pcd格式的点云数据。
 
 ## 4 模型转换
 
-本项目使用的模型checkpoints可通过[here](
-https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/Archive_pth_om_v2.zip)获取。压缩文件下载后解压，checkpoints文件后缀是.pth，下载后先将checkpoints转换成onnx格式(由于原ckpt依赖GPU实现，在NPU上无法进行转换，在此提供[onnx]()版本供开发者使用），再使用模型转换工具[ATC](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)将onnx转换成om模型。
+本项目使用的模型提供[onnx](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/2D_lidar_pedestrian_target_detection/onnx.zip)版本供开发者使用，使用模型转换工具[ATC](https://support.huaweicloud.com/tg-cannApplicationDev330/atlasatc_16_0005.html)将onnx转换成om模型。
 
-### 4.1 DROW3 模型转换
-
-<em>4.1.1 checkpoint文件转onnx文件</em>
-
-将.pth模型下载并解压到(PROJECT_PATH)/dr\_spaam/ckpts/路径下，修改(PROJECT_PATH)/LaserDet/scripts/det.py代码中的参数ckpt,model,和panoramic_scan。模型名称model应与ckpt对应。
-需要修改的参数共计6个，即
-
-- 类Detector()中的ckpt_path: {PATH_TO_UNZIPPED_CHECKPOINTS}
-- 类Detector()中的dataset: "DROW"或"JRDB"
-- 类Detector()中的model: "DROW3"或"DR-SPAAM
-- 类Detector()中的panoramic_scan: 如果数据集为DROWv2，则panoramic\_scan=False；如果数据集为JRDB，则panoramic\_scan=True。
-- num_pts:
-- torch.onnx.export()中的第三个参数，即输出onnx的文件名
-
-为了简化执行步骤，前往det.py文件所在路径，执行以下步骤：
-```
-$ cd ${PATH_TO_PROJECT}/LaserDet/
-# activate any torch env
-# make sure you check the args, ckpt, model, and panoramic_scan, of class Detector in det.py
-$ python scripts/det.py --ckpt_path ${PATH_TO_UNZIPPED_CHECKPOINTS}
-```
-该步骤后，生成的onnx默认保存在当前文件夹下。
-
-<em>4.1.2 onnx文件转om文件</em>
-
-进入onnx所在文件夹，执行以下步骤：
-```
-$ atc --model=$(PATH_TO_YOUR_DROW3_ONNX)/(DROW_MODEL_NAME).onnx --framework=5 --output={OUTPUT_NAME} -soc_version=Ascend310
-```
-生成的文件模型 *.om一般默认保存在当前执行命令所在路径下。执行后终端输入为：
-```
-ATC run success, welcome to the next use.
-```
-表示模型转换流程完成。
-
-### 4.2 DR-SPAAM 模型转换
-
-<em>4.2.1 checkpoint文件转onnx文件</em>
-
-同4.1.1，前往det.py文件所在路径，执行以下步骤：
-```
-$ cd ${PATH_TO_PROJECT}/LaserDet/scripts
-# activate any torch env
-# make sure you check the args, ckpt, model, and panoramic_scan, of class Detector in det.py
-$ python det.py --ckpt_path ${PATH_TO_UNZIPPED_CHECKPOINTS}
-```
-
-<em>4.2.2 onnx文件转om文件</em>
-进入onnx所在文件夹，执行以下步骤：
-
->``` bash
-># onnx_om_convertor.sh
->atc --model=$(PATH_TO_YOUR_DR_SPAAM_ONNX)/(DR_SPAAM_MODEL_NAME).onnx --framework=5 --output={OUTPUT_NAME} -soc_version=Ascend310
->```
-
-生成的文件模型 *.om一般默认保存在当前执行命令所在路径下。执行后终端输入为：
-```
-ATC run success, welcome to the next use.
-```
-表示模型转换流程完成。
-
-### 4.3 onnx转om一步转换
-
-在此提供简易版本。可不执行4.1与4.2。
+**onnx转om一步转换**
 
 进入`LaserDet/scripts/`文件夹下，可直接运行`onnx_om_convertor.sh`文件，即可对四个模型进行一步转换。命令如下：
 
@@ -240,7 +176,7 @@ $(PROJECT_DIR)
 数据集JRDB下载地址：
 
 - [JackRabbot dataset - train with activity](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/train_dataset_with_activity/train_dataset_with_activity.zip)
-- [jrdb22_test.zip](https://jrdb.erc.monash.edu/static/downloads/JRDB2022/test_dataset_without_labels/jrdb22_test.zip)
+- [jrdb_test.zip](https://jrdb.erc.monash.edu/static/downloads/jrdb_test.zip)
 
 请注意，通过上述两个链接下载的数据集原名为test_dataset_without_labels与train_dataset_with_activity，请按照上述的目录结构更改为test_dataset及train_dataset。下载后请确保文件夹内包含rosbags文件夹，且内包含.bag原文件。
 
@@ -253,7 +189,6 @@ $ pip install python-lzf
 $ pip install lz4
 $ pip install --extra-index-url https://rospypi.github.io/simple/ rosbag
 $ pip install roslz4 --extra-index-url https://rospypi.github.io/simple/
-
 ```
 
 接下来请从[2D_lidar_person_detection/setup_jrdb_dataset.py at master · VisualComputingInstitute/2D_lidar_person_detection · GitHub](https://github.com/VisualComputingInstitute/2D_lidar_person_detection/blob/master/dr_spaam/bin/setup_jrdb_dataset.py)上下载setup_jrdb_dataset.py脚本，放置于LaserDet/scripts文件夹下，并修改代码的第8行，使`_jrdb_dir`指向5.1.1下载的JRDB数据集。然后执行该脚本。
@@ -303,7 +238,7 @@ $ cd $(PROJECT_PATH)
 > # lidar_quicktest.sh
 >nohup python -u release_lidar_speedtest.py --data_path $1 --pipe_store $2 --split $3 --seq_name $4
 >```
-[^注] 当测试完整数据集时，split可以为val/test；当测试单个序列时，split可以为train_nano/test_nano；当测试单个帧时，split可以为train_single/test_single。对于DROWv2数据集，序列名称即为train/test文件夹下.csv文件的名称；对于JRDB数据集，序列名称可以在train_dataset/lasers或test_dataset/lasers下快速查找得到。
+[注] 当测试完整数据集时，split可以为val/test；当测试单个序列时，split可以为train_nano/test_nano；当测试单个帧时，split可以为train_single/test_single。对于DROWv2数据集，序列名称即为train/test文件夹下.csv文件的名称；对于JRDB数据集，序列名称可以在train_dataset/lasers或test_dataset/lasers下快速查找得到。
 
 测试整个数据集的平均性能：
 >```bash
@@ -326,25 +261,23 @@ $ bash lidar_quicktest.sh dataset/{DATASET_NAME} pipelines/{NAME.pipeline} {VAL_
 
 **性能推理结果如下：**
 
-**1）**On DROW val dataset (450 points, 225 degrees field of view)
+1）On DROW val dataset (450 points, 225 degrees field of view)
 
 |        | FPS (Ascend 310) |
 |--------|------------------|
 |DROW3   | 6.6274 |
 |DR-SPAAM| 3.0385 |
 
-[^注] 因为预处理方式不同，DR-SPAAM模型的输入是DROW3的十倍，模型本身体量差异不大，执行性能体现在FPS上。
+[注] 因为预处理方式不同，DR-SPAAM模型的输入是DROW3的十倍，模型本身体量差异不大，执行性能体现在FPS上。
 
-
-
-**2）**On JackRabbot (JRDB) val dataset (1091 points, 360 degrees field of view)
+2）On JackRabbot (JRDB) val dataset (1091 points, 360 degrees field of view)
 
 |        | FPS (Ascend 310) |
 |--------|------------------|
 |DROW3   | 11.0865 |
 |DR-SPAAM| 10.9769 |
 
-[^注] JRDB数据集的性能测试不包括计算精度的时间。
+[注] JRDB数据集的性能测试不包括计算精度的时间。
 
 ### 7.2 精度测试
 
@@ -352,7 +285,7 @@ $ bash lidar_quicktest.sh dataset/{DATASET_NAME} pipelines/{NAME.pipeline} {VAL_
 
 #### <em>7.2.1 DROWv2数据集测试</em>
 
-** 基于序的评价指标 **
+**基于序的评价指标**
 
 * AP (ROC curve 与 AUC)：将所有的样本-标签对按照预测值逆序排列，从坐标点$(0,0)$出发，若第1个为正，则向上走一步，否则向右走一步，向上走一步的步距为$1/P$，向右走一步的步距为$1/N$，其中$|P|$为实际正标签的的总数，$|N|$为实际负标签的的总数。这样获得的曲线称为ROC（Receiver Operating Characteristic Curve），而AUC（Area Under Curve）就是该曲线与坐标轴围成的面积。本项目的测试指标AP即AUC。
 
@@ -391,11 +324,11 @@ On DROW val dataset (450 points, 225 degrees field of view)
 |DR-SPAAM (GPU)| 0.5107 | 0.5284 | 0.5476 | 0.5552 | 0.5458 | 0.5535 |
 |DR-SPAAM (310)| 0.5128 | 0.5297 | 0.5488 | 0.5560 | 0.5474 | 0.5551 |
 
-[^注] DROWv2数据集的val部分比test部分包含更多hard samples，故两个推理模型的val检测结果比test检测结果差。
+[注] DROWv2数据集的val部分比test部分包含更多hard samples，故两个推理模型的val检测结果比test检测结果差。
 
 #### <em>7.2.2 JRDB数据集测试</em>
 
-若选择测试数据集为JRDB，因计算精度是几何增加的运算复杂度，执行命令后会将检测结果保存在路径下，需要切换测试环境（任意支持scipy和sklearn依赖的环境）以获得最终测试精度。首先执行以下命令
+若选择测试数据集为JRDB，因计算精度是几何增加的运算复杂度，执行命令后会将检测结果保存在路径下，需要切换测试环境（任意支持scipy和sklearn依赖的环境）以获得最终测试精度。首先执行以下命令:
 ```
 $ cd $(PROJECT_PATH)
 $ bash lidar_submit.sh dataset/JRDB pipelines/{NAME.pipeline} test False
@@ -453,13 +386,13 @@ $ pip install -U scikit-learn
 $ conda install -c anaconda scipy
 $ conda install -c anaconda scikit-learn
 ```
-我们提供了可供参考的脚本LaserDet/scripts/eval_external.py：
+我们提供了可供参考的脚本LaserDet/scripts/eval_test.py：
 
 将参数 --result_dir 修改为正确的输出结果txt集地址，执行以下指令：
 
 ```
 $ cd $(PROJECT_PATH)/LaserDet
-$ python scripts/eval_external.py --result_dir ${OUTPUTS_RESULTS_DIR}
+$ python scripts/eval_test.py --result_dir ${OUTPUTS_RESULTS_DIR}
 ```
 执行命令后终端输出测试精度。
 
@@ -471,7 +404,7 @@ On JackRabbot(JRDB) test dataset (1091 points, 360 degrees field of view)
 |DR-SPAAM (GPU) | 0.7856 | 0.8377 | 0.7482 | 0.7744 | 0.7477 | 0.7741 |
 |DR-SPAAM (310) | 0.7560 | 0.8289 | 0.7320 | 0.7677 | 0.7311 | 0.7673 |
 
-[^注] 验证DROWv2和JRDB的精度值不能跨数据集比较。
+[注] 验证DROWv2和JRDB的精度值不能跨数据集比较。
 
 ### 7.3 可视化测试
 **需要提前安装安装matplotlib。**
@@ -591,22 +524,22 @@ $(LaserDet)
 
 我们假设读者已正常执行步骤1-7，所需模型与数据集已就位。
 
-默认在ROS环境下，每开启一个新的终端都在路径$(PATH_TO_LASERDET)/LaserDet/dr_spaam_ros下，并执行source devel/setup.bash添加ROS环境路径。至目前该ROS节点支持JRDB数据集，模型输入为.bag文件，一般位于JRDB/(train OR test)/rosbag/SEQUENCE_NAME.bag，同时需要时间戳文件，一般位于JRDB/(train OR test)/timestamps/SEQUENCE_NAME/frames_pc_im_laser.json。**测试用bag文件和json文件的序列名称SEQUENCE_NAME是一一对应的。**
+默认在ROS环境下，每开启一个新的终端都在路径$(PATH_TO_LASERDet)/dr_spaam_ros下，并执行source devel/setup.bash添加ROS环境路径。至目前该ROS节点支持JRDB数据集，模型输入为.bag文件，一般位于JRDB/(train OR test)/rosbag/SEQUENCE_NAME.bag(同时将5.1.2中处理好的包含txt的数据集一并下载，一般位于JRDB/(train OR test)/lasers/SEQUENCE_NAME/*.txt）;同时需要时间戳文件，一般位于JRDB/(train OR test)/timestamps/SEQUENCE_NAME/frames_pc_im_laser.json。**测试用bag文件和json文件的序列名称SEQUENCE_NAME是一一对应的。**
 
 首先编辑LaserDet/dr_spaam_ros/src/dr_spaam_ros/node.py主程序中的
 >```python
 >if __name__ == '__main__':
 ># init ros node here
 >rospy.init_node("dr_spaam_ros")
->mode = 1 # 1: eval , 2: render
->seq_name = # TODO BAGFILE_NAME (.bag) and the model detection outputs will be saved under the folder named by seq_name
->timestamps_path = # TODO $(PATH_TO_TIMESTAMP_FILE)/frames_pc_im_laser.json
->pipe_store = # TODO $(PATH_TO_MODEL_PIPELINES)/XXX.pipeline
->is_rviz_supported = False # TODO if you have rviz-supported env or not
+>MODE_CHOOSE = 1 # 1: eval , 2: render
+>SEQ_NAME = # 指向处理后的数据集文件夹路径
+>TIMESTAMPS_PATH = # TODO $(PATH_TO_TIMESTAMP_FILE)/frames_pc_im_laser.json
+>PIPE_STORE = # TODO $(PATH_TO_MODEL_PIPELINES)/XXX.pipeline
+>IS_RIVZ_SUPPORTED = False # TODO if you have rviz-supported env or not
 >```
->若mode为1，模型推理结果将保存在LaserDet/dr_spaam_ros/src/outputs/seq_name下，按时间戳文件中的顺序逐帧写入txt文件，当rosbag play（步骤3）正常结束后，roslaunch（步骤2）也会正常退出。同时，也可以设置is_rviz_supported为False，每一帧的可视化结果将会保存到LaserDet/dr_spaam_ros/src/bag2png下。
+>若MODE_CHOOSE为1，模型推理结果将保存在LaserDet/dr_spaam_ros/src/outputs/seq_name下，按时间戳文件中的顺序逐帧写入txt文件，当rosbag play（步骤3）正常结束后，roslaunch（步骤2）也会正常退出。同时，也可以设置is_rviz_supported为False，每一帧的可视化结果将会保存到LaserDet/dr_spaam_ros/src/bag2png下。
 >
->若mode为2，则节点会一直处于等待接收sensor message的状态，rosbag play（步骤3）结束后，roslaunch（步骤2）不会自动退出，必须手动ctrl+C。
+>若MODE_CHOOSE为2，则节点会一直处于等待接收sensor message的状态，rosbag play（步骤3）结束后，roslaunch（步骤2）不会自动退出，必须手动ctrl+C。
 
 运行步骤如下：
 
@@ -622,7 +555,7 @@ I20221105 11:21:15.086273 30016 MxsmStream.cpp:326] state changed: PAUSED->PLAYI
 loop TOTAL_NUM_OF_FRAMES_IN_A_BAG_FILE_TO_BE_READ
 ```
 
-3. 开启第三个终端输入：rosbag play -r 0.015 BAG_FILE，DR-SPAAM-ROS节点开始接收每一帧信息。其中，-r是play rate，为避免丢帧造成模型推理无法正常进行，我们不得不适当降低rosbag play的速率至0.015-0.020这个范围。
+3. 开启第三个终端输入：`rosbag play -r 0.015 ${PATH_TO_BAG_FILE}`，DR-SPAAM-ROS节点开始接收每一帧信息。其中，-r是play rate，为避免丢帧造成模型推理无法正常进行，我们不得不适当降低rosbag play的速率至0.015-0.020这个范围。
 
 终端显示
 ```
@@ -659,7 +592,7 @@ $:rostopic hz /dr_spaam_detections # Published topic of node dr_spaam_ros
 
 ### 8.3 ROS精度测试
 
-本项目提供精度测试代码，位于LaserDet/scripts/eval_external_ros.py，使用方法与LaserDet/scripts/eval_external.py相同，此处不作过多展开。
+本项目提供精度测试代码，位于LaserDet/scripts/eval_test_ros.py，使用方法与LaserDet/scripts/eval_test.py相同，此处不作过多展开。
 
 ## 9 常见问题
 
