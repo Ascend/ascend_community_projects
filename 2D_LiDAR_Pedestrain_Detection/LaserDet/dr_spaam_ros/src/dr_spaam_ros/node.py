@@ -47,7 +47,7 @@ def listener(ros_cls, output_save_dir=None):
 
     # added-in
     ros_cls.laser_scans.append(scan)  # append to the deque right
-    anno_id = ros_cls.ts_frames[ros_cls.anno_id]['laser_frame']['url'].split('\\')[-1][:-4]
+    anno_id = ros_cls.ts_frames[ros_cls.anno_id]['laser_frame']['url'].split('/')[-1][:-4]
     frame_id = ros_cls.ts_frames[ros_cls.anno_id]["frame_id"] # detection saved as frame_id
     print("await for laser frame:", int(anno_id), "current bag id", ros_cls.bag_id, "frame id in timestamp", frame_id)
     while int(anno_id) == ros_cls.tested_id[-1]:
@@ -190,7 +190,7 @@ def listener(ros_cls, output_save_dir=None):
 
 def echo(ros_cls, output_save_dir=None):
 
-    anno_id = ros_cls.ts_frames[ros_cls.anno_id]['laser_frame']['url'].split('\\')[-1][:-4]
+    anno_id = ros_cls.ts_frames[ros_cls.anno_id]['laser_frame']['url'].split('/')[-1][:-4]
     frame_id = ros_cls.ts_frames[ros_cls.anno_id]["frame_id"]
 
     while int(anno_id) == ros_cls.tested_id[-1]:

@@ -6,10 +6,8 @@
 *.csv
 *.cu.o
 *.DS_Store
-*.gif
 *.ipynb_checkpoints
 *.pkl
-*.png
 *.pth
 *.pyc
 *.tfevents*
