@@ -42,9 +42,9 @@ void GetFileNames(std::string path, std::vector<std::string>& filenames) {
     std::cout << "Folder doesn't Exist!" << std::endl;
     return;
   }
-  while ((ptr = readdir(pDir)) != 0) {
-    if (std::strcmp(ptr->d_name, ".") != 0 &&
-        std::strcmp(ptr->d_name, "..") != 0) {
+  while ((ptr = readdir(pDir)) != nullptr) {
+    if (std::strcmp(ptr->d_name, ".") != nullptr &&
+        std::strcmp(ptr->d_name, "..") != nullptr) {
       filenames.push_back(path + "/" + ptr->d_name);
     }
   }

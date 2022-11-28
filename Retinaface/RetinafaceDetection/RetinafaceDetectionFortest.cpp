@@ -42,6 +42,8 @@ int padBottom;
 const uint32_t YUV_BYTE_NU = 3;
 const uint32_t YUV_BYTE_DE = 2;
 const uint32_t VPC_H_ALIGN = 2;
+const int suffixlen = 4;
+const bboxnum = 6;
 }  // namespace
 void RetinafaceDetection::SetRetinafacePostProcessConfig(
     const InitParam& initParam,
@@ -200,7 +202,8 @@ APP_ERROR RetinafaceDetection::WriteResult(
   }
 
   cataloge = tempImage.substr(cIndex + 1, pIndex - cIndex);
-  pictureName = tempImage.substr(pIndex + 1, tempImage.size() - pIndex - 1 - 4);
+  pictureName =
+      tempImage.substr(pIndex + 1, tempImage.size() - pIndex - 1 - suffixlen);
   std::string restxtPath = "./widerface_txt/";
   restxtPath += cataloge;
   restxtPath += "/";
@@ -217,7 +220,7 @@ APP_ERROR RetinafaceDetection::WriteResult(
       resultInfo.push_back(objInfos[i][j]);
     }
     LogInfo << "result box number is : " << resultInfo.size();
-    outfile << resultInfo.size() / 6;
+    outfile << resultInfo.size() / bboxnum;
     outfile << "\n";
     for (uint32_t j = 0; j < resultInfo.size(); j++) {
       const uint32_t thickness = 2;
