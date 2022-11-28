@@ -18,11 +18,11 @@
 
 表1.1 系统方案各子系统功能描述：
 
-| 序号 | 子系统         | 功能描述                                                     |
-| ---- | -------------- | ------------------------------------------------------------ |
+| 序号 | 子系统         | 功能描述                                                                                                   |
+| ---- | -------------- | ---------------------------------------------------------------------------------------------------------- |
 | 1    | 图片输入       | 接收外部调用接口的输入视频路径，对视频进行拉流，并将拉去的裸流存储到缓冲区（buffer）中，并发送到下游插件。 |
-| 2    | 模型推理插件   | 目标检测。                                                   |
-| 3    | 模型后处理插件 | 对模型输出的张量进行后处理，得到物体类型数据。               |
+| 2    | 模型推理插件   | 目标检测。                                                                                                 |
+| 3    | 模型后处理插件 | 对模型输出的张量进行后处理，得到物体类型数据。                                                             |
 
 
 
@@ -174,4 +174,79 @@ bash build.sh
 
 ## 6 精度测试
 
-本项目的所用模型和后处理插件编写都和https://gitee.com/bayf3/mindxsdk-referenceapps/tree/master/contrib/Retinaface地址处的一致。详细的精度测试请参考该代码。
+在进行本项目的测试之前，需要手动修改几处代码。
+1.进入CMakeLists.txt:
+将
+```
+add_executable(retinaface main.cpp ${Retinaface_DETECTION} ${Retinaface_POSTPROCESS})
+```
+中的main.cpp改为testmain.cpp。
+
+
+将
+```
+file(GLOB_RECURSE Retinaface_DETECTION ${PROJECT_SOURCE_DIR}/RetinafaceDetection/RetinafaceDetection.cpp)
+```
+中的RetinafaceDetection.cpp改为RetinafaceDetectionFortest.cpp。
+2.执行命令bash build.sh。
+
+3.在Retinaface目录下创建一个文件夹命名为widerface_txt。
+
+4.[下载](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/Retinaface/widerface.zip)数据集放到Retinaface目录下。
+
+5.执行指令：
+```
+./retinaface {$Retinaface目录路径}/widerface/val/images
+```
+之后生成的测试集结果将会放到widerface_txt文件夹下。也就是说在./retinaface后面接上widerface的测试数据集路径。
+
+6.进入到项目根目录，执行以下命令：
+```
+mkdir include
+mkdir evaluate
+```
+然后下载本模型官方源码：
+```
+git clone https://github.com/biubug6/Pytorch_Retinaface.git
+```
+7.准备include目录中的文件
+将Pytorch_Retinaface项目中的
+```
+Pytorch_Retinaface/layers/functions/prior_box.py
+
+Pytorch_Retinaface/utils/box_utils.py
+
+Pytorch_Retinaface/utils/nms/py_cpu_nms.py
+```
+放入本项目include文件夹下。
+
+8.准备evaluate目录文件
+将Pytorch_Retinaface项目中的
+```
+Pytorch_Retinaface/widerface_evaluate
+```
+放到本项目evaluate文件夹下。
+
+9.编译测试依赖代码 进入evaluate/widerface_evaluate路径下：
+```
+python3 setup.py build_ext --inplace
+```
+10.准备模型以及标签文件在ModelZoo社区[下载](https://gitee.com/link?target=https%3A%2F%2Fwww.hiascend.com%2Fzh%2Fsoftware%2Fmodelzoo%2Fmodels%2Fdetail%2F1%2F7270b02a457d4c4ab262277a646517f9) “ATC Retinaface(FP16) from Pytorch.zip”模型代码包并上传至服务器进行解压。将模型代码包中的"Retinaface/data/widerface/val/wider_val.txt"标签文件拷贝至"evaluate"目录下。
+
+11.进入evaluate/widerface_evaluate目录下：
+运行指令
+```
+python3 evaluation.py -p <your prediction dir> -g <groud truth dir>
+```
+其中\<your prediction dir\>即是模型推理的结果,\<groud truth dir\>是widerface_evaluate中的groun_truth文件夹。
+例如：
+```
+python3 evaluation.py -p ../widerface_txt -g ground_truth/
+```
+最终得到的精度如下图所示：
+![avator](images/image1.png)
+
+
+
+原图片精度如下：
+![avator](images/origin.png)

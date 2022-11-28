@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "RetinafaceDetection.h"
-
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -24,6 +22,7 @@
 
 #include "MxBase/DeviceManager/DeviceManager.h"
 #include "MxBase/Log/Log.h"
+#include "RetinafaceDetection.h"
 #include "boost/filesystem.hpp"
 #include "opencv2/opencv.hpp"
 namespace fs = boost::filesystem;
@@ -123,7 +122,7 @@ APP_ERROR RetinafaceDetection::CVMatToTensorBase(
 
   std::vector<uint32_t> shape = {imageMat.rows * YUV444_RGB_WIDTH_NU,
                                  static_cast<uint32_t>(imageMat.cols)};
-  tensorBase = TensorBase(memoryDataDst, false, shape, TENSOR_DTYPE_UINT8);
+  tensorBase = TensorBase(memoryDataDst, false, shape, TENSOR_DTYPE_INT8);
   return APP_ERR_OK;
 }
 
@@ -146,16 +145,7 @@ APP_ERROR RetinafaceDetection::Inference(
     }
     outputs.push_back(tensor);
   }
-  // print the shape and type of inputs
-  std::cout << "inputs size = " << inputs[0].GetSize() << "\n";
-  std::cout << "inputs GetByteSize = " << inputs[0].GetByteSize() << "\n";
-  std::cout << "inputs number = " << inputs.size() << "\n";
-  std::cout << "inputs shape size = " << inputs[0].GetShape().size() << "\n";
-  std::cout << "Data type = " << inputs[0].GetDataType() << "\n";
-  for (size_t i = 0; i < inputs[0].GetShape().size(); i++) {
-    std::cout << "value = ";
-    std::cout << inputs[0].GetShape()[i] << " ";
-  }
+
   DynamicInfo dynamicInfo = {};
   dynamicInfo.dynamicType = DynamicType::STATIC_BATCH;
   LogInfo << "Ready to infer.";
@@ -193,14 +183,42 @@ APP_ERROR RetinafaceDetection::WriteResult(
     const std::vector<std::vector<MxBase::ObjectInfo>>& objInfos) {
   LogInfo << "start write result.";
   cv::Mat writeImage = cv::imread(imagePath);
+  std::string cataloge;
+  std::string pictureName;
+  int cIndex = 0;
+  int pIndex = 0;
+  std::string tempImage = imagePath;
+  for (int i = tempImage.size() - 1; i >= 0; i--) {
+    if (tempImage[i] == '/') {
+      if (!pIndex) {
+        pIndex = i;
+      } else {
+        cIndex = i;
+        break;
+      }
+    }
+  }
+
+  cataloge = tempImage.substr(cIndex + 1, pIndex - cIndex);
+  pictureName = tempImage.substr(pIndex + 1, tempImage.size() - pIndex - 1 - 4);
+  std::string restxtPath = "./widerface_txt/";
+  restxtPath += cataloge;
+  restxtPath += "/";
+  restxtPath += pictureName;
+  restxtPath += ".txt";
+  std::ofstream outfile;
+  outfile.open(restxtPath, std::ios::out);
   uint32_t objInfosSize = objInfos.size();
   std::vector<MxBase::ObjectInfo> resultInfo;
-  std::cout << "objInfo number = " << objInfosSize << std::endl;
+  outfile << pictureName;
+  outfile << "\n";
   for (uint32_t i = 0; i < objInfosSize; i++) {
     for (uint32_t j = 0; j < objInfos[i].size(); j++) {
       resultInfo.push_back(objInfos[i][j]);
     }
     LogInfo << "result box number is : " << resultInfo.size();
+    outfile << resultInfo.size() / 6;
+    outfile << "\n";
     for (uint32_t j = 0; j < resultInfo.size(); j++) {
       const uint32_t thickness = 2;
       const cv::Scalar black = cv::Scalar(0, 0, 0);
@@ -212,9 +230,21 @@ APP_ERROR RetinafaceDetection::WriteResult(
       cv::Point2i c2(X1, Y1);
       cv::rectangle(writeImage, cv::Rect(X0, Y0, X1 - X0, Y1 - Y0), black,
                     thickness);
+      if (resultInfo[j].confidence > 0) {
+        outfile << X0;
+        outfile << " ";
+        outfile << Y0;
+        outfile << " ";
+        outfile << X1 - X0;
+        outfile << " ";
+        outfile << Y1 - Y0;
+        outfile << " ";
+        outfile << resultInfo[j].confidence;
+        outfile << "\n";
+      }
     }
   }
-  cv::imwrite("./result.jpg", writeImage);
+  outfile.close();
   return APP_ERR_OK;
 }
 
@@ -242,8 +272,6 @@ APP_ERROR RetinafaceDetection::Process(const std::string& imgPath) {
   cv::Mat nnImage;
   cv::copyMakeBorder(newImg, nnImage, padTop, padBottom, padLeft, padRight,
                      cv::BORDER_CONSTANT, 0);
-  std::cout << "nnImage W = " << nnImage.cols << " "
-            << "nnImage H = " << nnImage.rows << "\n";
   std::string newImagePath = "./ImageforInfer.jpg";
   cv::imwrite(newImagePath, nnImage);
   cv::Mat imageMat;
@@ -269,14 +297,6 @@ APP_ERROR RetinafaceDetection::Process(const std::string& imgPath) {
   }
 
   std::vector<std::vector<MxBase::ObjectInfo>> objInfos;
-  std::cout << std::endl;
-  std::cout << "outputSize = " << outputs.size() << std::endl;
-  for (uint32_t i = 0; i < outputs.size(); i++) {
-    for (uint32_t j = 0; j < outputs[i].GetShape().size(); j++) {
-      std::printf("outputs[%d][%d] = %d. ", i, j, outputs[i].GetShape()[j]);
-    }
-    std::cout << std::endl;
-  }
   ret = PostProcess(outputs, objInfos);
   if (ret != APP_ERR_OK) {
     LogError << "PostProcess failed, ret=" << ret << ".";
