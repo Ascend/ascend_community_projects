@@ -350,7 +350,7 @@ if __name__ == '__main__':
         )
         Output_save_dir = os.path.realpath(
                                 os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        listener_loop = int(ROS_CLS.ts_frames[-1]['laser_frame']['url'].split('\\')[-1][:-4])
+        listener_loop = int(ROS_CLS.ts_frames[-1]['laser_frame']['url'].split('/')[-1][:-4])
         while listener_loop >= 0:
             listener_loop -= 1
             print("loop", listener_loop)
