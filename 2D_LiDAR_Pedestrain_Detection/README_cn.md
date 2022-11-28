@@ -462,7 +462,7 @@ $(PROJECT_DIR)
 │ │ ├── ...
 ```
 
-![visulization](./imgs/001217.png)
+![visulization](imgs/001217.png)
 
 ## 8 ROS环境下的测试
 

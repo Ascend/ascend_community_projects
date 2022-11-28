@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+export PYTHONPATH=$PYTHONPATH:./LaserDet
 # running inference process
 nohup python -u release_lidar_speedtest.py --data_path $1 --pipe_store $2 --split $3 >> rounding_error.log 2>&1 &
