@@ -32,7 +32,7 @@ struct InitParam {
 };
 
 class FCOSDetection {
- public:
+public:
   APP_ERROR Init(const InitParam &initParam);
   APP_ERROR DeInit();
   APP_ERROR Inference(const std::vector<MxBase::TensorBase> &inputs,
@@ -42,7 +42,7 @@ class FCOSDetection {
                         std::vector<std::vector<MxBase::ObjectInfo>> &objInfos);
   APP_ERROR Process(const std::string &imgPath);
 
- protected:
+protected:
   APP_ERROR ReadImage(const std::string &imgPath, MxBase::TensorBase &tensor);
   APP_ERROR Resize(const MxBase::TensorBase &inputTensor,
                    MxBase::TensorBase &outputTensor);
@@ -55,7 +55,7 @@ class FCOSDetection {
       const InitParam &initParam,
       std::map<std::string, std::shared_ptr<void>> &config);
 
- private:
+private:
   std::shared_ptr<MxBase::DvppWrapper>
       dvppWrapper_;  // 封装DVPP基本编码、解码、扣图功能
   std::shared_ptr<MxBase::ModelInferenceProcessor> model_;  // 模型推理功能处理

@@ -21,7 +21,7 @@
 #include "opencv2/opencv.hpp"
 
 class FCOSPostProcess : public MxBase::ObjectPostProcessBase {
- public:
+public:
   FCOSPostProcess() = default;
   ~FCOSPostProcess() = default;
   FCOSPostProcess(const FCOSPostProcess &other);
@@ -36,11 +36,11 @@ class FCOSPostProcess : public MxBase::ObjectPostProcessBase {
       override;
   FCOSPostProcess &operator=(const FCOSPostProcess &other);
 
- protected:
+protected:
   void PostprocessBBox(MxBase::ObjectInfo &objInfo, int imageWidth,
                        int imageHeight, int netInWidth, int netInHeight);
 
- private:
+private:
   uint32_t classNum_ = 0;
   bool softmax_ = true;
   uint32_t topK_ = 1;
