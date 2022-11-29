@@ -1,13 +1,30 @@
+# Copyright 2021 Huawei Technologies Co., Ltd
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import json
+import sys
+import os
+
 from logging import raiseExceptions
 from re import A
-import sys
+
 sys.path.append(".")
 from collections import defaultdict
 import glob
-import os
+
 import argparse
 import numpy as np
-import json
+
 import copy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
@@ -45,12 +62,12 @@ def load_detection_file(kitti):
 def get_target_cls_et_reg(
     scan_rphi, dets_rphi, person_rad_petit, person_rad_grand
 ):
-    _, num_scans = scan_rphi.shape
+    _, _num_scans = scan_rphi.shape
 
     # no annotation in this frame
     if len(dets_rphi) == 0:
-        tar_cls = np.zeros(num_scans, dtype=np.int64)
-        tar_reg = np.zeros((num_scans, 2), dtype=np.float32)
+        tar_cls = np.zeros(_num_scans, dtype=np.int64)
+        tar_reg = np.zeros((_num_scans, 2), dtype=np.float32)
         anns_mask = []
     # this frame contains annotations
     else:
@@ -71,11 +88,11 @@ def get_target_cls_et_reg(
 
         # for each point, find the distance to its closest annotation
         argmin_pairwise_dist = np.argmin(pairwise_dist, axis=0)  # (n_scan, )
-        min_pairwise_dist = pairwise_dist[argmin_pairwise_dist, np.arange(num_scans)]
+        min_pairwise_dist = pairwise_dist[argmin_pairwise_dist, np.arange(_num_scans)]
 
         # points within small radius, whose corresponding annotation is valid, is marked
         # as foreground
-        tar_cls = -1 * np.ones(num_scans, dtype=np.int64)
+        tar_cls = -1 * np.ones(_num_scans, dtype=np.int64)
         valid_mask = np.logical_and(
             anns_mask[argmin_pairwise_dist], min_pairwise_dist < person_rad_petit
         )
@@ -136,9 +153,9 @@ def get_precision_recall(
         tp, fp, fn = np.sum(tps), np.sum(fps), np.sum(fns)
         precisions[i] = tp / (fp + tp) if fp + tp > 0 else np.nan
         recalls[i] = tp / (fn + tp) if fn + tp > 0 else np.nan
-        #print(dets_idxs, igt, idet, tp, fp, fn)
+
     print(precisions, recalls)
-    p
+    
     assert np.sum(np.diff(recalls) >= 0) == len(precisions) - 1
     ap = auc(recalls, precisions)
     peak_f1 = np.max(2 * precisions * recalls / np.clip(precisions + recalls, 1e-16, 2 + 1e-16))
@@ -153,12 +170,12 @@ def get_precision_recall(
     }
 
 
-def stack_consecutive_lasers(data_path, seq_name, scan_url, num_scans, scan_stride=1):
+def stack_consecutive_lasers(data_path, seq_name, scan_url, _num_scans, scan_stride=1):
 
     scan_url = scan_url.replace("\\", "/")
     current_frame_idx = int(os.path.basename(scan_url).split(".")[0])
     frames_list = []
-    for del_idx in range(num_scans-1, 0-1, -1):
+    for del_idx in range(_num_scans-1, 0-1, -1):
         frame_idx = max(0, current_frame_idx - del_idx * scan_stride)
         laser_url = os.path.join(os.path.dirname(scan_url), str(frame_idx).zfill(6) + ".txt").replace("\\", "/")
         laser_loaded = np.loadtxt(os.path.join(data_path, seq_name, laser_url), dtype=np.float32)
@@ -177,10 +194,10 @@ def get_eer(recs, precs):
     return np.average([precs[p1 + idx], recs[r1 + idx]])
 
 
-def launch_evaluate(result_dir, dataset_dir, num_scans):
+def launch_evaluate(_result_dir, _dataset_dir, _num_scans):
 
-    det_dir = os.path.join(result_dir, "detections")
-    laser_dir = os.path.join(dataset_dir, "lasers")
+    det_dir = os.path.join(_result_dir, "detections")
+    laser_dir = os.path.join(_dataset_dir, "lasers")
 
     seqs = os.listdir(det_dir)
     seq_03 = []
@@ -203,14 +220,14 @@ def launch_evaluate(result_dir, dataset_dir, num_scans):
         gts_xy_accum = []
         gts_inds_accum = []
 
-        pc_file = os.path.join(dataset_dir,
+        pc_file = os.path.join(_dataset_dir,
                                 "labels",
                                 "labels_3d",
                                 f"{seq_name}.json")
         with open(pc_file, "r") as f:
             pc_labels = json.load(f)["labels"]
 
-        timestamps_file = os.path.join(dataset_dir,
+        timestamps_file = os.path.join(_dataset_dir,
                                         "timestamps",
                                         seq_name,
                                         "frames_pc_im_laser.json")
@@ -224,8 +241,9 @@ def launch_evaluate(result_dir, dataset_dir, num_scans):
             if pc_file in pc_labels:
                 frames_labeled.append(frame)
 
+        path_tmp = os.path.join(det_dir, seq_name, "*.txt")
         # accumulate detections in all frames
-        for idx, (det_file, frame_seg) in enumerate(zip(glob.glob(os.path.join(det_dir, seq_name, "*.txt")), frames_ts)):
+        for idx, (det_file, frame_seg) in enumerate(zip(glob.glob(path_tmp), frames_ts)):
             counter = idx + 1
             with open(det_file, "r") as f:
                 dets_xy, dets_cls, _ = load_detection_file(f.read())
@@ -234,7 +252,7 @@ def launch_evaluate(result_dir, dataset_dir, num_scans):
             file_id = os.path.basename(det_file)
             laser_url = frame_seg['laser_frame']['url'].split('\\')[-1]
             # load consecutive lasers
-            laser_data = stack_consecutive_lasers(laser_dir, seq_name, laser_url, num_scans)
+            laser_data = stack_consecutive_lasers(laser_dir, seq_name, laser_url, _num_scans)
             laser_grid = np.linspace(-np.pi, np.pi, max(laser_data.shape), dtype=np.float32)
             scan_r = np.stack((laser_data[-1][::-1], laser_grid), axis=0)
 
@@ -266,12 +284,9 @@ def launch_evaluate(result_dir, dataset_dir, num_scans):
                 gts_occluded = np.logical_not(anns_valid_mask).astype(np.int32)
             else:
                 gts_xy = ""
-            #with open(det_file.replace("detections", "groundtruth"), "r") as f:
-            #    gts_xy, _, gts_occluded = load_detection_file(f.read())
-            # evaluate only on visiable groundtruth
-            #print(gts_xy, gts_occluded)
+
             gts_xy = gts_xy[gts_occluded == 0]
-            #print(gts_xy)
+
             if len(dets_xy) > 0:
                 dets_xy_accum.append(dets_xy)
                 dets_cls_accum.append(dets_cls)
@@ -368,9 +383,9 @@ if __name__ == "__main__":
     result_dir = args.ros_dets_dir
     dataset_dir = args.dataset_dir
     if args.model == "DROW3":
-        num_scans = 1
+        NUM_SCANS = 1
     elif args.model == "DR-SPAAM":
-        num_scans = 10
+        NUM_SCANS = 10
     else:
         raiseExceptions
-    launch_evaluate(result_dir, dataset_dir, num_scans)
+    launch_evaluate(result_dir, dataset_dir, NUM_SCANS)

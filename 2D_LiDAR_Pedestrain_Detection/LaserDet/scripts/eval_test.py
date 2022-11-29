@@ -1,11 +1,28 @@
-from re import A
+# Copyright 2021 Huawei Technologies Co., Ltd
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import sys
+import os
+
+import argparse
+import numpy as np
+from re import A
+
 sys.path.append(".")
 from collections import defaultdict
 import glob
-import os
-import argparse
-import numpy as np
+
+
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from sklearn.metrics import auc
@@ -103,9 +120,9 @@ def get_eer(recs, precs):
     return np.average([precs[p1 + idx], recs[r1 + idx]])
 
 
-def launch_evaluate(result_dir):
+def launch_evaluate(_result_dir):
 
-    det_dir = os.path.join(result_dir, "detections")
+    det_dir = os.path.join(_result_dir, "detections")
 
     seqs = os.listdir(det_dir)
     seq_03 = []
