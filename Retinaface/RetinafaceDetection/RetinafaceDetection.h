@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
+ * Copyright(C) 2022. Huawei Technologies Co.,Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,40 +18,45 @@
 #define MXBASE_RetinafaceDETECTION_H
 
 #include <RetinafacePostProcess.h>
+
 #include "MxBase/DvppWrapper/DvppWrapper.h"
 #include "MxBase/ModelInfer/ModelInferenceProcessor.h"
 #include "MxBase/Tensor/TensorContext/TensorContext.h"
 
 struct InitParam {
-    uint32_t deviceId;
-    bool checkTensor;
-    std::string modelPath;
-    std::string labelPath;
-    uint32_t classNum;
-    std::string ImagePath;
+  uint32_t deviceId;
+  bool checkTensor;
+  std::string modelPath;
+  std::string labelPath;
+  uint32_t classNum;
+  std::string ImagePath;
 };
 
 class RetinafaceDetection {
-public:
-    APP_ERROR Init(const InitParam& initParam);
-    APP_ERROR DeInit();
-    APP_ERROR Inference(const std::vector<MxBase::TensorBase>& inputs, std::vector<MxBase::TensorBase>& outputs);
-    APP_ERROR PostProcess(const std::vector<MxBase::TensorBase>& outputs, std::vector<std::vector<MxBase::ObjectInfo>>& objInfos);
-    APP_ERROR CVMatToTensorBase(const cv::Mat &imageMat, MxBase::TensorBase &tensorBase);
-    APP_ERROR Process(const std::string& imgPath);
-    APP_ERROR ReadImage(const std::string &imgPath, cv::Mat &imageMat);
-    APP_ERROR WriteResult(const std::string& imgPath,
-        const std::vector<std::vector<MxBase::ObjectInfo>>& objInfos);
-    void SetRetinafacePostProcessConfig(
-        const InitParam &initParam,
-        std::map<std::string, std::shared_ptr<void>> &config
-    );
-private:
-    std::shared_ptr<MxBase::DvppWrapper> dvppWrapper_;
-    std::shared_ptr<MxBase::ModelInferenceProcessor> model_;
-    std::shared_ptr<RetinafacePostProcess> post_;
-    MxBase::ModelDesc modelDesc_;
-    uint32_t deviceId_ = 0;
+ public:
+  APP_ERROR Init(const InitParam& initParam);
+  APP_ERROR DeInit();
+  APP_ERROR Inference(const std::vector<MxBase::TensorBase>& inputs,
+                      std::vector<MxBase::TensorBase>& outputs);
+  APP_ERROR PostProcess(const std::vector<MxBase::TensorBase>& outputs,
+                        std::vector<std::vector<MxBase::ObjectInfo>>& objInfos);
+  APP_ERROR CVMatToTensorBase(const cv::Mat& imageMat,
+                              MxBase::TensorBase& tensorBase);
+  APP_ERROR Process(const std::string& imgPath);
+  APP_ERROR ReadImage(const std::string& imgPath, cv::Mat& imageMat);
+  APP_ERROR WriteResult(
+      const std::string& imgPath,
+      const std::vector<std::vector<MxBase::ObjectInfo>>& objInfos);
+  void SetRetinafacePostProcessConfig(
+      const InitParam& initParam,
+      std::map<std::string, std::shared_ptr<void>>& config);
+
+ private:
+  std::shared_ptr<MxBase::DvppWrapper> dvppWrapper_;
+  std::shared_ptr<MxBase::ModelInferenceProcessor> model_;
+  std::shared_ptr<RetinafacePostProcess> post_;
+  MxBase::ModelDesc modelDesc_;
+  uint32_t deviceId_ = 0;
 };
 
 #endif
