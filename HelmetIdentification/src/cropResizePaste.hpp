@@ -29,8 +29,6 @@
 #define CONVER_TO_EVEN(NUM) (((NUM) % 2 == 0) ? (NUM) : ((NUM)-1))
 #define DVPP_ALIGN_UP(x, align) ((((x) + ((align)-1)) / (align)) * (align))
 
-//using namespace MxBase;
-
 MxBase::Rect GetPasteRect(uint32_t inputWidth, uint32_t inputHeight, uint32_t outputWidth, uint32_t outputHeight)
 {
     bool widthRatioLarger = true;
