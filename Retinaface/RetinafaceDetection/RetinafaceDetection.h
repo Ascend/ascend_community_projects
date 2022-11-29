@@ -33,7 +33,7 @@ struct InitParam {
 };
 
 class RetinafaceDetection {
- public:
+public:
   APP_ERROR Init(const InitParam& initParam);
   APP_ERROR DeInit();
   APP_ERROR Inference(const std::vector<MxBase::TensorBase>& inputs,
@@ -51,7 +51,7 @@ class RetinafaceDetection {
       const InitParam& initParam,
       std::map<std::string, std::shared_ptr<void>>& config);
 
- private:
+private:
   std::shared_ptr<MxBase::DvppWrapper> dvppWrapper_;
   std::shared_ptr<MxBase::ModelInferenceProcessor> model_;
   std::shared_ptr<RetinafacePostProcess> post_;
