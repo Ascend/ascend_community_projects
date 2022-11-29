@@ -14,21 +14,21 @@
 import json
 import sys
 import os
+import glob
 
 from logging import raiseExceptions
 from re import A
 
 sys.path.append(".")
-from collections import defaultdict
-import glob
-
-import argparse
-import numpy as np
 
 import copy
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from sklearn.metrics import auc
+
+import argparse
+import numpy as np
+from collections import defaultdict
 
 
 # laser to base

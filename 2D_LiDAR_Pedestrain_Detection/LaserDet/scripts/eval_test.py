@@ -13,15 +13,15 @@
 
 import sys
 import os
-
-import argparse
-import numpy as np
-from re import A
-
-sys.path.append(".")
-from collections import defaultdict
 import glob
 
+import argparse
+from re import A
+from collections import defaultdict
+import numpy as np
+
+
+sys.path.append(".")
 
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
@@ -125,8 +125,8 @@ def launch_evaluate(_result_dir):
     det_dir = os.path.join(_result_dir, "detections")
 
     seqs = os.listdir(det_dir)
-    seq_03 = []
-    seq_05 = []
+    sequence_0_3 = []
+    sequence_0_5 = []
 
     seqs_dets_xy = []
     seqs_dets_cls = []
@@ -168,42 +168,44 @@ def launch_evaluate(_result_dir):
                 gts_xy_accum.append(gts_xy)
                 gts_inds_accum += [counter] * len(gts_xy)
 
+        # detection
         dets_xy = np.concatenate(dets_xy_accum, axis=0)
         dets_cls = np.concatenate(dets_cls_accum)
         dets_inds = np.array(dets_inds_accum)
-        gts_xy = np.concatenate(gts_xy_accum, axis=0)
+        # ground truth
         gts_inds = np.array(gts_inds_accum)
+        gts_xy = np.concatenate(gts_xy_accum, axis=0)
 
         # evaluate sequence
-        seq_03.append(
+        sequence_0_3.append(
             get_precision_recall(
                 dets_xy, dets_cls, dets_inds, gts_xy, gts_inds, ar=0.3,
             )
         )
 
-        seq_05.append(
+        sequence_0_5.append(
             get_precision_recall(
                 dets_xy, dets_cls, dets_inds, gts_xy, gts_inds, ar=0.5,
             )
         )
 
         print(
-                f"AP_0.3 {seq_03[-1]['ap']:4f} "
-                f"peak-F1_0.3 {seq_03[-1]['peak_f1']:4f} "
-                f"EER_0.3 {seq_03[-1]['eer']:4f}\n"
-                f"AP_0.5 {seq_05[-1]['ap']:4f} "
-                f"peak-F1_0.5 {seq_05[-1]['peak_f1']:4f} "
-                f"EER_0.5 {seq_05[-1]['eer']:4f}\n"
+                f"AP_0.3 {sequence_0_3[-1]['ap']:4f} "
+                f"peak-F1_0.3 {sequence_0_3[-1]['peak_f1']:4f} "
+                f"EER_0.3 {sequence_0_3[-1]['eer']:4f}\n"
+                f"AP_0.5 {sequence_0_5[-1]['ap']:4f} "
+                f"peak-F1_0.5 {sequence_0_5[-1]['peak_f1']:4f} "
+                f"EER_0.5 {sequence_0_5[-1]['eer']:4f}\n"
             )
 
-        # store sequence detections and groundtruth for dataset evaluation
         seqs_dets_xy.append(dets_xy)
         seqs_dets_cls.append(dets_cls)
         seqs_dets_inds.append(dets_inds)
+
         seqs_gts_xy.append(gts_xy)
         seqs_gts_inds.append(gts_inds)
 
-    # evaluate all dataset
+    # all dataset evaluation
     if len(seqs) > 1:
         print("Evaluating full dataset")
 
