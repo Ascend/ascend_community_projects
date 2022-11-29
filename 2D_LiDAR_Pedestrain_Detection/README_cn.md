@@ -50,7 +50,6 @@ $(PROJECT_DIR)
 ├── lidar_submit.sh
 ├── release_lidar_main.py
 ├── release_lidar_speedtest.py
-│   ├── result.png
 ├── LaserDet
 │   ├── dr_spaam_ros
 │   │   ├── src
@@ -68,7 +67,8 @@ $(PROJECT_DIR)
 │   │   ├── example.rviz
 │   ├── scripts
 │   │   ├── det.py
-│   │   ├── eval_external.py
+│   │   ├── eval_test.py
+│   │   ├── eval_test_ros.py
 │   │   ├── onnx_om_convertor.sh
 │   │   ├── setup_jrdb_dataset.py(自行下载)
 │   ├── srcs
