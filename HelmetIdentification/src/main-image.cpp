@@ -22,7 +22,7 @@
 using namespace std;
 
 // 如果在200DK上运行就改为 USE_200DK
-#define USE_DVPP
+#define USE_200DK
 
 APP_ERROR readImage(std::string imgPath, MxBase::Image& image, ImageProcessor& imageProcessor)
 {
