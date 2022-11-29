@@ -20,12 +20,10 @@ from re import A
 from collections import defaultdict
 import numpy as np
 
-
-sys.path.append(".")
-
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from sklearn.metrics import auc
+sys.path.append(".")
 
 
 def load_detection_file(kitti):
