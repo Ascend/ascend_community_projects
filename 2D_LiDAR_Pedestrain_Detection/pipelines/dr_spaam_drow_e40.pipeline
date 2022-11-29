@@ -1,0 +1,25 @@
+{
+    "detection0": {
+        "stream_config": {
+            "deviceId": "0"
+        },
+        "appsrc0": {
+            "factory": "appsrc", 
+            "next": "mxpi_tensorinfer0"
+        },
+        "mxpi_tensorinfer0": {
+            "props": {
+                "dataSource": "appsrc0",
+                "modelPath": "./pipelines/dr_spaam_drow_e40.om"
+                },
+            "factory": "mxpi_tensorinfer",
+            "next": "appsink0"
+        },
+        "appsink0": {
+            "props": {
+                "blocksize": "4096000"
+            },
+            "factory": "appsink"
+        }
+    }
+}
