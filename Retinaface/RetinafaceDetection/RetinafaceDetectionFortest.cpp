@@ -43,7 +43,7 @@ const uint32_t YUV_BYTE_NU = 3;
 const uint32_t YUV_BYTE_DE = 2;
 const uint32_t VPC_H_ALIGN = 2;
 const int suffixlen = 4;
-const bboxnum = 6;
+const int bboxnum = 6;
 }  // namespace
 void RetinafaceDetection::SetRetinafacePostProcessConfig(
     const InitParam& initParam,

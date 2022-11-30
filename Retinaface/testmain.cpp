@@ -25,6 +25,8 @@
 #include <vector>
 
 #include "MxBase/Log/Log.h"
+
+#define STRCMPFAIL 0
 std::string imgFile;
 void InitRetinafaceParam(InitParam& initParam) {
   initParam.deviceId = 0;
@@ -43,8 +45,8 @@ void GetFileNames(std::string path, std::vector<std::string>& filenames) {
     return;
   }
   while ((ptr = readdir(pDir)) != nullptr) {
-    if (std::strcmp(ptr->d_name, ".") != nullptr &&
-        std::strcmp(ptr->d_name, "..") != nullptr) {
+    if (std::strcmp(ptr->d_name, ".") != STRCMPFAIL &&
+        std::strcmp(ptr->d_name, "..") != STRCMPFAIL) {
       filenames.push_back(path + "/" + ptr->d_name);
     }
   }

@@ -167,7 +167,7 @@ bash build.sh
 **步骤4** 制定jpg图片进行推理，准备一张推理图片放入主目录下。eg:推理图片为test.jpg
 
 ```
-./Retinaface ./test.jpg
+./retinaface ./test.jpg
 ```
 
 得到`result.jpg`即为输出结果。
@@ -192,48 +192,39 @@ file(GLOB_RECURSE Retinaface_DETECTION ${PROJECT_SOURCE_DIR}/RetinafaceDetection
 
 3.在Retinaface目录下创建一个文件夹命名为widerface_txt。
 
-4.[下载](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/Retinaface/widerface.zip)数据集放到Retinaface目录下。
+4.[下载](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/Retinaface/widerface.zip)数据集放到Retinaface目录下。下载完毕数据集之后，执行指令：
+```
+bash test.sh
+```
+
 
 5.执行指令：
+
+在根目录下执行指令：
 ```
-./retinaface {$Retinaface目录路径}/widerface/val/images
+./retinaface ./widerface/val/images
 ```
 之后生成的测试集结果将会放到widerface_txt文件夹下。也就是说在./retinaface后面接上widerface的测试数据集路径。
 
 6.进入到项目根目录，执行以下命令：
 ```
-mkdir include
-mkdir evaluate
-```
-然后下载本模型官方源码：
-```
 git clone https://github.com/biubug6/Pytorch_Retinaface.git
 ```
-7.准备include目录中的文件
-将Pytorch_Retinaface项目中的
-```
-Pytorch_Retinaface/layers/functions/prior_box.py
+将原来模型源代码下载下来。
 
-Pytorch_Retinaface/utils/box_utils.py
+7.执行指令：
 
-Pytorch_Retinaface/utils/nms/py_cpu_nms.py
+进入到项目根目录
 ```
-放入本项目include文件夹下。
+bash movefile.sh
+```
 
-8.准备evaluate目录文件
-将Pytorch_Retinaface项目中的
-```
-Pytorch_Retinaface/widerface_evaluate
-```
-放到本项目evaluate文件夹下。
-
-9.编译测试依赖代码 进入evaluate/widerface_evaluate路径下：
+8.编译测试依赖代码 进入evaluate/widerface_evaluate路径下：
 ```
 python3 setup.py build_ext --inplace
 ```
-10.准备模型以及标签文件在ModelZoo社区[下载](https://gitee.com/link?target=https%3A%2F%2Fwww.hiascend.com%2Fzh%2Fsoftware%2Fmodelzoo%2Fmodels%2Fdetail%2F1%2F7270b02a457d4c4ab262277a646517f9) “ATC Retinaface(FP16) from Pytorch.zip”模型代码包并上传至服务器进行解压。将模型代码包中的"Retinaface/data/widerface/val/wider_val.txt"标签文件拷贝至"evaluate"目录下。
 
-11.进入evaluate/widerface_evaluate目录下：
+9.进入evaluate/widerface_evaluate目录下：
 运行指令
 ```
 python3 evaluation.py -p <your prediction dir> -g <groud truth dir>
