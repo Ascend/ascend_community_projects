@@ -26,7 +26,7 @@
 #define DEFAULT_CONFIDENCE_THRESH 0.40
 
 class RetinafacePostProcess : public MxBase::ObjectPostProcessBase {
- public:
+public:
   RetinafacePostProcess() = default;
 
   ~RetinafacePostProcess() = default;
@@ -47,7 +47,7 @@ class RetinafacePostProcess : public MxBase::ObjectPostProcessBase {
       const std::map<std::string, std::shared_ptr<void>>& paramMap = {})
       override;
 
- protected:
+protected:
   void ObjectDetectionOutput(
       const std::vector<MxBase::TensorBase>& tensors,
       std::vector<std::vector<MxBase::ObjectInfo>>& objectInfos,
@@ -56,7 +56,7 @@ class RetinafacePostProcess : public MxBase::ObjectPostProcessBase {
   cv::Mat decode_for_loc(cv::Mat& loc, cv::Mat& prior, cv::Mat& key,
                          float resize_scale_factor);
 
- private:
+private:
   uint32_t objectConfTensor_ = DEFAULT_OBJECT_CONF_TENSOR;
   uint32_t objectInfoTensor_ = DEFAULT_OBJECT_INFO_TENSOR;
   float iouThresh_ = DEFAULT_IOU_THRESH;
