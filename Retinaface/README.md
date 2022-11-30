@@ -188,11 +188,18 @@ add_executable(retinaface main.cpp ${Retinaface_DETECTION} ${Retinaface_POSTPROC
 file(GLOB_RECURSE Retinaface_DETECTION ${PROJECT_SOURCE_DIR}/RetinafaceDetection/RetinafaceDetection.cpp)
 ```
 中的RetinafaceDetection.cpp改为RetinafaceDetectionFortest.cpp。
+
+
+将Retinaface/RetinafacePostProcess/RetinafacePostProcess.h中的
+```cpp
+#define DEFAULT_CONFIDENCE_THRESH 0.40
+```
+0.40改为0.02。
 2.执行命令bash build.sh。
 
 3.在Retinaface目录下创建一个文件夹命名为widerface_txt。
 
-4.[下载](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/Retinaface/widerface.zip)数据集放到Retinaface目录下。下载完毕数据集之后，执行指令：
+4.[下载](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/mindxsdk-referenceapps%20/contrib/Retinaface/widerface.zip)数据集放到Retinaface项目根目录下。下载完毕数据集之后，在根目录下执行指令：
 ```
 bash test.sh
 ```
@@ -235,9 +242,11 @@ python3 evaluation.py -p <your prediction dir> -g <groud truth dir>
 python3 evaluation.py -p ../widerface_txt -g ground_truth/
 ```
 最终得到的精度如下图所示：
+
 ![avator](images/image1.png)
 
 
 
 原图片精度如下：
+
 ![avator](images/origin.png)

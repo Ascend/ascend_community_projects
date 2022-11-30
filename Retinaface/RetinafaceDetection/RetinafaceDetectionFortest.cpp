@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <direct.h>
+#include <io.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -207,6 +209,13 @@ APP_ERROR RetinafaceDetection::WriteResult(
   std::string restxtPath = "./widerface_txt/";
   restxtPath += cataloge;
   restxtPath += "/";
+  if (_access(restxtPath.c_str(), 0) == -1) {
+    int ret = _mkdir(restxtPath.c_str());
+    if (ret == -1) {
+      LogInfo << "create file failed.";
+      return APP_ERR_OK;
+    }
+  }
   restxtPath += pictureName;
   restxtPath += ".txt";
   std::ofstream outfile;
