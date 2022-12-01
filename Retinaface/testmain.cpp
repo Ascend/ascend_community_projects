@@ -31,7 +31,7 @@ std::string imgFile;
 void InitRetinafaceParam(InitParam& initParam) {
   initParam.deviceId = 0;
   initParam.checkTensor = true;
-  initParam.modelPath = "/home/dongyu1/Retinaface0/model/newRetinaface.om";
+  initParam.modelPath = "./model/newRetinaface.om";
   initParam.classNum = 1;
   initParam.labelPath = "";
   initParam.ImagePath = "";

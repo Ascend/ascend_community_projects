@@ -207,13 +207,6 @@ APP_ERROR RetinafaceDetection::WriteResult(
   std::string restxtPath = "./widerface_txt/";
   restxtPath += cataloge;
   restxtPath += "/";
-  if (_access(restxtPath.c_str(), 0) == -1) {
-    int ret = _mkdir(restxtPath.c_str());
-    if (ret == -1) {
-      LogInfo << "create file failed.";
-      return APP_ERR_OK;
-    }
-  }
   restxtPath += pictureName;
   restxtPath += ".txt";
   std::ofstream outfile;
