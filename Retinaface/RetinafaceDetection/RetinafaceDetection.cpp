@@ -222,7 +222,7 @@ APP_ERROR RetinafaceDetection::Process(const std::string& imgPath) {
   imagePath = imgPath;
   cv::Mat originImage = cv::imread(imgPath);
   if (originImage.data == NULL) {
-    LogInfo << "The image is not exist.\n";
+    LogError << "The image is not exist.\n";
     return 0;
   }
   originImageW = originImage.cols;
