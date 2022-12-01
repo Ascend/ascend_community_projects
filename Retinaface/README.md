@@ -195,6 +195,8 @@ file(GLOB_RECURSE Retinaface_DETECTION ${PROJECT_SOURCE_DIR}/RetinafaceDetection
 #define DEFAULT_CONFIDENCE_THRESH 0.40
 ```
 0.40改为0.02。
+
+
 2.执行命令bash build.sh。
 
 3.在Retinaface目录下创建一个文件夹命名为widerface_txt。
