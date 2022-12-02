@@ -273,10 +273,10 @@ bool checkArg(int argc, char *argv[])
         LogWarn << "Please input video path, such as './video_sample test.264'.";
         return false;
     }
-    else if(argc == arg_one_video)
+    else if (argc == arg_one_video)
     {
         std::string videoPath0 = argv[arg1];
-        if(!checkFile(videoPath0))
+        if (!checkFile(videoPath0))
         {
             return false;
         }
@@ -287,15 +287,15 @@ bool checkArg(int argc, char *argv[])
         std::thread threadVdec0(VdecThread0, frameConfig::frameCountChannel0, frameConfig::skipIntervalChannel0, frameConfig::channelId0, src_width0, src_height0);
         threadVdec0.join();
     }
-    else if(argc == arg_two_video)
+    else if (argc == arg_two_video)
     {
         std::string videoPath0 = argv[arg1];
         std::string videoPath1 = argv[arg4];
-        if(!checkFile(videoPath0))
+        if (!checkFile(videoPath0))
         {
             return false;
         }
-        if(!checkFile(videoPath1))
+        if (!checkFile(videoPath1))
         {
             return false;
         }
@@ -330,7 +330,7 @@ APP_ERROR main(int argc, char *argv[])
     {
         LogError << "MxInit failed, ret=" << ret << ".";
     }
-    if(!checkArg(argc, argv))
+    if (!checkArg(argc, argv))
     {
         return APP_ERR_OK;
     }
