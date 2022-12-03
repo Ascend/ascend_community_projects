@@ -49,12 +49,17 @@
 |- FCOSPostprocess
 |	|- FCOSDetectionPostProcess.cpp
 |	|_ FCOSDetectionPostProcess.h
+|- imageforTest
+|   |- 000000000785.jpg
+|   |- 000000000872.jpg
+|   |_ other images
 |- build.sh
 |- CMakeLists.txt
 |- main.py
 |- binresult
 |- evaluate.py
-|_ README.md
+|- README.md
+|_ test.sh
 ```
 
 ### 1.5 技术实现流程图
@@ -120,7 +125,52 @@ ATC run success, welcome to the next use.
 
 
 ## 5 精度测试
-本项目和 https://gitee.com/ascend/mindxsdk-referenceapps/tree/master/contrib/FCOS 地址处的项目的模型和后处理过程一样。详细的精度测试参考地址处的项目。
+本项目和 https://gitee.com/ascend/mindxsdk-referenceapps/tree/master/contrib/FCOS  地址处的项目的模型和后处理过程一样。详细的精度测试参考地址处的项目。在本项目，由于其后处理插件以及模型和上面地址处的是一致的，这里就不单独进行精度测试。仅仅利用imageforTest内的照片跑出来的结果来与地址处的项目进行对比。这里旨在说明两个项目的代码运行结果是基本一致的。
+
+在进行精度比对之前，首先需要修改几处代码。
+首先在FCOSDetection.cpp文件里面的301行下面加上代码：
+```cpp
+std::string resPath = imagePath;
+  for (uint32_t i = 0; i<resPath.size(); i++) {
+    if (resPath.at(i) == '.') {
+      resPath.replace(i, 4, ".txt");
+      break;
+    }
+  }
+  std::ofstream outfile;
+  outfile.open(resPath, std::ios::out);
+```
+在这之后，在同一个函数里面的
+```cpp
+cv::rectangle(imgBgr,
+                    cv::Rect(newX0, newY0, newX1 - newX0, newY1 - newY0), green,
+                    thickness);
+```
+代码下面加入以下代码：
+```cpp
+outfile << labelMap_[((int)resultInfo[j].classId)];
+      outfile << "\n";
+      outfile << newX0;
+      outfile << " ";
+      outfile << newY0;
+      outfile << " ";
+      outfile << newX1 - newX0;
+      outfile << " ";
+      outfile << newY1 - newY0;
+      outfile << "\n";
+```
+在加入完毕以上代码之后就在终端输入命令：
+```
+bash test.sh
+```
+即可在imageforTest文件夹下面看到以txt文件存放的结果。每个txt文件对应于一张图片。
+
+![avatar](./image/image4.png)
+
+在每个txt文件中，其中的内容如下：
+
+![avatar](./image/image5.png)
+在每个txt文件中都存放了对应图片的所有检测到的物体类别及其目标框$(x_0,y_0,w,h)$。但是这个项目和上述地址处的项目的同一张图片的txt文件里面的每一个目标框结果存放顺序不同（不影响结果）。经过多次对比，发现本项目的结果和上述地址处的项目最终结果生成的目标框的位置基本一样、类别也一致。
 ## 6 常见问题
 
 ### 6.1 类别标签问题

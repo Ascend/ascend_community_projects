@@ -22,26 +22,28 @@
 
 class FCOSPostProcess : public MxBase::ObjectPostProcessBase {
 public:
- FCOSPostProcess() = default;
- ~FCOSPostProcess() = default;
- FCOSPostProcess(const FCOSPostProcess &other);
- APP_ERROR Init(
-     const std::map<std::string, std::shared_ptr<void>> &postConfig) override;
- APP_ERROR DeInit() override;
- APP_ERROR Process(
-     const std::vector<MxBase::TensorBase> &tensors,
-     std::vector<std::vector<MxBase::ObjectInfo>> &objectInfos,
-     const std::vector<MxBase::ResizedImageInfo> &resizedImageInfos = {},
-     const std::map<std::string, std::shared_ptr<void>> &configParamMap = {})
-     override;
- FCOSPostProcess &operator=(const FCOSPostProcess &other);
+  FCOSPostProcess() = default;
+  ~FCOSPostProcess() = default;
+  FCOSPostProcess(const FCOSPostProcess &other);
+  APP_ERROR Init(
+      const std::map<std::string, std::shared_ptr<void>> &postConfig) override;
+  APP_ERROR DeInit() override;
+  APP_ERROR Process(
+      const std::vector<MxBase::TensorBase> &tensors,
+      std::vector<std::vector<MxBase::ObjectInfo>> &objectInfos,
+      const std::vector<MxBase::ResizedImageInfo> &resizedImageInfos = {},
+      const std::map<std::string, std::shared_ptr<void>> &configParamMap = {})
+      override;
+  FCOSPostProcess &operator=(const FCOSPostProcess &other);
+
 protected:
- void PostprocessBBox(MxBase::ObjectInfo &objInfo, int imageWidth,
-                      int imageHeight, int netInWidth, int netInHeight);
+  void PostprocessBBox(MxBase::ObjectInfo &objInfo, int imageWidth,
+                       int imageHeight, int netInWidth, int netInHeight);
+
 private:
- uint32_t classNum_ = 0;
- bool softmax_ = true;
- uint32_t topK_ = 1;
- float min_confidence = 0.5;
+  uint32_t classNum_ = 0;
+  bool softmax_ = true;
+  uint32_t topK_ = 1;
+  float min_confidence = 0.5;
 };
 #endif
