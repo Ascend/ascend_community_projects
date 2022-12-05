@@ -37,10 +37,10 @@ right_camera_matrix = np.array([camera_list[2][:3],
                                 camera_list[2][6:]])
 right_distortion = np.array([camera_list[3]])
 
-# 旋转关系向量
+# Rotation vector
 R = np.array([camera_list[4][:3],
               camera_list[4][3:6],
               camera_list[4][6:]])
 
-# 平移关系向量
+# Translation vector
 T = np.array(camera_list[5])

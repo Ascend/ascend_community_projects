@@ -18,18 +18,17 @@ import cv2
 from mindx.sdk import base
 from mindx.sdk.base import Tensor, Model, Size, log, ImageProcessor, post, BTensor
 
-DEVICE_ID = 0  # 芯片ID
-MODEL_PATH = "./model/yolov3_tf_aipp.om"  # 模型的路径
-CONFIG_PATH = "./model/yolov3_tf_bs1_fp16.cfg"  # 模型配置文件的路径
-LABEL_PATH = "./model/yolov3.names"  # 分类标签文件的路径
-B_USEDVPP = False  # 使用dvpp图像处理器启用，使用opencv时False
+DEVICE_ID = 0  
+MODEL_PATH = "./model/yolov3_tf_aipp.om"  
+CONFIG_PATH = "./model/yolov3_tf_bs1_fp16.cfg"  
+LABEL_PATH = "./model/yolov3.names"  
+B_USEDVPP = False  # Enabled with dvpp image processor, false with opencv
 
 
 def yolo_infer(image_path, yolo_resize):
-    yolo = Model(MODEL_PATH, DEVICE_ID)  # 创造模型对象
+    yolo = Model(MODEL_PATH, DEVICE_ID)  
     image_tensor = []
     if B_USEDVPP:
-    # 创造图像处理器对象!!!!!使用该方法处理后数据已在device侧
         image_processor0 = ImageProcessor(DEVICE_ID)
         decode_img = image_processor0.decode(image_path, base.nv12)
         
@@ -39,7 +38,7 @@ def yolo_infer(image_path, yolo_resize):
         image_processor1 = ImageProcessor(DEVICE_ID)
         size_cof = Size(yolo_resize, yolo_resize)
         resize_img = image_processor1.resize(decode_img, size_cof)  
-        image_tensor = [resize_img.to_tensor()]  # 推理前需要转换为tensor的List，数据已在device侧无需转移
+        image_tensor = [resize_img.to_tensor()]  
 
     else:
         image = np.array(cv2.imread(image_path))
@@ -50,16 +49,15 @@ def yolo_infer(image_path, yolo_resize):
 
         resize_img = cv2.resize(image, size_cof, interpolation=cv2.INTER_LINEAR)
         
-        yuv_img =  cv2.cvtColor(resize_img, cv2.COLOR_BGR2YUV)
-        yuv_img = yuv_img[np.newaxis, :, :]
-        image_tensor = Tensor(yuv_img) # 推理前需要转换为tensor的List，使用Tensor类来构建。
+        yuv_img = resize_img[np.newaxis, :, :]
+        image_tensor = Tensor(yuv_img) 
         
-        image_tensor.to_device(DEVICE_ID) # 重要，需要转移至device侧
+        image_tensor.to_device(DEVICE_ID) 
         image_tensor = [image_tensor]
     outputs = yolo.infer(image_tensor)
-    print("-----------YOLO Infer Success!----------------")
+
     yolov3_post = post.Yolov3PostProcess(
-        config_path=CONFIG_PATH, label_path=LABEL_PATH)  # 构造对应的后处理对象
+        config_path=CONFIG_PATH, label_path=LABEL_PATH)  
     
     resize_info = base.ResizedImageInfo()
     resize_info.heightResize = yolo_resize
