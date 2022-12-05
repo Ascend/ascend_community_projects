@@ -54,11 +54,7 @@ int spi_open(const char *path, unsigned int mode, uint32_t max_speed) {
     return spi_open_advanced(path, mode, max_speed, MSB_FIRST, 8, 0);
 }
 
-int spi_open_advanced(const char *path, unsigned int mode, uint32_t max_speed, spi_bit_order_t bit_order, uint8_t bits_per_word, uint8_t extra_flags) {
-    return spi_open_advanced2(path, mode, max_speed, bit_order, bits_per_word, extra_flags);
-}
-
-int spi_open_advanced2(const char *path, unsigned int mode, uint32_t max_speed, spi_bit_order_t bit_order, uint8_t bits_per_word, uint32_t extra_flags) {
+int spi_open_advanced(const char *path, unsigned int mode, uint32_t max_speed, spi_bit_order_t bit_order, uint8_t bits_per_word, uint32_t extra_flags) {
     uint32_t data32;
     uint8_t data8;
     int fd;
@@ -291,7 +287,6 @@ int spi_read(int fd, uint8_t *rxbuf, size_t len) {
     if (reback < 0) {
         fprintf(stderr, "spi_read ():errno:%d --%s\n", errno, strerror(errno));
     }
-
     return reback;
 }
 
@@ -309,13 +304,13 @@ int spi_close(int *fd) {
 }
 
 int spi_set_m(int fd, uint8_t mode) {
-    uint8_t test;
-    if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
-        ERROR_LOG("failed to get SPI mode");
+    uint8_t test = mode;
+    if (ioctl(fd, SPI_IOC_WR_MODE, &test) == -1) {
+        ERROR_LOG("failed to set SPI mode");
         return -1;
     }
     if (ioctl(fd, SPI_IOC_RD_MODE, &test) == -1) {
-        ERROR_LOG("failed to set SPI mode");
+        ERROR_LOG("failed to get SPI mode");
         return -1;
     }
     if (test != mode) {
@@ -339,7 +334,6 @@ int spi_get_mode(int fd, uint8_t *mode) {
     uint8_t data8;
 
     if (spi_get_mode__(fd, &data8)) {
-        ERROR_LOG("Getting SPI mode");
         return -1;
     }
     *mode = data8 & (SPI_CPHA | SPI_CPOL);
@@ -400,7 +394,7 @@ int spi_get_extra_flags(int fd, uint8_t *extra_flags) {
 
 int spi_get_cshigh(int fd, bool *cs) {
     uint8_t mode = 0;
-    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode(fd, &mode) < 0) { return -1; }
 
     *cs = (mode & SPI_CS_HIGH) ? true : false;
 
@@ -409,7 +403,7 @@ int spi_get_cshigh(int fd, bool *cs) {
 
 int spi_get_loop(int fd, bool *result) {
     uint8_t mode = 0;
-    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode(fd, &mode) < 0) { return -1; }
 
     *result = (mode & SPI_LOOP) ? true : false;
 
@@ -418,7 +412,7 @@ int spi_get_loop(int fd, bool *result) {
 
 int spi_get_no_cs(int fd, bool *result) {
     uint8_t mode = 0;
-    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode(fd, &mode) < 0) { return -1; }
 
     *result = (mode & SPI_NO_CS) ? true : false;
 
@@ -504,7 +498,7 @@ int spi_set_bits_per_word(int fd, uint8_t bits_per_word) {
 int spi_set_cshigh(int fd, bool val) {
     uint8_t tmp, mode = 0;
 
-    if (spi_get_mode__(fd, &mode) != 0) { return -1; }
+    if (spi_get_mode(fd, &mode) != 0) { return -1; }
 
     tmp = (val == true) ? (mode | SPI_CS_HIGH) : (mode & ~SPI_CS_HIGH);
 
@@ -516,7 +510,7 @@ int spi_set_cshigh(int fd, bool val) {
 int spi_set_no_cs(int fd, bool val) {
     uint8_t tmp, mode;
 
-    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode(fd, &mode) < 0) { return -1; }
 
     tmp = (val == true) ? (mode | SPI_NO_CS) : (mode & ~SPI_NO_CS);
 
@@ -528,7 +522,7 @@ int spi_set_no_cs(int fd, bool val) {
 int spi_set_loop(int fd, bool val) {
     uint8_t tmp, mode;
 
-    if (spi_get_mode__(fd, &mode) < 0) { return -1; }
+    if (spi_get_mode(fd, &mode) < 0) { return -1; }
 
     tmp = (val == true) ? (mode | SPI_LOOP) : mode & ~SPI_LOOP;
 

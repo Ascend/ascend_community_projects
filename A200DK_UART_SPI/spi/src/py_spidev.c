@@ -152,7 +152,7 @@ static PyObject *SpiDev_writebytes(SpiDevObject *self, PyObject *args) {
 
 static PyObject *SpiDev_readbytes(SpiDevObject *self, PyObject *args) {
     uint8_t rxbuf[SPIDEV_MAXPATH];
-    int status, len, ii;
+    int len, ii;
     PyObject *list;
 
     if (!PyArg_ParseTuple(args, "i:read", &len))
@@ -166,7 +166,7 @@ static PyObject *SpiDev_readbytes(SpiDevObject *self, PyObject *args) {
     }
 
     memset(rxbuf, 0, sizeof rxbuf);
-    status = read(self->fd, &rxbuf[0], len);
+    status = read(self->fd, rxbuf, len);
     if (status < 0) {
         PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
@@ -759,8 +759,8 @@ static PyObject *SpiDev_xfer3(SpiDevObject *self, PyObject *args) {
 }
 
 static int spidev_set_mode__(int fd, uint8_t mode) {
-    uint8_t test;
-    if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
+    uint8_t test = mode;
+    if (ioctl(fd, SPI_IOC_WR_MODE, &test) == -1) {
         PyErr_SetFromErrno(PyExc_IOError);
         return -1;
     }
@@ -883,7 +883,7 @@ static int SpiDev_set_cshigh(SpiDevObject *self, PyObject *val, void *closure) {
         return -1;
     }
 
-    tmp = (val == Py_True) ? (self->mode | SPI_CS_HIGH) : (tmp = self->mode & ~SPI_CS_HIGH);
+    tmp = (val == Py_True) ? (self->mode | SPI_CS_HIGH) : (self->mode & ~SPI_CS_HIGH);
     ret = spidev_set_mode__(self->fd, tmp);
     if (ret != -1) { self->mode = tmp; }
     return ret;
@@ -924,7 +924,7 @@ static int SpiDev_set_3wire(SpiDevObject *self, PyObject *val, void *closure) {
     }
 
     tmp = (val == Py_True) ? (self->mode | SPI_3WIRE) : (self->mode & ~SPI_3WIRE);
-
+    ret = spidev_set_mode__(self->fd, tmp);
     if (ret != -1) { self->mode = tmp; }
     return ret;
 }

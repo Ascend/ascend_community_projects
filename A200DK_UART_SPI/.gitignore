@@ -6,3 +6,4 @@
 /.clang-format
 /*/build
 /*/dist
+*.docx

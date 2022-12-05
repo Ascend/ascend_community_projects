@@ -21,5 +21,6 @@ SPI_SPEED = 1000000
 spi.max_speed_hz = SPI_SPEED
 spi.mode = 0b01
 spi.writebytes2([01, 01])
+print(spi.readbytes(2))
 
 spi.close()

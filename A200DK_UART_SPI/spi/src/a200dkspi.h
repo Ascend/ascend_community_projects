@@ -30,6 +30,7 @@ extern "C" {
 #define EXIT_ARGS_LEN_MIN 3
 #define BITS_8 8
 #define BITS_32 32
+#define SPI_MAX_TRANSFER_LEN 28 // spi单次最大传输长度
 
 #define INFO_LOG(fmt, args...) fprintf(stdout, "[INFO]  " fmt "\n", ##args)
 #define WARN_LOG(fmt, args...) \
@@ -55,9 +56,6 @@ int spi_open(const char *path, unsigned int mode, uint32_t max_speed);
 int spi_open_advanced(const char *path, unsigned int mode,
                       uint32_t max_speed, spi_bit_order_t bit_order,
                       uint8_t bits_per_word, uint8_t extra_flags);
-int spi_open_advanced2(const char *path, unsigned int mode,
-                       uint32_t max_speed, spi_bit_order_t bit_order,
-                       uint8_t bits_per_word, uint32_t extra_flags);
 int spi_xfer(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len);
 int spi_xfer2(int fd, const uint8_t *txbuf, uint8_t *rxbuf, size_t len,
               uint16_t delay_usecs, uint8_t bits_per_word, uint32_t speed_hz);

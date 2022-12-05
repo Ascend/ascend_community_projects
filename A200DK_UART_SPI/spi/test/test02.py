@@ -11,34 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#DEBUG = y
+import spidev
 
-# Add your debugging flag (or not) to CFLAGS
-ifeq ($(DEBUG),y)
-  DEBFLAGS = -O -g
-# "-O" is needed to expand inlines
-else
-  DEBFLAGS = -O2
-endif
 
-CROSS_COMPILE	?= aarch64-linux-gnu-
-CC=$(CROSS_COMPILE)gcc
-CFLAGS= -Wall
+spi = spidev.SpiDev()
+spi.open(0, 0)
 
-CFLAGS += $(DEBFLAGS)
-LDFLAGS = -L. -lspidev
+SPI_SPEED = 1000000
+SPI_SPEED_2 = 2000000
+BITS_PER_WORD_32 = 32
+spi.max_speed_hz = SPI_SPEED
+spi.mode = 0b01
+print(spi.xfer([1, 1]))
 
-cname?=test01
-oname=$(cname).o
-targetname = $(cname)
-all: $(targetname)
+print(spi.mode)
+print(spi.bits_per_word)
+print(spi.max_speed_hz)
 
-#compiler ruler
-$(targetname):$(oname)
-	$(CC) $(CFLAGS) -o $@ $? $(LDFLAGS)
-	rm  *.o  
-	rm -f *.bak
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
-clean:
-	rm -f targetname 
+spi.mode = 0
+spi.bits_per_word = BITS_PER_WORD_32
+spi.max_speed_hz = SPI_SPEED_2  
+
+print(spi.mode)
+print(spi.bits_per_word)
+print(spi.max_speed_hz)
+
+spi.close()

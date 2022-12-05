@@ -20,14 +20,17 @@
 #include "a200dkspi.h"
 
 #define SPI_SPEED 1000000
+#define SPI_MAX_SPEED 3000000
 #define LEN_MAX 1024
 #define BUF_LEN 4
+#define BIIS_PER_WORD_32 32
+
 
 int main(void) {
     int fd, res;
     uint8_t new[LEN_MAX];
     uint8_t buf[BUF_LEN] = {0xaa, 0xbb, 0xcc, 0xdd};
-    uint8_t rbuf[BUF_LEN] = {0};
+    uint8_t read_buf[BUF_LEN] = {0};
 
     memset(new, 0, LEN_MAX);
 
@@ -38,16 +41,20 @@ int main(void) {
         printf("%d\n", fd);
     }
 
-    res = spi_tostring(fd, new, SPI_SPEED);
+    spi_read(fd, read_buf, BUF_LEN);
+
+    printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
+
+    res = spi_tostring(fd, new, LEN_MAX);
     printf("%s\n", new);
 
-    if (spi_xfer(fd, buf, rbuf, sizeof(buf)) < 0) {
-        printf("failed to transfer\n");
-        exit(1);
-    }
-
-    printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[2], rbuf[3]);
-
+	spi_set_mode(fd, 0);
+	spi_set_max_speed(fd, SPI_MAX_SPEED);
+	spi_set_bit_order(fd, 0);
+	spi_set_bits_per_word(fd, BIIS_PER_WORD_32);
+    
+    res = spi_tostring(fd, new, LEN_MAX);
+    printf("%s\n", new);
     spi_close(&fd);
 
     return 0;

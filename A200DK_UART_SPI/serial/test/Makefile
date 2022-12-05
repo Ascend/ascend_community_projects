@@ -26,7 +26,7 @@ CC=$(CROSS_COMPILE)gcc
 CFLAGS= -Wall
 
 CFLAGS += $(DEBFLAGS)
-LDFLAGS = 
+LDFLAGS = -L. -lserial
 
 cname?=serial_test
 oname=$(cname).o
@@ -34,7 +34,7 @@ targetname = $(cname)
 all: $(targetname)
 
 #compiler ruler
-$(targetname):$(oname)  c_serial.o 
+$(targetname):$(oname)  
 	$(CC) $(CFLAGS) -o $@ $? $(LDFLAGS)
 	rm  *.o  
 	rm -f *.bak
