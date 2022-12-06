@@ -62,7 +62,6 @@ namespace frameConfig
     int arg4 = 4;
     int arg5 = 5;
     int arg6 = 6;
-    int arg7 = 7;
 
     // channel0对应文件的指针
     AVFormatContext *pFormatCtx0 = nullptr;
@@ -273,24 +272,24 @@ bool checkArg(int argc, char *argv[])
         LogWarn << "Please input video path, such as './video_sample test.264'.";
         return false;
     }
-    else if (argc == arg_one_video)
+    else if (argc == frameConfig::arg_one_video)
     {
-        std::string videoPath0 = argv[arg1];
+        std::string videoPath0 = argv[frameConfig::arg1];
         if (!checkFile(videoPath0))
         {
             return false;
         }
-        uint32_t src_width0 = (uint32_t)stoul(argv[arg2]);
-        uint32_t src_height0 = (uint32_t)stoul(argv[arg3]);
+        uint32_t src_width0 = (uint32_t)stoul(argv[frameConfig::arg2]);
+        uint32_t src_height0 = (uint32_t)stoul(argv[frameConfig::arg3]);
         LogWarn << "videoPath0: " << videoPath0 << ", src_width0: " << src_width0 << ", src_height0: " << src_height0;
         PullStream0(videoPath0);
         std::thread threadVdec0(VdecThread0, frameConfig::frameCountChannel0, frameConfig::skipIntervalChannel0, frameConfig::channelId0, src_width0, src_height0);
         threadVdec0.join();
     }
-    else if (argc == arg_two_video)
+    else if (argc == frameConfig::arg_two_video)
     {
-        std::string videoPath0 = argv[arg1];
-        std::string videoPath1 = argv[arg4];
+        std::string videoPath0 = argv[frameConfig::arg1];
+        std::string videoPath1 = argv[frameConfig::arg4];
         if (!checkFile(videoPath0))
         {
             return false;
@@ -300,15 +299,15 @@ bool checkArg(int argc, char *argv[])
             return false;
         }
 
-        uint32_t src_width0 = (uint32_t)stoul(argv[arg2]);
-        uint32_t src_height0 = (uint32_t)stoul(argv[arg3]);
+        uint32_t src_width0 = (uint32_t)stoul(argv[frameConfig::arg2]);
+        uint32_t src_height0 = (uint32_t)stoul(argv[frameConfig::arg3]);
         LogWarn << "videoPath0: " << videoPath0 << ", src_width0: " << src_width0 << ", src_height0: " << src_height0;
         PullStream0(videoPath0);
         std::thread threadVdec0(VdecThread0, frameConfig::frameCountChannel0, frameConfig::skipIntervalChannel0, frameConfig::channelId0, src_width0, src_height0);
         threadVdec0.join();
 
-        uint32_t src_width1 = (uint32_t)stoul(argv[arg5]);
-        uint32_t src_height1 = (uint32_t)stoul(argv[arg6]);
+        uint32_t src_width1 = (uint32_t)stoul(argv[frameConfig::arg5]);
+        uint32_t src_height1 = (uint32_t)stoul(argv[frameConfig::arg6]);
         LogWarn << "videoPath1: " << videoPath1 << ", src_width1: " << src_width1 << ", src_height1: " << src_height1;
         PullStream1(videoPath1);
         std::thread threadVdec1(VdecThread1, frameConfig::frameCountChannel1, frameConfig::skipIntervalChannel1, frameConfig::channelId1, src_width1, src_height1);
