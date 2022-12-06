@@ -99,9 +99,6 @@ max_speed
 bit_order
 bits_per_word
 extra_flags
-cshigh
-loop
-no_cs
 ```
 
 
@@ -122,9 +119,12 @@ no_cs
 │   │   └── py_serial.c
 │   └── test
 │       ├── Makefile
-│       ├── serialtest
-│       ├── serial_test.c
-│       └── test01.py
+│       ├── test_read.c
+│       ├── test_readline.c
+│       ├── test_readline.py
+│       ├── test_read.py
+│       ├── test_set.c
+│       └── test_set.py
 ├── spi
 │   ├── setup.py
 │   ├── spidev.egg-info
@@ -138,11 +138,12 @@ no_cs
 │   │   └── py_spidev.c
 │   └── test
 │       ├── Makefile
-│       ├── spitest
 │       ├── test01.c
-│       └── test01.py
+│       ├── test01.py
+│       ├── test02.c
+│       └── test02.py
 ├── README.md
-└── 操作文档.docx
+└── 操作文档.md
 ```
 
 ## 3 开发准备
@@ -180,11 +181,11 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
 ### 4.1 Serial C示例步骤
 
-**步骤1** 执行如下命令，进入到GPIO代码资源目录下。
+**步骤1** 执行如下命令，进入到Serial 代码资源目录下。
 
     cd serial/src
 
-**步骤2** 执行如下命令，将smbus.c编译成.so文件。
+**步骤2** 执行如下命令，将c_serial.c编译成.so文件。
 
     gcc c_serial.c -fPIC -shared -o libserial.so
 
@@ -192,7 +193,7 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
     vi /etc/ld.so.conf
 
-**步骤4** 执行如下命令，将libsmbus.so复制到路径/usr/local/lib下。
+**步骤4** 执行如下命令，将libserial.so复制到路径/usr/local/lib下。
 
     cp libserial.so /usr/local/lib
 
@@ -252,11 +253,11 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
 ### 4.3 SPI C示例步骤
 
-**步骤1** 执行如下命令，进入到I2C代码资源目录下。
+**步骤1** 执行如下命令，进入到SPI代码资源目录下。
 
     cd spi/src
 
-**步骤2** 执行如下命令，将smbus.c编译成.so文件。
+**步骤2** 执行如下命令，将c_spidev.c编译成.so文件。
 
     gcc c_spidev.c -fPIC -shared -o libspidev.so
 
@@ -264,7 +265,7 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
     vi /etc/ld.so.conf
 
-**步骤4** 执行如下命令，将libsmbus.so复制到路径/usr/local/lib下。
+**步骤4** 执行如下命令，将libspidev.so复制到路径/usr/local/lib下。
 
     cp libspidev.so /usr/local/lib
 
@@ -272,7 +273,7 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
     ldconfig
 
-**步骤6** 执行如下命令，将gpio.h复制到路径/usr/include下。。
+**步骤6** 执行如下命令，将a200dkspi.h复制到路径/usr/include下。。
 
     cp a200dkspi.h /usr/include
 
@@ -298,7 +299,7 @@ https://gitee.com/ascend/docs-openmind/blob/master/guide/mindx/ascend_community_
 
     conda activate py37
 
-**步骤3** 执行如下命令，进入到I2C项目目录下。
+**步骤3** 执行如下命令，进入到SPI项目目录下。
 
     cd spi
 

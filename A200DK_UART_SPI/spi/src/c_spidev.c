@@ -51,7 +51,7 @@ uint32_t get_xfer3_block_size(void) {
 }
 
 int spi_open(const char *path, unsigned int mode, uint32_t max_speed) {
-    return spi_open_advanced(path, mode, max_speed, MSB_FIRST, 8, 0);
+    return spi_open_advanced(path, mode, max_speed, MSB_FIRST, BITS_8, 0);
 }
 
 int spi_open_advanced(const char *path, unsigned int mode, uint32_t max_speed, spi_bit_order_t bit_order, uint8_t bits_per_word, uint32_t extra_flags) {
