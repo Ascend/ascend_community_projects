@@ -133,7 +133,6 @@ static PyObject *Serial_write(SerialObject *self, PyObject *seq) {
                         "failed to pass PyBytes_Check");
         return NULL;
     }
-
     len = PyBytes_Size(uni);
     p = PyBytes_AsString(uni);
     if (serial_write(self->fd, (uint8_t *)p, (size_t)len) < 0) {
