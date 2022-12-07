@@ -98,7 +98,7 @@ mode
 max_speed
 bit_order
 bits_per_word
-extra_flags
+extra_flags: SPI_LOOP等
 ```
 
 
