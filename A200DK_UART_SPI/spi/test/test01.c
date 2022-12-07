@@ -20,6 +20,8 @@
 #include "a200dkspi.h"
 
 #define SPI_SPEED 1000000
+#define INDEX_2 2
+#define INDEX_3 3
 #define LEN_MAX 1024
 #define BUF_LEN 4
 
@@ -47,7 +49,7 @@ int main(void) {
         exit(1);
     }
 	
-	printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[BUF_LEN - 1], rbuf[BUF_LEN]);
+	printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[INDEX_2], rbuf[INDEX_3]);
 
     spi_close(&fd);
 

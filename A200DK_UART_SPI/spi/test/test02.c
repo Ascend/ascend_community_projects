@@ -22,6 +22,8 @@
 #define SPI_SPEED 1000000
 #define SPI_MAX_SPEED 3000000
 #define LEN_MAX 1024
+#define INDEX_2 2
+#define INDEX_3 3
 #define BUF_LEN 4
 #define BIIS_PER_WORD_32 32
 
@@ -43,7 +45,7 @@ int main(void) {
 
     spi_read(fd, read_buf, BUF_LEN);
 
-	printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[BUF_LEN - 1], rbuf[BUF_LEN]);
+	printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[INDEX_2], rbuf[INDEX_3]);
 
     res = spi_tostring(fd, new, LEN_MAX);
     printf("%s\n", new);
