@@ -28,6 +28,7 @@ int main(void) {
     uint8_t new[LEN_MAX];
     uint8_t buf[BUF_LEN] = {0xaa, 0xbb, 0xcc, 0xdd};
     uint8_t rbuf[BUF_LEN] = {0};
+    uint8_t i = 0;
 
     memset(new, 0, LEN_MAX);
 
@@ -45,8 +46,8 @@ int main(void) {
         printf("failed to transfer\n");
         exit(1);
     }
-
-    printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[2], rbuf[3]);
+	
+	printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[BUF_LEN - 1], rbuf[BUF_LEN]);
 
     spi_close(&fd);
 

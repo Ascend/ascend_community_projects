@@ -43,7 +43,7 @@ int main(void) {
 
     spi_read(fd, read_buf, BUF_LEN);
 
-    printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", read_buf[0], read_buf[1], read_buf[2], read_buf[3]);
+	printf("shifted in: 0x%02x 0x%02x 0x%02x 0x%02x\n", rbuf[0], rbuf[1], rbuf[BUF_LEN - 1], rbuf[BUF_LEN]);
 
     res = spi_tostring(fd, new, LEN_MAX);
     printf("%s\n", new);

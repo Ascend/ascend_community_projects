@@ -65,7 +65,7 @@ int main(int argc, char const *argv[]) {
     serial_set_vmin(fd, SELF_VMIN);
     serial_set_vtime(fd, SELF_VTIME);
 
-    serial_write(fd, buf, sizeof(buf));
+    serial_write(fd, buf, strlen(buf));
     res = serial_readline(fd, read_buf, SELF_READ_BUF_MAX, TIMEOUT_MS);
     printf("接收： %d\r\n", res);
     serial_write(fd, read_buf, sizeof(read_buf));
