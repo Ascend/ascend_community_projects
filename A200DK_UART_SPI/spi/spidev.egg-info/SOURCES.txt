@@ -1,0 +1,8 @@
+setup.py
+spidev.egg-info/PKG-INFO
+spidev.egg-info/SOURCES.txt
+spidev.egg-info/dependency_links.txt
+spidev.egg-info/top_level.txt
+src/c_spidev.c
+src/py_spidev.c
+test/test01.py

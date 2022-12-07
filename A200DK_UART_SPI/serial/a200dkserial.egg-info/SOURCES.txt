@@ -1,0 +1,8 @@
+setup.py
+a200dkserial.egg-info/PKG-INFO
+a200dkserial.egg-info/SOURCES.txt
+a200dkserial.egg-info/dependency_links.txt
+a200dkserial.egg-info/top_level.txt
+src/c_serial.c
+src/py_serial.c
+test/test01.py
