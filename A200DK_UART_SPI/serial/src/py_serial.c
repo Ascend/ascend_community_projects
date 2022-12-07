@@ -136,7 +136,6 @@ static PyObject *Serial_write(SerialObject *self, PyObject *seq) {
 
     len = PyBytes_Size(uni);
     p = PyBytes_AsString(uni);
-
     if (serial_write(self->fd, (uint8_t *)p, (size_t)len) < 0) {
         PyErr_SetString(PyExc_TypeError,
                         "failed to serial_write");
