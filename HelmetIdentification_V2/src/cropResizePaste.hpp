@@ -32,6 +32,14 @@
 MxBase::Rect GetPasteRect(uint32_t inputWidth, uint32_t inputHeight, uint32_t outputWidth, uint32_t outputHeight)
 {
     bool widthRatioLarger = true;
+    if(outputWidth == 0)
+    {
+        LogError << "outputWidth equals to 0.";
+    }
+    if(outputHeight == 0)
+    {
+        LogError << "outputHeight equals to 0.";
+    }
     float resizeRatio = static_cast<float>(inputWidth) / outputWidth;
     if (resizeRatio < (static_cast<float>(inputHeight) / outputHeight))
     {
