@@ -304,13 +304,15 @@ bool checkArg(int argc, char *argv[])
         LogWarn << "videoPath0: " << videoPath0 << ", src_width0: " << src_width0 << ", src_height0: " << src_height0;
         PullStream0(videoPath0);
         std::thread threadVdec0(VdecThread0, frameConfig::frameCountChannel0, frameConfig::skipIntervalChannel0, frameConfig::channelId0, src_width0, src_height0);
-        threadVdec0.join();
-
+        
         uint32_t src_width1 = (uint32_t)stoul(argv[frameConfig::arg5]);
         uint32_t src_height1 = (uint32_t)stoul(argv[frameConfig::arg6]);
         LogWarn << "videoPath1: " << videoPath1 << ", src_width1: " << src_width1 << ", src_height1: " << src_height1;
         PullStream1(videoPath1);
         std::thread threadVdec1(VdecThread1, frameConfig::frameCountChannel1, frameConfig::skipIntervalChannel1, frameConfig::channelId1, src_width1, src_height1);
+        
+        // threadVdec0新建后直接join会导致channel0的图片全部排在channel1的图片之前
+        threadVdec0.join();
         threadVdec1.join();
     }
     else
