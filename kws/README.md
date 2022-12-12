@@ -32,10 +32,10 @@ SDK：3.0RC3（可通过cat SDK目录下的version.info查看信息）
 本项目首先通过onnx软件将tf的预训练模型转化为onnx模型，然后在使用atc工具将其转化为SDK能使用的om模型。最终通过构建SDK推理pipeline，实现模型推理。
 
 1.5 特性及适用场景  
-  kws主要分为两个步骤：<br/>
+  kws主要分为两个步骤：
 
-  **一、 构建声学模型** <br/>
-  **二、 对模型输出进行解码，查看是否出现目标关键词** <br/>
+  >1 构建声学模型  
+  2 对模型输出进行解码，查看是否出现目标关键词
 
   声学模型采用CRNN-CTC,模型构建参考论文《CRNN-CTC Based Mandarin Keyword Spotting》<br/>
 
@@ -67,13 +67,13 @@ apt-get install liblzma-dev
 
 >此处提供处理完成的数据集data_CTC目录([下载链接](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/kws/data_CTC.7z))，生成的索引目录data_CTC_pre_2([索引目录下载链接](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/kws/data_CTC_pre_2.7z))。请注意数据集每次预处理生成的data_CTC_pre_2索引和数据集的mod_gsc2均不同且一一对应，并会影响后续精度测试结果。 
 
-### 1. 下载tensorflow原作的([下载链接](https://github.com/ryuuji06/keyword-spotting/))的代码并部署
-### 2. 下载后数据集data_CTC([下载链接](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/kws/data_CTC.7z))后删除mod_gsc2文件夹内的文件，部署至原项目根目录下。
+### 2.1 下载tensorflow原作的([下载链接](https://github.com/ryuuji06/keyword-spotting/))的代码并部署
+### 2.2 下载后数据集data_CTC([下载链接](https://mindx.sdk.obs.cn-north-4.myhuaweicloud.com/ascend_community_projects/kws/data_CTC.7z))后删除mod_gsc2文件夹内的文件，部署至原项目根目录下。
 
 >注意在arm环境中可能存在numpy版本问题导致无法正确切分数据集，此种情况可在其他环境先处理好数据集，本例中数据集相关操作在Windows平台完成。
 下载下来的源码文件keyword-spotting-main部署至推理项目根目录(keyword-spotting-main/)下
 
-### 3. 执行数据集切分
+### 2.3 执行数据集切分
 下载源码文件后将create_dataset.py 和 prepare_datasets.py 中的keywords由  
 >keywords = ['house', 'right', 'down', 'left', 'no', 'five', 'one', 'three']
 
@@ -166,9 +166,11 @@ pip install .
 
 
 ### 4.1 激活310或200DK环境  
-键入
+运行
+```bash
 source ${SDK−path}/set_env.sh
 source ${ascend-toolkit-path}/set_env.sh
+```
 以激活环境，其中SDK-path是SDK mxVision安装路径，ascend-toolkit-path是CANN安装路径。
 
 ### 4.2 模型转换  
@@ -216,7 +218,7 @@ atc --framework=5 --model=model2.onnx --output=modelctc1 --input_format=ND --inp
 |-------- blank                     // 过长音频截取长度后的存放的临时文件夹(推理运行时生成)
 ```
 
-修改run.sh中代码以指定OM精度测试，OM指定文件夹功能测试和原模型tf精度测试，原模型tf指定文件夹功能测试。
+修改run.sh中代码以指定OM精度测试，OM指定音频文件夹功能测试或原模型tf精度测试，原模型tf指定音频文件夹功能测试。
 ```bash
 # python main.py -p "../{}"         #OM指定文件夹功能
 # python kws_predict.py -p "../{}"      #原模型tf指定文件夹功能
